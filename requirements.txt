@@ -1,4 +1,16 @@
+codecov
+nbsphinx
 numpy>=1.3
+numpydoc
 pandas>=1.0
 pip
 pre-commit
+pytest
+pytest-cov
+sphinx>=1.4.3
+sphinxcontrib-bibtex
+sphinx_bootstrap_theme
+sphinx_gallery
+twine
+watermark
+wheel
