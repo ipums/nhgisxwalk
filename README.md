@@ -3,6 +3,7 @@
 
 [![GitHub release](https://img.shields.io/github/v/tag/jGaboardi/nhgisxwalk?include_prereleases&logo=GitHub)](https://img.shields.io/github/v/tag/jGaboardi/nhgisxwalk?include_prereleases&logo=GitHub)
 
+***This project will eventually be transferred to [`IPUMS`](https://github.com/ipums).***
 
 ## Examples
 
@@ -12,7 +13,7 @@
 
 
 
-## BibTeX Citations
+## BibTeX Citation
 
 
 
