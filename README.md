@@ -2,12 +2,6 @@
 <img src="figs/nhgis_logo_black.png" height="100" href=https://www.nhgis.org />
 </p>
 
-
-[<img align="middle" src="figs/nhgis_logo_black.png" height="50">](https://www.nsf.gov/index.jsp) [<img align="middle" src="figs/nhgis_logo_white.png" height="50">](https://www.nsf.gov/index.jsp) [<img align="middle" src="figs/nhgis_logo_black.png" height="50">](https://www.nsf.gov/index.jsp)
-
-
-
-
 # nhgisxwalk
 ## Spatio-temporal [NHGIS Crosswalks](https://www.nhgis.org/user-resources/geographic-crosswalks)
 
