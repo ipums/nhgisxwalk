@@ -1,5 +1,7 @@
+[<img align="middle" src="figs/nhgis_logo.png" width="150">](https://www.nhgis.org)
+
 # nhgisxwalk
-## Spatio-temporal NHGIS Crosswalks
+## Spatio-temporal [NHGIS Crosswalks](https://www.nhgis.org/user-resources/geographic-crosswalks)
 
 [![DOI](https://zenodo.org/badge/259962549.svg)](https://zenodo.org/badge/latestdoi/259962549) [![GitHub release](https://img.shields.io/github/v/tag/jGaboardi/nhgisxwalk?include_prereleases&logo=GitHub)](https://img.shields.io/github/v/tag/jGaboardi/nhgisxwalk?include_prereleases&logo=GitHub)
 
