@@ -5,7 +5,7 @@
 # nhgisxwalk
 ## Spatio-temporal [NHGIS Crosswalks](https://www.nhgis.org/user-resources/geographic-crosswalks)
 
-[![DOI](https://zenodo.org/badge/259962549.svg)](https://zenodo.org/badge/latestdoi/259962549) [![GitHub release](https://img.shields.io/github/v/tag/jGaboardi/nhgisxwalk?include_prereleases&logo=GitHub)](https://img.shields.io/github/v/tag/jGaboardi/nhgisxwalk?include_prereleases&logo=GitHub)
+[![DOI](https://zenodo.org/badge/259962549.svg)](https://zenodo.org/badge/latestdoi/259962549) [![GitHub release](https://img.shields.io/github/v/tag/jGaboardi/nhgisxwalk?include_prereleases&logo=GitHub)](https://img.shields.io/github/v/tag/jGaboardi/nhgisxwalk?include_prereleases&logo=GitHub) [![unittests](https://github.com/jGaboardi/nhgisxwalk/workflows/.github/workflows/unittests.yml/badge.svg)](https://github.com/jGaboardi/nhgisxwalk/actions?query=workflow%3A.github%2Fworkflows%2Funittests.yml)
 
 ***This project will eventually be transferred to [`IPUMS`](https://github.com/ipums).***
 
