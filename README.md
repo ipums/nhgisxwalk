@@ -1,9 +1,9 @@
 <p align="center" valign="middle">
-<img src="figs/nhgis_logo.png" height="100" href=https://www.nhgis.org />
+<img src="figs/nhgis_logo_black.png" height="100" href=https://www.nhgis.org />
 </p>
 
 
-[<img align="middle" src="figs/nhgis_logo.png" height="50">](https://www.nsf.gov/index.jsp) [<img align="middle" src="figs/nhgis_logo.png" height="50">](https://www.nsf.gov/index.jsp) [<img align="middle" src="figs/nhgis_logo.png" height="50">](https://www.nsf.gov/index.jsp)
+[<img align="middle" src="figs/nhgis_logo_black.png" height="50">](https://www.nsf.gov/index.jsp) [<img align="middle" src="figs/nhgis_logo_white.png" height="50">](https://www.nsf.gov/index.jsp) [<img align="middle" src="figs/nhgis_logo_black.png" height="50">](https://www.nsf.gov/index.jsp)
 
 
 
