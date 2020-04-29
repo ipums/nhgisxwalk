@@ -1,7 +1,7 @@
 # nhgisxwalk
 ## Spatio-temporal NHGIS Crosswalks
 
-[![GitHub release](https://img.shields.io/github/v/tag/jGaboardi/nhgisxwalk?include_prereleases&logo=GitHub)](https://img.shields.io/github/v/tag/jGaboardi/nhgisxwalk?include_prereleases&logo=GitHub)
+[![DOI](https://zenodo.org/badge/259962549.svg)](https://zenodo.org/badge/latestdoi/259962549) [![GitHub release](https://img.shields.io/github/v/tag/jGaboardi/nhgisxwalk?include_prereleases&logo=GitHub)](https://img.shields.io/github/v/tag/jGaboardi/nhgisxwalk?include_prereleases&logo=GitHub)
 
 ***This project will eventually be transferred to [`IPUMS`](https://github.com/ipums).***
 
