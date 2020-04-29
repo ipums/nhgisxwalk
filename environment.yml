@@ -1,0 +1,13 @@
+ name: nhgis_env
+ channels:
+   - conda-forge
+ dependencies:
+   - python=3.7
+   - ipython
+   - jupyter
+   - nb_conda_kernels
+   - pandas
+   - pip
+   - watermark
+   - pip:
+     - git+https://github.com/jGaboardi/nhgisxwalk.git@master
