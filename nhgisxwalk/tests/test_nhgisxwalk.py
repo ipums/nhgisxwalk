@@ -36,8 +36,9 @@ class TestGenericName(unittest.TestCase):
 
     def test_network_failures_assertRaises(self):
         # testing for triggered errors
-        with self.assertRaises(TypeError):
-            self.thing_that_should_raise_TypeError()
+        with self.assertRaises(NameError):
+            I_AM_SAM
+            # self.thing_that_should_raise_TypeError()
 
     def test_generic_function_numpy_array_equality(self):
         # testing membership
