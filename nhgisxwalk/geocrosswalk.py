@@ -6,6 +6,9 @@ from .identifiers import str_types, get_context, code_cols
 from .identifiers import bgp_id, trt_id, id_from
 from .codes import code_desc_1990_blk, desc_code_1990_blk
 
+import numpy
+import pandas
+
 
 __all__ = ["GeoCrossWalk"]
 
