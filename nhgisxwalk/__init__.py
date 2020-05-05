@@ -7,10 +7,9 @@ __author__ = "James Gaboardi <jgaboardi@gmail.com>"
 __date__ = "2020-04"
 
 
-from .geocrosswalk import GeoCrossWalk
+from .geocrosswalk import GeoCrossWalk, calculate_atoms
 
 
-# from .atom_calculator import calculate_atoms
 # from .identifiers import str_types, get_context, code_cols
 # from .identifiers import bgp_id, trt_id, id_from
 # from .codes import code_desc_1990_blk, desc_code_1990_blk
@@ -33,3 +32,5 @@ from .geocrosswalk import GeoCrossWalk
 # atom calculator as a method in GeoXwalk
 
 #
+
+# toy_atoms = nhgisxwalk.calculate_atoms(toy_df, weight="wt", input_var="pop_bk90", sum_var="pop_bgp1990_tract2010", source_id="id_bgp90", groupby_cols=["id_bgp90", "id_tract10"])

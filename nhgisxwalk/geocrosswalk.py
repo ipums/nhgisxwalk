@@ -10,7 +10,7 @@ import numpy
 import pandas
 
 
-__all__ = ["GeoCrossWalk"]
+__all__ = ["GeoCrossWalk", "calculate_atoms"]
 
 
 # stuff from data prep as class here...
@@ -132,3 +132,53 @@ class GeoCrossWalk:
 # atom calculator as a method in GeoXwalk
 
 #
+
+
+def calculate_atoms(
+    df, weight=None, input_var=None, sum_var=None, source_id=None, groupby_cols=None
+):
+    """ Calculate the atoms (intersecting parts) of census geographies.
+    
+    Parameters
+    ----------
+    
+    df : pandas.DataFrame
+        input data
+    
+    weight : str
+        weight colum name
+    
+    input_var : str
+        input variable column name
+    
+    sum_var : str
+        groupby and summed variable column name
+    
+    source_id : str
+        Source ID column name.
+    
+    groupby_cols : list
+        dataframe columns to perform groupby
+    
+    Returns
+    -------
+    
+    df : pandas.DataFrame
+        atom data (all intersections between source and target geographies)
+        -- the "weight" column calculates the propotion of source area
+            attributes are in target area.
+    
+    """
+
+    # calculate numerators
+    df[sum_var] = df[weight] * df[input_var]
+    df = df.groupby(groupby_cols)[sum_var].sum().to_frame()
+    df.reset_index(inplace=True)
+
+    # calculate denominators
+    denominators = df.groupby(source_id)[sum_var].sum()
+
+    # interpolate weights
+    df[sum_var] = df[sum_var] / df[source_id].map(denominators)
+
+    return df
