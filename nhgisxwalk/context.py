@@ -1,5 +1,7 @@
+"""Code descriptions in a pandas.DataFrame
 """
-"""
+
+################################## see `context` objects in notebooks for this --> get_context. --> `nhgisxwalk.get_context`
 
 
 class CodeContext:
