@@ -21,16 +21,3 @@ from .geocrosswalk import GeoCrossWalk, calculate_atoms
 #
 # API structure
 #   -- only import the class here
-
-# switch class!
-
-# base.py
-
-# from .base import GeoXwalk
-
-
-# atom calculator as a method in GeoXwalk
-
-#
-
-# toy_atoms = nhgisxwalk.calculate_atoms(toy_df, weight="wt", input_var="pop_bk90", sum_var="pop_bgp1990_tract2010", source_id="id_bgp90", groupby_cols=["id_bgp90", "id_tract10"])

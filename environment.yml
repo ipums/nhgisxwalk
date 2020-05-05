@@ -3,11 +3,14 @@
    - conda-forge
  dependencies:
    - python=3.7
+   - geopandas
    - ipython
    - jupyter
+   - matplotlib
    - nb_conda_kernels
    - pandas
    - pip
+   - shapely
    - watermark
    - pip:
      - git+https://github.com/jGaboardi/nhgisxwalk.git@master

@@ -23,8 +23,44 @@ class GeoCrossWalk:
     Parameters
     ----------
     
+    source_year : str
+        Census source units year.
     
+    target_year : str
+        Census target units year.
     
+    source_geo : str
+        Census source geographic units.
+    
+    target_geo : str
+        Census target geographic units.
+    
+    input_var : str or iterable
+        ....
+    
+    xwalk_base_y1 : str
+        ....
+    
+    xwalk_base_y2 : str
+        ....
+    
+    code : str
+        ....
+    
+    stfips : str
+        ....
+    
+    nhgis : str
+        ....
+    
+    write_xwalk : str
+        ...
+    
+    write_atoms : str
+        ...
+    
+    weight : str
+        ....
     
     
     Attributes
@@ -40,10 +76,10 @@ class GeoCrossWalk:
 
     def __init__(
         self,
-        y1=None,
-        y2=None,
-        y1geo=None,
-        y2geo=None,
+        source_year=None,
+        target_year=None,
+        source_geo=None,
+        target_geo=None,
         input_var=None,
         xwalk_base_y1=None,
         xwalk_base_y2=None,
@@ -60,9 +96,9 @@ class GeoCrossWalk:
         
         """
 
-        pass
-
         # set class attributes
+        self.source_year, self.target_year = source_year, target_year
+        self.source_geo, self.target_geo = source_geo, target_geo
 
         # Perform step one
         self.step_one()
@@ -148,10 +184,10 @@ def calculate_atoms(
     weight : str
         weight colum name
     
-    input_var : str
+    input_var : str or iterable
         input variable column name
     
-    sum_var : str
+    sum_var : str or iterable
         groupby and summed variable column name
     
     source_id : str
@@ -170,15 +206,22 @@ def calculate_atoms(
     
     """
 
-    # calculate numerators
-    df[sum_var] = df[weight] * df[input_var]
-    df = df.groupby(groupby_cols)[sum_var].sum().to_frame()
-    df.reset_index(inplace=True)
+    if type(input_var) == str:
+        input_var = [input_var]
+    if type(sum_var) == str:
+        sum_var = [sum_var]
 
-    # calculate denominators
-    denominators = df.groupby(source_id)[sum_var].sum()
+    # iterate over each pair of input/interpolation variables
+    for ivar, svar in zip(input_var, sum_var):
+        # calculate numerators
+        df[svar] = df[weight] * df[ivar]
+        df = df.groupby(groupby_cols)[svar].sum().to_frame()
+        df.reset_index(inplace=True)
 
-    # interpolate weights
-    df[sum_var] = df[sum_var] / df[source_id].map(denominators)
+        # calculate denominators
+        denominators = df.groupby(source_id)[svar].sum()
+
+        # interpolate weights
+        df[svar] = df[svar] / df[source_id].map(denominators)
 
     return df
