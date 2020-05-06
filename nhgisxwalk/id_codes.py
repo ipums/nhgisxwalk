@@ -2,8 +2,14 @@
 """
 
 from .__code_components import *
+import numpy
 import pandas
 from io import StringIO
+
+
+# To Do ----- v0.0.1
+#
+# ID generator: -- blk_id, bkg_id, cty_id...
 
 
 def code_cols(geog, year):
@@ -45,6 +51,13 @@ def code_cols(geog, year):
         ]
 
     return cols
+
+
+def blk_id():
+    """
+    """
+
+    pass
 
 
 def bgp_id(df, order, cname="_GJOIN", tzero=["STATEA", "COUNTYA"], nhgis=True):
@@ -117,6 +130,13 @@ def bgp_id(df, order, cname="_GJOIN", tzero=["STATEA", "COUNTYA"], nhgis=True):
     return df
 
 
+def bkg_id():
+    """
+    """
+
+    pass
+
+
 def trt_id(year, _id, nhgis=True):
     """Extract the tract ID from the block ID.
     
@@ -154,6 +174,13 @@ def trt_id(year, _id, nhgis=True):
     return tract_id
 
 
+def cty_id():
+    """
+    """
+
+    pass
+
+
 def id_from(target_func, target_year, source, vectorized=True):
     """Create target IDs from source IDs.
     
@@ -182,9 +209,9 @@ def id_from(target_func, target_year, source, vectorized=True):
 
     # generate IDs from source geographies to target geographies
     if vectorized:
-        result = numpy.vectorize(target_func)("2010", source)
+        result = numpy.vectorize(target_func)(target_year, source)
     else:
-        result = [target_func("2010", rec) for rec in source]
+        result = [target_func(target_year, rec) for rec in source]
 
     return result
 

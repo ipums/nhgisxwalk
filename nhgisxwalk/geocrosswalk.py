@@ -4,13 +4,12 @@
 
 from .id_codes import code_cols, bgp_id, trt_id, id_from, id_code_components
 
-
-# from .identifiers import str_types, get_context, code_cols
-# from .identifiers import bgp_id, trt_id, id_from
-# from .codes import code_desc_1990_blk, desc_code_1990_blk
-
 import numpy
 import pandas
+
+
+# used to fetch/vectorize ID generation fucntions
+id_generators = {f.__name__: f for f in [bgp_id, trt_id]}
 
 
 class GeoCrossWalk:
@@ -29,7 +28,7 @@ class GeoCrossWalk:
     Parameters
     ----------
     
-    xwalk_base : pandas.DataFrame
+    base : pandas.DataFrame
         Base-level crosswalk containing composite atoms of smallest units
         to build larger crosswalk atoms of larger source and target units.
     
@@ -44,6 +43,12 @@ class GeoCrossWalk:
     
     target_geo : str
         Census target geographic units.
+    
+    base_source_geo : str
+        base-level crosswalk's source geographic units.
+    
+    base_source_table : str
+        path to the source year's base tabular data
     
     input_var : str or iterable
         ....
@@ -72,6 +77,9 @@ class GeoCrossWalk:
     weight : str
         ....
     
+    keep_base : bool
+        Keep the base crosswalk when building of the atomic crosswalk
+        is complete (True). Default is False.
     
     Attributes
     ----------
@@ -104,21 +112,23 @@ class GeoCrossWalk:
 
     def __init__(
         self,
-        xwalk_base,
+        base,
         source_year=None,
         target_year=None,
         source_geo=None,
         target_geo=None,
+        base_source_table=None,
         input_var=None,
         weight_var=None,
         stfips=None,
+        base_source_geo="blk",
         code_type="gj",
-        weight="wt_",
+        base_weight="WEIGHT",
+        weight_prefix="wt_",
+        keep_base=False,
     ):
 
         # Set class attributes -------------------------------------------------
-        # building base crosswalk
-        self.xwalk_base = xwalk_base
         # source and target class attributes
         self.source_year, self.target_year = source_year, target_year
         self.source_geo, self.target_geo = source_geo, target_geo
@@ -128,40 +138,76 @@ class GeoCrossWalk:
         self.xwalk_name = "%s_to_%s" % (self.source, self.target)
         # input, summed, and weight variable names
         self.input_var, self.weight_var = input_var, weight_var
-        self.wt = weight_var
-
+        self.base_weight = base_weight
+        self.wt = weight_prefix
         # set for gj (nhgis ID) vs. ge (census ID)
         self.code_type = code_type
         self.nhgis = True if self.code_type == "gj" else False
+        if self.code_type == "gj":
+            self.code_label = "GJOIN"
+            self.tabular_code_label = "GISJOIN"
+        else:
+            self.code_label = "GEOID"
+            self.tabular_code_label = code_label
+        # source geographies within the base crosswalk
+        self.base_source_geo = base_source_geo
+        # columns within the base crosswalk
+        self.base_source_col = self.code_label + self.source_year
+        self.base_target_col = self.code_label + self.target_year
+        # path to the tabular data for the base source units
+        self.base_source_table = base_source_table
 
         # if creating a single state subset
         self.stfips = stfips
+
+        # Prepare base for output crosswalk ------------------------------------
+        self.base = base
+        # initial subset of national base crosswalk to target state (if desired)
         if self.stfips:
             self.subset_target_to_state()
 
-        #
+        # fetch all components of that constitute various geographic IDs
         self.fetch_id_code_components()
 
-        return
+        # join the (base) source tabular data to the base crosswalk
+        self.join_source_base_tabular()
 
-        # Perform step one
-        self.step_one()
+        # add source geographic unit ID to the base crosswalk
+        self.generate_source_ids()
 
-        # Perform step two
-        self.step_two()
+        # add target geographic unit ID to the base crosswalk
+        self.generate_target_ids()
 
-        # Perform step three
-        self.step_three()
+        # Create atomic crosswalk
+        # calculate the source to target atom values
+        self.xwalk = calculate_atoms(
+            self.base,
+            weight=self.base_weight,
+            input_var=self.input_var,
+            weight_var=self.weight_var,
+            weight_prefix=self.wt,
+            source_id=self.source,
+            groupby_cols=[self.source, self.target],
+        )
 
-        # Perform step four
-        self.step_four()
+        # discard building base if not needed
+        if not keep_base:
+            del self.base
 
     def subset_target_to_state(self):
-        """
-        """
+        """subset a national crosswalk to state-level (within target year)."""
+
+        def _state(rec):
+            """Slice out a particular state by FIPS code."""
+            return rec[1:3] == self.stfips
+
+        self.base = self.base[self.base[self.base_target_col].map(lambda x: _state(x))]
 
     def fetch_id_code_components(self):
         """Fetch dataframe that describes each component of a geographic unit ID."""
+        self.base_source_id_components = id_code_components(
+            self.source_year, self.base_source_geo
+        )
         self.source_id_components = id_code_components(
             self.source_year, self.source_geo
         )
@@ -169,37 +215,68 @@ class GeoCrossWalk:
             self.target_year, self.target_geo
         )
 
-    def step_one(self):
-        """Read in base crosswalk, prepare, and subset (if needed)"""
+    def join_source_base_tabular(self):
+        """Join tabular attributes to base crosswalk."""
+        # read in national tabular data
+        data_types = str_types(self.base_source_id_components["Variable"])
+        tab_df = pandas.read_csv(self.base_source_table, dtype=data_types)
 
-    def step_two(self):
-        """Read in and join year 1 tabular data to crosswalk."""  ######################### step 2(1) from data_generator
+        # do left merge
+        self.base = pandas.merge(
+            left=self.base,
+            right=tab_df,
+            how="left",
+            left_on=self.base_source_col,
+            right_on=self.tabular_code_label,
+            validate="many_to_many",
+        )
 
-        pass
+    def generate_source_ids(self):
+        """Add source geographic unit ID to the base crosswalk."""
+        cols = code_cols(self.source_geo, self.source_year)
+        if self.source_geo == "blk":
+            raise AttributeError()
+        elif self.source_geo == "bgp":
+            func = bgp_id
+        elif self.source_geo == "bkg":
+            raise AttributeError()
+        elif self.source_geo == "trt":
+            raise AttributeError()
+        elif self.source_geo == "cty":
+            raise AttributeError()
+        else:
+            raise AttributeError()
+        # generate source geographic ID
+        self.base = func(self.base, cols, cname=self.source, nhgis=self.nhgis)
 
-    def step_three(self):
-        """Prepare and add year 1 (source) ID to crosswalk."""  ######################### step 2(2) from data_generator
+    def generate_target_ids(self):
+        """Add target geographic unit ID to the base crosswalk."""
+        func = id_generators["%s_id" % self.target_geo]
+        self.base[self.target] = id_from(
+            func, self.target_year, self.base[self.base_target_col]
+        )
 
-        pass
+    def xwalk_to_file(self, loc="", fext=".csv.zip"):
+        """Write the produced crosswalk to .csv."""
+        if self.stfips:
+            self.xwalk_name += "_" + self.stfips
+        self.xwalk.to_csv(loc + self.xwalk_name + fext)
 
-    def step_four(self):
-        """Calculate atomic crosswalk."""
-
-        pass
-
-    def write_xwalk(self):
-        """"""
-
-        pass
-
-
-# To Do ----- v0.0.1
-#
-# ID generator: -- blk_id, bkg_id, cty_id...
+    @staticmethod
+    def xwalk_from_file(fname, fext=".csv.zip"):
+        """Write the produced crosswalk to .csv."""
+        xwalk = pandas.read_csv(fname + fext)
+        return xwalk
 
 
 def calculate_atoms(
-    df, weight=None, input_var=None, sum_var=None, source_id=None, groupby_cols=None
+    df,
+    weight=None,
+    input_var=None,
+    weight_var=None,
+    weight_prefix=None,
+    source_id=None,
+    groupby_cols=None,
 ):
     """ Calculate the atoms (intersecting parts) of census geographies and
     interpolate a "weight" of the source attribute that lies within the
@@ -217,8 +294,11 @@ def calculate_atoms(
     input_var : str or iterable
         input variable column name(s)
     
-    sum_var : str or iterable
+    weight_var : str or iterable
         groupby and summed variable column name(s)
+    
+    weight_prefix : str
+        Prepend this prefix to the the `weight_var` column name.
     
     source_id : str
         Source ID column name.
@@ -236,25 +316,36 @@ def calculate_atoms(
     
     """
 
-    if type(weight) == str:
-        weight = [weight]
     if type(input_var) == str:
         input_var = [input_var]
-    if type(sum_var) == str:
-        sum_var = [sum_var]
+    if type(weight_var) == str:
+        weight_var = [weight_var]
+    n_input_var, n_weight_var = len(input_var), len(weight_var)
+    if n_input_var != n_weight_var:
+        msg = "The 'input_var' and 'weight_var' should be the same length. "
+        msg += "%s != %s" % (n_input_var, n_weight_var)
+        raise RuntimeError(msg)
 
-    # iterate over each set of weight/input/interpolation variables
-    for w, ivar, svar in zip(weight, input_var, sum_var):
+    if weight_prefix:
+        weight_var = [weight_prefix + wvar for wvar in weight_var]
+
+    # iterate over each pair of input/interpolation variables
+    for ivar, wvar in zip(input_var, weight_var):
+
+        #########
+        ################################################# Need to figure out how to do this with more than one variable
+        ##########
+
         # calculate numerators
-        df[svar] = df[w] * df[ivar]
-        df = df.groupby(groupby_cols)[svar].sum().to_frame()
+        df[wvar] = df[weight] * df[ivar]
+        df = df.groupby(groupby_cols)[wvar].sum().to_frame()
         df.reset_index(inplace=True)
 
         # calculate denominators
-        denominators = df.groupby(source_id)[svar].sum()
+        denominators = df.groupby(source_id)[wvar].sum()
 
         # interpolate weights
-        df[svar] = df[svar] / df[source_id].map(denominators)
+        df[wvar] = df[wvar] / df[source_id].map(denominators)
 
     return df
 
