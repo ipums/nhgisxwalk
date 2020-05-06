@@ -22,7 +22,7 @@
 
 
 ## License
-The package is licensed under the [BSD license](https://github.com/jGaboardi/pp2n/blob/master/LICENSE).
+The package is licensed under the [BSD 3-Clause license](https://github.com/jGaboardi/pp2n/blob/master/LICENSE).
 
 
 
