@@ -310,9 +310,9 @@ def calculate_atoms(
     -------
     
     atoms : pandas.DataFrame
-        atom data (all intersections between source and target geographies)
-        -- the "weight" column calculates the propotion of source area
-            attributes are in target area.
+        all intersections between source and target geographies, and 
+        the interpolated weight calculations for the propotion of
+        source area attributes that are in the target area.
     
     """
 
