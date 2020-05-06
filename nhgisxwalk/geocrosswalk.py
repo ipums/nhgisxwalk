@@ -309,7 +309,7 @@ def calculate_atoms(
     Returns
     -------
     
-    df : pandas.DataFrame
+    atoms : pandas.DataFrame
         atom data (all intersections between source and target geographies)
         -- the "weight" column calculates the propotion of source area
             attributes are in target area.
@@ -320,7 +320,9 @@ def calculate_atoms(
         input_var = [input_var]
     if type(weight_var) == str:
         weight_var = [weight_var]
+    
     n_input_var, n_weight_var = len(input_var), len(weight_var)
+    
     if n_input_var != n_weight_var:
         msg = "The 'input_var' and 'weight_var' should be the same length. "
         msg += "%s != %s" % (n_input_var, n_weight_var)
@@ -330,24 +332,25 @@ def calculate_atoms(
         weight_var = [weight_prefix + wvar for wvar in weight_var]
 
     # iterate over each pair of input/interpolation variables
-    for ivar, wvar in zip(input_var, weight_var):
-
-        #########
-        ################################################# Need to figure out how to do this with more than one variable
-        ##########
-
+    for ix, (ivar, wvar) in enumerate(zip(input_var, weight_var)):
+        
         # calculate numerators
         df[wvar] = df[weight] * df[ivar]
-        df = df.groupby(groupby_cols)[wvar].sum().to_frame()
-        df.reset_index(inplace=True)
+        if ix == 0:
+            # on the first iteration create an atom dataframe
+            atoms = df.groupby(groupby_cols)[wvar].sum().to_frame()
+            atoms.reset_index(inplace=True)
+        else:
+            # on tsubsequent iterations add weights as a column
+            atoms[wvar] = df.groupby(groupby_cols)[wvar].sum().values
 
         # calculate denominators
-        denominators = df.groupby(source_id)[wvar].sum()
+        denominators = atoms.groupby(source_id)[wvar].sum()
 
         # interpolate weights
-        df[wvar] = df[wvar] / df[source_id].map(denominators)
+        atoms[wvar] = atoms[wvar] / atoms[source_id].map(denominators)
 
-    return df
+    return atoms
 
 
 def str_types(var_names):
@@ -372,14 +375,15 @@ def valid_geo_shorthand(shorthand_name=True):
 
 def example_crosswalk_data():
     """Create an example dataframe to demonstrate atom generation."""
-    cols = ["id_bgp90", "id_bk90", "id_bk10", "id_tract10", "wt", "pop_bk90"]
-    id_bgp90 = ["A", "A", "A", "B", "B"]
-    id_bk90 = ["A.1", "A.2", "A.2", "B.1", "B.2"]
-    id_bk10 = ["X.1", "X.2", "Y.1", "X.3", "Y.2"]
-    id_tract10 = ["X", "X", "Y", "X", "Y"]
+    cols = ["bgp1990", "blk1990", "blk2010", "trt2010", "wt", "pop_1990", "hh_1990"]
+    bgp1990 = ["A", "A", "A", "B", "B"]
+    blk1990 = ["A.1", "A.2", "A.2", "B.1", "B.2"]
+    blk2010 = ["X.1", "X.2", "Y.1", "X.3", "Y.2"]
+    trt2010 = ["X", "X", "Y", "X", "Y"]
     wt = [1.0, 0.3, 0.7, 1.0, 1.0]
-    pop_bk90 = [60.0, 100.0, 100.0, 50.0, 80.0]
-    col_data = [id_bgp90, id_bk90, id_bk10, id_tract10, wt, pop_bk90]
+    pop_1990 = [60.0, 100.0, 100.0, 50.0, 80.0]
+    hh_1990 = [25., 40., 40., 20., 30.]
+    col_data = [bgp1990, blk1990, blk2010, trt2010, wt, pop_1990, hh_1990]
     example_data = pandas.DataFrame(columns=cols)
     for cn, cd in zip(cols, col_data):
         example_data[cn] = cd
