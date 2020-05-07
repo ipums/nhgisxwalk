@@ -3,21 +3,58 @@
 
 import unittest
 import numpy
+import pandas
 
 import nhgisxwalk
 
 
+# use sample data for all empirical tests
+data_dir = "./testing_data_subsets/"
+# 1990 blocks to 2010 blocks
+source_year, target_year = "1990", "2010"
+base_xwalk_name = "/nhgis_blk%s_blk%s_gj.csv.zip" % (source_year, target_year)
+base_xwalk_file = data_dir + base_xwalk_name
+data_types = nhgisxwalk.str_types(["GJOIN%s" % source_year, "GJOIN%s" % target_year])
+base_xwalk = pandas.read_csv(base_xwalk_file, index_col=0, dtype=data_types)
+# input variables
+input_vars = [
+    nhgisxwalk.desc_code_1990["Persons"]["Total"],
+    nhgisxwalk.desc_code_1990["Families"]["Total"],
+    nhgisxwalk.desc_code_1990["Households"]["Total"],
+    nhgisxwalk.desc_code_1990["Housing Units"]["Total"],
+]
+input_var_tags = ["pop", "fam", "hh", "hu"]
+
+# empirical tabular data path
+tab_data_path = data_dir + "/%s_block.csv.zip" % source_year
+
+
 class Test_GeoCrossWalk(unittest.TestCase):
     def setUp(self):
-        # set class attributes for testing
-
-        self.df = nhgisxwalk.example_crosswalk_data()
-
-        pass
+        self.base_xwalk = base_xwalk
+        self.tab_data_path = tab_data_path
+        self.source_year, self.target_year = source_year, target_year
+        self.input_vars, self.input_var_tags = input_vars, input_var_tags
+        # self.
 
     def tearDown(self):
         # OK to leave blank
         pass
+
+    def test_walk_instantiation_full(self):
+        known_values = numpy.array([1.0, 0.10763114, 0.89236886, 1.0])
+        observed_xwalk = nhgisxwalk.GeoCrossWalk(
+            self.base_xwalk,
+            source_year=self.source_year,
+            target_year=self.target_year,
+            source_geo="bgp",
+            target_geo="trt",
+            base_source_table=self.tab_data_path,
+            input_var=self.input_vars,
+            weight_var=self.input_var_tags,
+        )
+        observed_values = observed_xwalk.xwalk["wt_pop"].tail(15).values[3:7]
+        numpy.testing.assert_allclose(known_values, observed_values)
 
     def test_generic_function_assertEqual(self):
         # testing exact equality
@@ -54,7 +91,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
 
 class Test_upper_level_functions(unittest.TestCase):
     def setUp(self):
-        self.df = nhgisxwalk.example_crosswalk_data()
+        self.example_df = nhgisxwalk.example_crosswalk_data()
 
     def tearDown(self):
         # OK to leave blank
@@ -62,7 +99,7 @@ class Test_upper_level_functions(unittest.TestCase):
 
     def test_example_crosswalk_data(self):
         known_type = "dataframe"
-        observed_type = self.df._typ
+        observed_type = self.example_df._typ
         self.assertEqual(known_type, observed_type)
 
     def test_calculate_atoms_single_prefix(self):
@@ -75,7 +112,7 @@ class Test_upper_level_functions(unittest.TestCase):
             ]
         )
         observed = nhgisxwalk.calculate_atoms(
-            self.df,
+            self.example_df,
             weight="wt",
             input_var="pop_1990",
             weight_var="pop",
@@ -98,7 +135,7 @@ class Test_upper_level_functions(unittest.TestCase):
             ]
         )
         observed = nhgisxwalk.calculate_atoms(
-            self.df,
+            self.example_df,
             weight="wt",
             input_var="pop_1990",
             weight_var="pop",
@@ -120,7 +157,7 @@ class Test_upper_level_functions(unittest.TestCase):
             ]
         )
         observed = nhgisxwalk.calculate_atoms(
-            self.df,
+            self.example_df,
             weight="wt",
             input_var=["pop_1990", "hh_1990"],
             weight_var=["pop", "hh"],
@@ -143,7 +180,7 @@ class Test_upper_level_functions(unittest.TestCase):
             ]
         )
         observed = nhgisxwalk.calculate_atoms(
-            self.df,
+            self.example_df,
             weight="wt",
             input_var=["pop_1990", "hh_1990"],
             weight_var=["pop", "hh"],
