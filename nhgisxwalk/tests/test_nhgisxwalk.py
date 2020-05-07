@@ -7,7 +7,7 @@ import numpy
 import nhgisxwalk
 
 
-class TestGeoCrossWalk(unittest.TestCase):
+class Test_GeoCrossWalk(unittest.TestCase):
     def setUp(self):
         # set class attributes for testing
 
@@ -18,11 +18,6 @@ class TestGeoCrossWalk(unittest.TestCase):
     def tearDown(self):
         # OK to leave blank
         pass
-
-    def test_example_crosswalk_data(self):
-        known_type = "dataframe"
-        observed_type = self.df._typ
-        self.assertEqual(known_type, observed_type)
 
     def test_generic_function_assertEqual(self):
         # testing exact equality
@@ -55,6 +50,48 @@ class TestGeoCrossWalk(unittest.TestCase):
 
         # all close
         numpy.testing.assert_allclose(known, observed)
+
+
+class Test_upper_level_functions(unittest.TestCase):
+    def setUp(self):
+        self.df = nhgisxwalk.example_crosswalk_data()
+
+    def tearDown(self):
+        # OK to leave blank
+        pass
+
+    def test_example_crosswalk_data(self):
+        known_type = "dataframe"
+        observed_type = self.df._typ
+        self.assertEqual(known_type, observed_type)
+
+    def test_calculate_atoms(self):
+        known = numpy.array(
+            [
+                ["A", "X", 0.5625, 0.5692307692307692],
+                ["A", "Y", 0.4375, 0.4307692307692308],
+                ["B", "X", 0.38461538461538464, 0.4],
+                ["B", "Y", 0.6153846153846154, 0.6],
+            ]
+        )
+        observed = nhgisxwalk.calculate_atoms(
+            self.df,
+            weight="wt",
+            input_var=["pop_1990", "hh_1990"],
+            weight_var=["pop", "hh"],
+            weight_prefix="wt_",
+            source_id="bgp1990",
+            groupby_cols=["bgp1990", "trt2010"],
+        )
+        k1, o1 = known[:, :2], observed.values[:, :2]
+        numpy.testing.assert_array_equal(k1, o1)
+        k2, o2 = known[:, 2:].astype(float), observed.values[:, 2:].astype(float)
+        numpy.testing.assert_allclose(k2, o2, atol=4)
+
+    def test_str_types(self):
+        known = {"test_name_1": str, "test_name_2": str}
+        observed = nhgisxwalk.str_types(["test_name_1", "test_name_2"])
+        self.assertEqual(known, observed)
 
 
 if __name__ == "__main__":
