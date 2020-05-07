@@ -65,7 +65,52 @@ class Test_upper_level_functions(unittest.TestCase):
         observed_type = self.df._typ
         self.assertEqual(known_type, observed_type)
 
-    def test_calculate_atoms(self):
+    def test_calculate_atoms_single_prefix(self):
+        known = numpy.array(
+            [
+                ["A", "X", 0.5625],
+                ["A", "Y", 0.4375],
+                ["B", "X", 0.38461538461538464],
+                ["B", "Y", 0.6153846153846154],
+            ]
+        )
+        observed = nhgisxwalk.calculate_atoms(
+            self.df,
+            weight="wt",
+            input_var="pop_1990",
+            weight_var="pop",
+            weight_prefix="wt_",
+            source_id="bgp1990",
+            groupby_cols=["bgp1990", "trt2010"],
+        )
+        k1, o1 = known[:, :2], observed.values[:, :2]
+        numpy.testing.assert_array_equal(k1, o1)
+        k2, o2 = known[:, 2:].astype(float), observed.values[:, 2:].astype(float)
+        numpy.testing.assert_allclose(k2, o2, atol=4)
+
+    def test_calculate_atoms_single_no_prefix(self):
+        known = numpy.array(
+            [
+                ["A", "X", 0.5625],
+                ["A", "Y", 0.4375],
+                ["B", "X", 0.38461538461538464],
+                ["B", "Y", 0.6153846153846154],
+            ]
+        )
+        observed = nhgisxwalk.calculate_atoms(
+            self.df,
+            weight="wt",
+            input_var="pop_1990",
+            weight_var="pop",
+            source_id="bgp1990",
+            groupby_cols=["bgp1990", "trt2010"],
+        )
+        k1, o1 = known[:, :2], observed.values[:, :2]
+        numpy.testing.assert_array_equal(k1, o1)
+        k2, o2 = known[:, 2:].astype(float), observed.values[:, 2:].astype(float)
+        numpy.testing.assert_allclose(k2, o2, atol=4)
+
+    def test_calculate_atoms_multi_prefix(self):
         known = numpy.array(
             [
                 ["A", "X", 0.5625, 0.5692307692307692],
@@ -80,6 +125,28 @@ class Test_upper_level_functions(unittest.TestCase):
             input_var=["pop_1990", "hh_1990"],
             weight_var=["pop", "hh"],
             weight_prefix="wt_",
+            source_id="bgp1990",
+            groupby_cols=["bgp1990", "trt2010"],
+        )
+        k1, o1 = known[:, :2], observed.values[:, :2]
+        numpy.testing.assert_array_equal(k1, o1)
+        k2, o2 = known[:, 2:].astype(float), observed.values[:, 2:].astype(float)
+        numpy.testing.assert_allclose(k2, o2, atol=4)
+
+    def test_calculate_atoms_multi_no_prefix(self):
+        known = numpy.array(
+            [
+                ["A", "X", 0.5625, 0.5692307692307692],
+                ["A", "Y", 0.4375, 0.4307692307692308],
+                ["B", "X", 0.38461538461538464, 0.4],
+                ["B", "Y", 0.6153846153846154, 0.6],
+            ]
+        )
+        observed = nhgisxwalk.calculate_atoms(
+            self.df,
+            weight="wt",
+            input_var=["pop_1990", "hh_1990"],
+            weight_var=["pop", "hh"],
             source_id="bgp1990",
             groupby_cols=["bgp1990", "trt2010"],
         )
