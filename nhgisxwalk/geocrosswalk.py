@@ -108,6 +108,27 @@ class GeoCrossWalk:
     target_id_components : pandas.DataFrame
         ...
     
+    
+    Notes
+    -----
+    
+    
+    Examples
+    --------
+    
+    Instantiate the example data.
+    
+    >>> import nhgisxwalk
+    >>> df = nhgisxwalk.example_crosswalk_data()
+    >>> df
+      bgp1990 blk1990 blk2010 trt2010   wt  pop_1990  hh_1990
+    0       A     A.1     X.1       X  1.0      60.0     25.0
+    1       A     A.2     X.2       X  0.3     100.0     40.0
+    2       A     A.2     Y.1       Y  0.7     100.0     40.0
+    3       B     B.1     X.3       X  1.0      50.0     20.0
+    4       B     B.2     Y.2       Y  1.0      80.0     30.0
+    
+    
     """
 
     def __init__(
@@ -320,9 +341,9 @@ def calculate_atoms(
         input_var = [input_var]
     if type(weight_var) == str:
         weight_var = [weight_var]
-    
+
     n_input_var, n_weight_var = len(input_var), len(weight_var)
-    
+
     if n_input_var != n_weight_var:
         msg = "The 'input_var' and 'weight_var' should be the same length. "
         msg += "%s != %s" % (n_input_var, n_weight_var)
@@ -333,7 +354,7 @@ def calculate_atoms(
 
     # iterate over each pair of input/interpolation variables
     for ix, (ivar, wvar) in enumerate(zip(input_var, weight_var)):
-        
+
         # calculate numerators
         df[wvar] = df[weight] * df[ivar]
         if ix == 0:
@@ -382,7 +403,7 @@ def example_crosswalk_data():
     trt2010 = ["X", "X", "Y", "X", "Y"]
     wt = [1.0, 0.3, 0.7, 1.0, 1.0]
     pop_1990 = [60.0, 100.0, 100.0, 50.0, 80.0]
-    hh_1990 = [25., 40., 40., 20., 30.]
+    hh_1990 = [25.0, 40.0, 40.0, 20.0, 30.0]
     col_data = [bgp1990, blk1990, blk2010, trt2010, wt, pop_1990, hh_1990]
     example_data = pandas.DataFrame(columns=cols)
     for cn, cd in zip(cols, col_data):

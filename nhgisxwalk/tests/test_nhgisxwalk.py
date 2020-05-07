@@ -7,14 +7,22 @@ import numpy
 import nhgisxwalk
 
 
-class TestGenericName(unittest.TestCase):
+class TestGeoCrossWalk(unittest.TestCase):
     def setUp(self):
         # set class attributes for testing
+
+        self.df = nhgisxwalk.example_crosswalk_data()
+
         pass
 
     def tearDown(self):
         # OK to leave blank
         pass
+
+    def test_example_crosswalk_data(self):
+        known_type = "dataframe"
+        observed_type = self.df._typ
+        self.assertEqual(known_type, observed_type)
 
     def test_generic_function_assertEqual(self):
         # testing exact equality

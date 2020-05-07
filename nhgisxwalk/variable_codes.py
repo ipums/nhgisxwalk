@@ -25,13 +25,11 @@ code_desc_1990 = {
         "Universe": "Housing Units",
         "Source code": "NH1",
         "NHGIS code": "ESA",
-        "ET1001": "Total",
+        "ESA001": "Total",
     },
 }
 # Descriptive to code lookup
-desc_code_1990 = {
-    K: {v: k for k, v in V.items()} for K, V in code_desc_1990.items()
-}
+desc_code_1990 = {K: {v: k for k, v in V.items()} for K, V in code_desc_1990.items()}
 
 # Block Group Part Table Breakdown ---------------------------------------------
 # Code to descriptive lookup
