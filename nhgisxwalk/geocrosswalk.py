@@ -128,6 +128,21 @@ class GeoCrossWalk:
     3       B     B.1     X.3       X  1.0      50.0     20.0
     4       B     B.2     Y.2       Y  1.0      80.0     30.0
     
+    >>> atoms = nhgisxwalk.calculate_atoms(
+    ...             df,
+    ...             weight="wt",
+    ...             input_var=["pop_1990", "hh_1990"],
+    ...             weight_var=["pop", "hh"],
+    ...             weight_prefix="wt_",
+    ...             source_id="bgp1990",
+    ...             groupby_cols=["bgp1990", "trt2010"]
+    ...         )
+    >>> atoms
+      bgp1990 trt2010    wt_pop     wt_hh
+    0       A       X  0.562500  0.569231
+    1       A       Y  0.437500  0.430769
+    2       B       X  0.384615  0.400000
+    3       B       Y  0.615385  0.600000
     
     """
 
