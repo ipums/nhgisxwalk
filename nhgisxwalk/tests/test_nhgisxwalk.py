@@ -45,7 +45,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
         # OK to leave blank
         pass
 
-    def test_walk_instantiation_full(self):
+    def test_xwalk_full(self):
         known_values = numpy.array([1.0, 0.10763114, 0.89236886, 1.0])
         observed_xwalk = nhgisxwalk.GeoCrossWalk(
             self.base_xwalk,
@@ -60,7 +60,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
         observed_values = observed_xwalk.xwalk["wt_pop"].tail(15).values[3:7]
         numpy.testing.assert_allclose(known_values, observed_values)
 
-    def test_walk_instantiation_state(self):
+    def test_xwalk_state(self):
         known_values = numpy.array([1.0, 0.10763114, 0.89236886, 1.0])
         observed_xwalk = nhgisxwalk.GeoCrossWalk(
             self.base_xwalk,
@@ -75,6 +75,38 @@ class Test_GeoCrossWalk(unittest.TestCase):
         )
         observed_values = observed_xwalk.xwalk["wt_pop"].tail(15).values[3:7]
         numpy.testing.assert_allclose(known_values, observed_values)
+
+    def test_xwalk_code_type_ge(self):
+        # testing for triggered errors
+        with self.assertRaises(RuntimeError):
+            observed_xwalk = nhgisxwalk.GeoCrossWalk(
+                self.base_xwalk,
+                source_year=self.source_year,
+                target_year=self.target_year,
+                source_geo="bgp",
+                target_geo="trt",
+                base_source_table=self.tab_data_path,
+                input_var=self.input_vars,
+                weight_var=self.input_var_tags,
+                stfips=self.stfips,
+                code_type="ge",
+            )
+
+    def test_xwalk_code_type_NAN(self):
+        # testing for triggered errors
+        with self.assertRaises(RuntimeError):
+            observed_xwalk = nhgisxwalk.GeoCrossWalk(
+                self.base_xwalk,
+                source_year=self.source_year,
+                target_year=self.target_year,
+                source_geo="bgp",
+                target_geo="trt",
+                base_source_table=self.tab_data_path,
+                input_var=self.input_vars,
+                weight_var=self.input_var_tags,
+                stfips=self.stfips,
+                code_type="NAN",
+            )
 
     def test_generic_function_assertEqual(self):
         # testing exact equality

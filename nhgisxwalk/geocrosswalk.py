@@ -200,7 +200,7 @@ class GeoCrossWalk:
             self.tabular_code_label = "GISJOIN"
         elif self.code_type == "ge":
             self.code_label = "GEOID"
-            self.tabular_code_label = code_label
+            self.tabular_code_label = self.code_label
             msg = "%s functionality is not currently supported." % self.code_label
             raise RuntimeError(msg)
         else:
