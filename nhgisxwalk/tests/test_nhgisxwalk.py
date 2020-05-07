@@ -28,6 +28,9 @@ input_var_tags = ["pop", "fam", "hh", "hu"]
 # empirical tabular data path
 tab_data_path = data_dir + "/%s_block.csv.zip" % source_year
 
+# state to use for subset -- Wyoming
+stfips = "56"
+
 
 class Test_GeoCrossWalk(unittest.TestCase):
     def setUp(self):
@@ -35,6 +38,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
         self.tab_data_path = tab_data_path
         self.source_year, self.target_year = source_year, target_year
         self.input_vars, self.input_var_tags = input_vars, input_var_tags
+        self.stfips = stfips
         # self.
 
     def tearDown(self):
@@ -52,6 +56,22 @@ class Test_GeoCrossWalk(unittest.TestCase):
             base_source_table=self.tab_data_path,
             input_var=self.input_vars,
             weight_var=self.input_var_tags,
+        )
+        observed_values = observed_xwalk.xwalk["wt_pop"].tail(15).values[3:7]
+        numpy.testing.assert_allclose(known_values, observed_values)
+
+    def test_walk_instantiation_state(self):
+        known_values = numpy.array([1.0, 0.10763114, 0.89236886, 1.0])
+        observed_xwalk = nhgisxwalk.GeoCrossWalk(
+            self.base_xwalk,
+            source_year=self.source_year,
+            target_year=self.target_year,
+            source_geo="bgp",
+            target_geo="trt",
+            base_source_table=self.tab_data_path,
+            input_var=self.input_vars,
+            weight_var=self.input_var_tags,
+            stfips=self.stfips,
         )
         observed_values = observed_xwalk.xwalk["wt_pop"].tail(15).values[3:7]
         numpy.testing.assert_allclose(known_values, observed_values)
