@@ -181,29 +181,29 @@ def cty_id():
     pass
 
 
-def id_from(target_func, target_year, source, vectorized=True):
+def id_from(target_func, target_year, source, vectorized):
     """Create target IDs from source IDs.
     
     Parameters
     ----------
     
     target_func : function or method
-        function or method for generating requested target IDs
+        Function or method for generating requested target IDs.
     
     target_year : str
-        target ID year
+        Target ID year.
     
     source : iterable
-        original source IDs
+        Original source IDs.
     
     vectorized : bool
-        potential speedup when vectorized
+        Potential speedup when (True).
     
     Returns
     -------
     
     result : iterable
-        generated target IDs
+        Generated target IDs.
     
     """
 

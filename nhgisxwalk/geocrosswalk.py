@@ -81,6 +81,11 @@ class GeoCrossWalk:
         Keep the base crosswalk when building of the atomic crosswalk
         is complete (True). Default is False.
     
+    vectorized : bool
+        Vectorize the `id_codes.id_from()` function for (potential)
+        speedups (True). Default is True. 
+    
+    
     Attributes
     ----------
     
@@ -116,7 +121,7 @@ class GeoCrossWalk:
     Examples
     --------
     
-    Instantiate the example data.
+    Instantiate the example data and calculate atomic crosswalk.
     
     >>> import nhgisxwalk
     >>> df = nhgisxwalk.example_crosswalk_data()
@@ -162,6 +167,7 @@ class GeoCrossWalk:
         base_weight="WEIGHT",
         weight_prefix="wt_",
         keep_base=False,
+        vectorized=True,
     ):
 
         # Set class attributes -------------------------------------------------
@@ -289,7 +295,7 @@ class GeoCrossWalk:
         """Add target geographic unit ID to the base crosswalk."""
         func = id_generators["%s_id" % self.target_geo]
         self.base[self.target] = id_from(
-            func, self.target_year, self.base[self.base_target_col]
+            func, self.target_year, self.base[self.base_target_col], vectorized
         )
 
     def xwalk_to_file(self, loc="", fext=".csv.zip"):
