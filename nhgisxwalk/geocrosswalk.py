@@ -1,4 +1,12 @@
 """IPUMS/NHGIS Census Crosswalk and Atom Generator
+
+
+TO DO:
+
+    * v0.0.2
+        * 1990 BGP SF1 file for **ALL** BGP IDS...
+        * ID generator: -- blk_id, bkg_id, cty_id...
+
 """
 
 
@@ -6,6 +14,8 @@ from .id_codes import code_cols, bgp_id, trt_id, id_from, id_code_components
 
 import numpy
 import pandas
+
+import pickle
 
 
 # used to fetch/vectorize ID generation fucntions
@@ -188,9 +198,14 @@ class GeoCrossWalk:
         if self.code_type == "gj":
             self.code_label = "GJOIN"
             self.tabular_code_label = "GISJOIN"
-        else:
+        elif self.code_type == "ge":
             self.code_label = "GEOID"
             self.tabular_code_label = code_label
+            msg = "%s functionality is not currently supported." % self.code_label
+            raise RuntimeError(msg)
+        else:
+            msg = "%s is not a recognized `code_type`." % self.code_type
+            raise RuntimeError(msg)
         # source geographies within the base crosswalk
         self.base_source_geo = base_source_geo
         # columns within the base crosswalk
@@ -218,7 +233,7 @@ class GeoCrossWalk:
         self.generate_source_ids()
 
         # add target geographic unit ID to the base crosswalk
-        self.generate_target_ids()
+        self.generate_target_ids(vectorized)
 
         # Create atomic crosswalk
         # calculate the source to target atom values
@@ -291,24 +306,38 @@ class GeoCrossWalk:
         # generate source geographic ID
         self.base = func(self.base, cols, cname=self.source, nhgis=self.nhgis)
 
-    def generate_target_ids(self):
+    def generate_target_ids(self, vect):
         """Add target geographic unit ID to the base crosswalk."""
         func = id_generators["%s_id" % self.target_geo]
         self.base[self.target] = id_from(
-            func, self.target_year, self.base[self.base_target_col], vectorized
+            func, self.target_year, self.base[self.base_target_col], vect
         )
 
-    def xwalk_to_file(self, loc="", fext=".csv.zip"):
+    def xwalk_to_cvs(self, loc="", fext=".pkl"):
         """Write the produced crosswalk to .csv."""
         if self.stfips:
             self.xwalk_name += "_" + self.stfips
         self.xwalk.to_csv(loc + self.xwalk_name + fext)
 
+    def xwalk_to_pickle(self, loc="", fext=".pkl"):
+        """Write the produced GeoCrossWalk object."""
+        if self.stfips:
+            self.xwalk_name += "_" + self.stfips
+        with open(self.xwalk_name + fext, "wb") as pkl_xwalk:
+            pickle.dump(self, pkl_xwalk, protocol=2)
+
     @staticmethod
-    def xwalk_from_file(fname, fext=".csv.zip"):
-        """Write the produced crosswalk to .csv."""
+    def xwalk_from_cvs(fname, fext=".csv.zip"):
+        """Read in a produced crosswalk from .csv."""
         xwalk = pandas.read_csv(fname + fext)
         return xwalk
+
+    @staticmethod
+    def xwalk_from_pickle(fname, fext=".pkl"):
+        """Read in a produced crosswalk from a pickled GeoCrossWalk."""
+        with open(fname + fext, "rb") as pkl_xwalk:
+            self = pickle.load(pkl_xwalk)
+        return self
 
 
 def calculate_atoms(

@@ -1,15 +1,11 @@
 """IDs and ID components of geographic code descriptions in a pandas.DataFrame.
 """
 
+
 from .__code_components import *
 import numpy
 import pandas
 from io import StringIO
-
-
-# To Do ----- v0.0.1
-#
-# ID generator: -- blk_id, bkg_id, cty_id...
 
 
 def code_cols(geog, year):
