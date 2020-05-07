@@ -93,6 +93,27 @@ class Test_upper_level_functions(unittest.TestCase):
         observed = nhgisxwalk.str_types(["test_name_1", "test_name_2"])
         self.assertEqual(known, observed)
 
+    def test_valid_geo_shorthand(self):
+        known_sn = {
+            "blk": "block",
+            "bgp": "block group part",
+            "bkg": "block group",
+            "trt": "tract",
+            "cty": "county",
+        }
+        observed_sn = nhgisxwalk.valid_geo_shorthand(shorthand_name=True)
+        self.assertEqual(known_sn, observed_sn)
+
+        known_ns = {
+            "block": "blk",
+            "block group part": "bgp",
+            "block group": "bkg",
+            "tract": "trt",
+            "county": "cty",
+        }
+        observed_ns = nhgisxwalk.valid_geo_shorthand(shorthand_name=False)
+        self.assertEqual(known_ns, observed_ns)
+
 
 if __name__ == "__main__":
     unittest.main()
