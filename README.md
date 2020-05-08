@@ -11,11 +11,17 @@
 
 ## Examples
 
-
+* [Proportionally-weighted Synthetic Atoms](https://github.com/jGaboardi/nhgisxwalk/blob/master/notebooks/weighted-portion-synthetic-atoms.ipynb)
+* [Synthetic Example](https://github.com/jGaboardi/nhgisxwalk/blob/master/notebooks/synthetic-example.ipynb)
+* [Sample Workflow]()
 
 ## Installation
 
+Currently `nhgisxwalk` officially supports Python [3.6](https://docs.python.org/3.6/), [3.7](https://docs.python.org/3.7/), and [3.8](https://docs.python.org/3.8/). Please make sure that you are operating in a Python >= 3.6 environment. Install the most current development version of `nhgisxwalk` by running:
 
+```
+$ pip install git+https://github.com/jGaboardi/nhgisxwalk
+```
 
 ## BibTeX Citation
 
