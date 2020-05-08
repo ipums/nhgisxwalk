@@ -89,11 +89,31 @@ class Test_GeoCrossWalk(unittest.TestCase):
             input_var=self.input_vars,
             weight_var=self.input_var_tags,
             keep_base=False,
+            stfips=self.stfips,
         )
         write_xwalk.xwalk_to_csv()
         read_xwalk = nhgisxwalk.GeoCrossWalk.xwalk_from_csv(write_xwalk.xwalk_name)
         known_values = write_xwalk.xwalk["wt_pop"].values
         observed_values = read_xwalk["wt_pop"].values
+        numpy.testing.assert_allclose(known_values, observed_values)
+
+    def test_xwalk_write_read_pickle(self):
+        write_xwalk = nhgisxwalk.GeoCrossWalk(
+            self.base_xwalk,
+            source_year=self.source_year,
+            target_year=self.target_year,
+            source_geo="bgp",
+            target_geo="trt",
+            base_source_table=self.tab_data_path,
+            input_var=self.input_vars,
+            weight_var=self.input_var_tags,
+            keep_base=False,
+            stfips=self.stfips,
+        )
+        write_xwalk.xwalk_to_pickle()
+        read_xwalk = nhgisxwalk.GeoCrossWalk.xwalk_from_pickle(write_xwalk.xwalk_name)
+        known_values = write_xwalk.xwalk["wt_pop"].values
+        observed_values = read_xwalk.xwalk["wt_pop"].values
         numpy.testing.assert_allclose(known_values, observed_values)
 
     def test_xwalk_code_type_ge(self):
