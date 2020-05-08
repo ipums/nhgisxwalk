@@ -28,8 +28,8 @@ input_var_tags = ["pop", "fam", "hh", "hu"]
 # empirical tabular data path
 tab_data_path = data_dir + "/%s_block.csv.zip" % source_year
 
-# state to use for subset -- Wyoming
-stfips = "56"
+# state-level values to use for subset -- DC
+stfips = "11"
 
 
 class Test_GeoCrossWalk(unittest.TestCase):
@@ -46,7 +46,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
         pass
 
     def test_xwalk_full(self):
-        known_values = numpy.array([1.0, 0.10763114, 0.89236886, 1.0])
+        known_values = numpy.array([1.0, 0.41477113, 0.58522887, 1.0])
         observed_xwalk = nhgisxwalk.GeoCrossWalk(
             self.base_xwalk,
             source_year=self.source_year,
@@ -57,11 +57,11 @@ class Test_GeoCrossWalk(unittest.TestCase):
             input_var=self.input_vars,
             weight_var=self.input_var_tags,
         )
-        observed_values = observed_xwalk.xwalk["wt_pop"].tail(15).values[3:7]
+        observed_values = observed_xwalk.xwalk["wt_pop"][688:692].values
         numpy.testing.assert_allclose(known_values, observed_values)
 
     def test_xwalk_state(self):
-        known_values = numpy.array([1.0, 0.10763114, 0.89236886, 1.0])
+        known_values = numpy.array([1.0, 0.41477113, 0.58522887, 1.0])
         observed_xwalk = nhgisxwalk.GeoCrossWalk(
             self.base_xwalk,
             source_year=self.source_year,
@@ -75,7 +75,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
             vectorized=False,
             keep_base=False,
         )
-        observed_values = observed_xwalk.xwalk["wt_pop"].tail(15).values[3:7]
+        observed_values = observed_xwalk.xwalk["wt_pop"][688:692].values
         numpy.testing.assert_allclose(known_values, observed_values)
 
     def test_xwalk_write_read_csv(self):
@@ -163,6 +163,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
                 stfips=self.stfips,
             )
 
+    """
     def test_generic_function_assertEqual(self):
         # testing exact equality
         known = "thing"
@@ -194,6 +195,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
 
         # all close
         numpy.testing.assert_allclose(known, observed)
+    """
 
 
 class Test_upper_level_functions(unittest.TestCase):
