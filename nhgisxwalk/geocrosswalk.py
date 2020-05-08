@@ -313,11 +313,11 @@ class GeoCrossWalk:
             func, self.target_year, self.base[self.base_target_col], vect
         )
 
-    def xwalk_to_csv(self, loc="", fext=".pkl"):
-        """Write the produced crosswalk to .csv."""
+    def xwalk_to_csv(self, loc="", fext=".zip"):
+        """Write the produced crosswalk to .csv.zip."""
         if self.stfips:
             self.xwalk_name += "_" + self.stfips
-        self.xwalk.to_csv(loc + self.xwalk_name + fext)
+        self.xwalk.to_csv(loc + self.xwalk_name + ".csv" + fext)
 
     def xwalk_to_pickle(self, loc="", fext=".pkl"):
         """Write the produced GeoCrossWalk object."""
@@ -327,9 +327,9 @@ class GeoCrossWalk:
             pickle.dump(self, pkl_xwalk, protocol=2)
 
     @staticmethod
-    def xwalk_from_csv(fname, fext=".csv.zip"):
-        """Read in a produced crosswalk from .csv."""
-        xwalk = pandas.read_csv(fname + fext)
+    def xwalk_from_csv(fname, fext=".zip"):
+        """Read in a produced crosswalk from .csv.zip."""
+        xwalk = pandas.read_csv(fname + ".csv" + fext)
         return xwalk
 
     @staticmethod
