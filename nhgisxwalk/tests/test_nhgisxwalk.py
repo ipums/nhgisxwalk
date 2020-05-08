@@ -72,6 +72,8 @@ class Test_GeoCrossWalk(unittest.TestCase):
             input_var=self.input_vars,
             weight_var=self.input_var_tags,
             stfips=self.stfips,
+            vectorized=False,
+            keep_base=False,
         )
         observed_values = observed_xwalk.xwalk["wt_pop"].tail(15).values[3:7]
         numpy.testing.assert_allclose(known_values, observed_values)
@@ -106,6 +108,21 @@ class Test_GeoCrossWalk(unittest.TestCase):
                 weight_var=self.input_var_tags,
                 stfips=self.stfips,
                 code_type="NAN",
+            )
+
+    def test_xwalk_code_type_NAN(self):
+        # testing for triggered errors
+        with self.assertRaises(RuntimeError):
+            observed_xwalk = nhgisxwalk.GeoCrossWalk(
+                self.base_xwalk,
+                source_year=self.source_year,
+                target_year=self.target_year,
+                source_geo="bgp",
+                target_geo="trt",
+                base_source_table=self.tab_data_path,
+                input_var=self.input_vars,
+                weight_var=["one", "two"],
+                stfips=self.stfips,
             )
 
     def test_generic_function_assertEqual(self):
