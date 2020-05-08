@@ -13,7 +13,7 @@
 
 * [Proportionally-weighted Synthetic Atoms](https://github.com/jGaboardi/nhgisxwalk/blob/master/notebooks/weighted-portion-synthetic-atoms.ipynb)
 * [Synthetic Example](https://github.com/jGaboardi/nhgisxwalk/blob/master/notebooks/synthetic-example.ipynb)
-* [Sample Workflow]()
+* [Sample Workflow](https://github.com/jGaboardi/nhgisxwalk/blob/master/notebooks/data-subset-sample-workflow.ipynb)
 
 ## Resources
 
