@@ -328,7 +328,7 @@ class GeoCrossWalk:
         """Add target geographic unit ID to the base crosswalk."""
         func = id_generators["%s_id" % self.target_geo]
         self.base[self.target] = id_from(
-            func, self.target_year, self.base[self.base_target_col], vect
+            func, self.target_year, self.base[self.base_target_col], self.nhgis, vect
         )
 
     def xwalk_to_csv(self, loc="", fext=".zip"):

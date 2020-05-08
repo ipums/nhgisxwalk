@@ -135,7 +135,7 @@ def bkg_id():
     pass
 
 
-def trt_id(year, _id, nhgis=True):
+def trt_id(year, _id, nhgis):
     """Extract the tract ID from the block ID.
     
     Parameters
@@ -179,7 +179,7 @@ def cty_id():
     pass
 
 
-def id_from(target_func, target_year, source, vectorized):
+def id_from(target_func, target_year, source, nhgis, vectorized):
     """Create target IDs from source IDs.
     
     Parameters
@@ -207,9 +207,9 @@ def id_from(target_func, target_year, source, vectorized):
 
     # generate IDs from source geographies to target geographies
     if vectorized:
-        result = numpy.vectorize(target_func)(target_year, source)
+        result = numpy.vectorize(target_func)(target_year, source, nhgis)
     else:
-        result = [target_func(target_year, rec) for rec in source]
+        result = [target_func(target_year, rec, nhgis) for rec in source]
 
     return result
 
