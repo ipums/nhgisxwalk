@@ -78,6 +78,24 @@ class Test_GeoCrossWalk(unittest.TestCase):
         observed_values = observed_xwalk.xwalk["wt_pop"].tail(15).values[3:7]
         numpy.testing.assert_allclose(known_values, observed_values)
 
+    def test_xwalk_write_read_csv(self):
+        write_xwalk = nhgisxwalk.GeoCrossWalk(
+            self.base_xwalk,
+            source_year=self.source_year,
+            target_year=self.target_year,
+            source_geo="bgp",
+            target_geo="trt",
+            base_source_table=self.tab_data_path,
+            input_var=self.input_vars,
+            weight_var=self.input_var_tags,
+            keep_base=False,
+        )
+        write_xwalk.xwalk.xwalk_to_csv()
+        read_xwalk = nhgisxwalk.GeoCrossWalk.xwalk_to_csv(write_xwalk.xwalk_name)
+
+        observed_values = observed_xwalk.xwalk["wt_pop"].tail(15).values[3:7]
+        numpy.testing.assert_allclose(known_values, observed_values)
+
     def test_xwalk_code_type_ge(self):
         # testing for triggered errors
         with self.assertRaises(RuntimeError):
@@ -110,7 +128,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
                 code_type="NAN",
             )
 
-    def test_xwalk_code_type_NAN(self):
+    def test_xwalk_uneven_input(self):
         # testing for triggered errors
         with self.assertRaises(RuntimeError):
             observed_xwalk = nhgisxwalk.GeoCrossWalk(
