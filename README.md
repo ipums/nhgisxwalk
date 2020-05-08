@@ -15,6 +15,10 @@
 * [Synthetic Example](https://github.com/jGaboardi/nhgisxwalk/blob/master/notebooks/synthetic-example.ipynb)
 * [Sample Workflow]()
 
+## Resources
+
+* [Frequently Asked Questions](https://github.com/jGaboardi/nhgisxwalk/wiki/FAQ-&-Resources)
+
 ## Installation
 
 Currently `nhgisxwalk` officially supports Python [3.6](https://docs.python.org/3.6/), [3.7](https://docs.python.org/3.7/), and [3.8](https://docs.python.org/3.8/). Please make sure that you are operating in a Python >= 3.6 environment. Install the most current development version of `nhgisxwalk` by running:
