@@ -439,6 +439,9 @@ def calculate_atoms(
         # interpolate weights
         atoms[wvar] = atoms[wvar] / atoms[source_id].map(denominators)
 
+        # if any weights are NaN, replace with 0.
+        atoms[wvar].fillna(0.0, inplace=True)
+
     return atoms
 
 
