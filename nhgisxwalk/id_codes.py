@@ -15,16 +15,18 @@ def code_cols(geog, year):
     ----------
     
     geog : str
-        Will support ["blk", "bgp", "bgr", "trt", "cty",...].
+         The specified census geography. This will support
+         ["blk", "bgp", "bgr", "trt", "cty",...] in the future.
     
     year : str
-        Will support ["1990", "2000", "2010"].
-        
+        The specified census year. This will support
+        ["1990", "2000", "2010", "2020"] in the future.
+    
     Returns
     -------
     
     cols : list
-        Correct ordering of columns to create the geography ID.
+        The correct ordering of columns to create the geography ID.
     
     """
     # ensure `year` is a str
@@ -57,37 +59,37 @@ def blk_id():
 
 
 def bgp_id(df, order, cname="_GJOIN", tzero=["STATEA", "COUNTYA"], nhgis=True):
-    """recreate a the BGPs GISJOIN/GEOID
+    """Recreate BGPs GISJOIN/GEOID.
     
     Parameters
     ----------
     
     df : pandas.DataFrame
-        Input dataframe.
+        The input dataframe.
     
     order : list-like
-        Correct ordering of columns.
+        The correct ordering of columns.
     
     cname : str
-        Name for new column.
+        The name for the new column.
     
     tzeros : list
-        Columns to add trailing zero. `nhgis` must be True.
+        The columns to add trailing zero. ``nhgis`` must be ``True``.
     
     nhgis : bool
-        Added 'G' and training zeros. See `GISJOIN identifiers` at
-        https://www.nhgis.org/user-resources/geographic-crosswalks
+        Set to ``True`` to add 'G' and trailing zeros.
+        See `GISJOIN identifiers <https://www.nhgis.org/user-resources/geographic-crosswalks>`_.
     
     Returns
     -------
     
     df : pandas.DataFrame
-        Dataframe with new column.
+        The input ``df`` with new column.
     
     """
 
     def _gjoin(x):
-        """internal GISJOIN/GEOID generator"""
+        """Internal GISJOIN/GEOID generator."""
 
         # container for ID components
         join_id_vals = []
@@ -140,20 +142,20 @@ def trt_id(year, _id, nhgis=True):
     ----------
     
     year : str
-        Census collection year.
+        The census collection year.
     
     _id : str
-        Block GISJOIN/GEOID.
+        The block GISJOIN/GEOID.
     
     nhgis : bool
-        Added 'G' and training zeros. See `GISJOIN identifiers` at
-        https://www.nhgis.org/user-resources/geographic-crosswalks
+        Set to ``True`` to add 'G' and trailing zeros.
+        See `GISJOIN identifiers <https://www.nhgis.org/user-resources/geographic-crosswalks>`_.
     
     Returns
     -------
     
     tract_id : str
-        Tract GISJOIN/GEOID.
+        The tract GISJOIN/GEOID.
     
     """
 
@@ -184,22 +186,22 @@ def id_from(target_func, target_year, source, vectorized):
     ----------
     
     target_func : function or method
-        Function or method for generating requested target IDs.
+        The function or method for generating requested target IDs.
     
     target_year : str
-        Target ID year.
+        The original target ID year.
     
     source : iterable
-        Original source IDs.
+        The original source IDs.
     
     vectorized : bool
-        Potential speedup when (True).
+        Potential speedup when set to ``True``. Default is ``True``.
     
     Returns
     -------
     
     result : iterable
-        Generated target IDs.
+        The generated target IDs.
     
     """
 
@@ -213,22 +215,25 @@ def id_from(target_func, target_year, source, vectorized):
 
 
 def id_code_components(year, geo):
-    """Fetch the raw-string and create a dataframe.
+    """Fetch the raw-string of the components used to create the specified
+    year+geography ID, and return in a dataframe.
     
     Parameters
     ----------
     
     year : str
-        ...
+        The specified census year.
     
     geo : str
-        ...
+        The specified census geography.
     
     Returns
     -------
     
     df : pandas.DataFrame
-        ...
+        A dataframe of two columns: "Variable", "Description". The
+        "Variable" column is tabular name of the component that is
+        explained in "Description".
     
     """
 
