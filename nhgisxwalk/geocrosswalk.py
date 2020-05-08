@@ -39,99 +39,89 @@ class GeoCrossWalk:
     ----------
     
     base : pandas.DataFrame
-        Base-level crosswalk containing composite atoms of smallest units
+        The base-level crosswalk containing composite atoms of smallest units
         to build larger crosswalk atoms of larger source and target units.
     
     source_year : str
-        Census source units year.
+        The census source units year.
     
     target_year : str
-        Census target units year.
+        The census target units year.
     
     source_geo : str
-        Census source geographic units.
+        The census source geographic units.
     
     target_geo : str
-        Census target geographic units.
+        The census target geographic units.
     
     base_source_geo : str
-        base-level crosswalk's source geographic units.
+        The base-level crosswalk's source geographic units.
     
     base_source_table : str
-        path to the source year's base tabular data
+        The path to the source year's base tabular data.
     
     input_var : str or iterable
-        ....
-    
-    xwalk_base_y1 : str
-        ....
-    
-    xwalk_base_y2 : str
-        ....
+        Demographic or housing census variables. For currently available
+        variables call ``nhgisxwalk.desc_code_YYYY()`` where YYYY is the 
+        census year.
     
     code_type : str
-        ....
+        Either ``gj`` for the GISJOIN (NHGIS) code formatting or ``ge`` for
+        the original census GEOID code formatting. Default is ``gj``. For more
+        information see the specifics of the
+        `technical details <https://www.nhgis.org/user-resources/geographic-crosswalks#details>`_.
     
     stfips : str
-        ....
-    
-    nhgis : str
-        ....
-    
-    write_xwalk : str
-        ...
-    
-    write_atoms : str
-        ...
+        If a state-level subset is desired, set the state FIPS code.
     
     weight : str
-        ....
+        The column tags to use for the atomic interpolated variables.
     
     keep_base : bool
         Keep the base crosswalk when building of the atomic crosswalk
-        is complete (True). Default is False.
+        is complete (``True``). Default is ``False``.
     
     vectorized : bool
-        Vectorize the `id_codes.id_from()` function for (potential)
-        speedups (True). Default is True. 
-    
+        Vectorize the ``id_codes.id_from()`` function for (potential)
+        speedups (``True``). Default is ``True``.
     
     Attributes
     ----------
     
     source : str
-        ...
+        The combination of the source census geographic unit and census year.
     
     target : str
-        ...
+        The combination of the target census geographic unit and census year.
     
     xwalk_name : str
-        ...
+        The combination of ``source` and ``target``.
     
-    xwalk : str
-        ...
+    xwalk : pandas.DataFrame
+        The actual crosswalk generated between ``source`` and ``target``.
     
     wt : str
-        see `weight` parameter
+        See ``weight`` parameter.
     
     nhgis : bool
-        see `code_type` parameter
+        See the ``code_type`` parameter.
     
     source_id_components : pandas.DataFrame
-        ...
+        The ``source`` result from ``id_codes.id_code_components()``.
     
     target_id_components : pandas.DataFrame
-        ...
-    
+        The ``target`` result from ``id_codes.id_code_components()``.
     
     Notes
     -----
     
+    For more information see the ``nhgisxwalk`` FAQ
+    `page <https://github.com/jGaboardi/nhgisxwalk/wiki/FAQ-&-Resources>`_.
     
     Examples
     --------
     
-    Instantiate the example data and calculate atomic crosswalk.
+    Ex. 1: Instantiate the example data and calculate an atomic crosswalk.
     
     >>> import nhgisxwalk
     >>> df = nhgisxwalk.example_crosswalk_data()
@@ -142,6 +132,19 @@ class GeoCrossWalk:
     2       A     A.2     Y.1       Y  0.7     100.0     40.0
     3       B     B.1     X.3       X  1.0      50.0     20.0
     4       B     B.2     Y.2       Y  1.0      80.0     30.0
+    
+    This synthetic data is comprised of 1990 and 2010 census blocks (``blk1990``
+    and ``blk2010``, respectively); the base atomic crosswalk. Since the
+    boundaries of census blocks are subject to change over time, the 1990
+    blocks nest don't perfectly in the 2010 blocks. The magnitude of this
+    imperfect nesting is represented in the weight column (``wt``), which
+    records the areal portion of the 1990 block that intersects with the 2010
+    blocks. Further, the population and household counts for the 1990 blocks
+    are available through the ``pop_1990`` and ``hh_1990`` columns.
+    Finally, the associated 1990 census block group parts and the 2010 census
+    tracts are also represented with ``bgp1990`` and ``trt2010``. With this 
+    information it is possible to create a (synthetic) 1990 block group part
+    to 2010 tract crosswalk.
     
     >>> atoms = nhgisxwalk.calculate_atoms(
     ...             df,
@@ -158,6 +161,21 @@ class GeoCrossWalk:
     1       A       Y  0.437500  0.430769
     2       B       X  0.384615  0.400000
     3       B       Y  0.615385  0.600000
+    
+    The result is four atomic intersections between the synthetic 1990 census
+    block group parts and the 2010 census tracts with varying population
+    and household proportional weights.
+    
+    Ex. 2: Instantiate the example data and calculate atomic crosswalk.
+    
+    >>> import nhgisxwalk
+    
+    
+    
+    
+    
+    
+    
     
     """
 
@@ -252,7 +270,7 @@ class GeoCrossWalk:
             del self.base
 
     def subset_target_to_state(self):
-        """subset a national crosswalk to state-level (within target year)."""
+        """Subset a national crosswalk to state-level (within target year)."""
 
         def _state(rec):
             """Slice out a particular state by FIPS code."""
@@ -320,7 +338,7 @@ class GeoCrossWalk:
         self.xwalk.to_csv(loc + self.xwalk_name + ".csv" + fext)
 
     def xwalk_to_pickle(self, loc="", fext=".pkl"):
-        """Write the produced GeoCrossWalk object."""
+        """Write the produced ``GeoCrossWalk`` object."""
         if self.stfips:
             self.xwalk_name += "_" + self.stfips
         with open(self.xwalk_name + fext, "wb") as pkl_xwalk:
@@ -334,7 +352,7 @@ class GeoCrossWalk:
 
     @staticmethod
     def xwalk_from_pickle(fname, fext=".pkl"):
-        """Read in a produced crosswalk from a pickled GeoCrossWalk."""
+        """Read in a produced crosswalk from a pickled ``GeoCrossWalk``."""
         with open(fname + fext, "rb") as pkl_xwalk:
             self = pickle.load(pkl_xwalk)
         return self
@@ -349,39 +367,39 @@ def calculate_atoms(
     source_id=None,
     groupby_cols=None,
 ):
-    """ Calculate the atoms (intersecting parts) of census geographies and
-    interpolate a "weight" of the source attribute that lies within the
-    target geography.
+    """ Calculate the atoms (intersecting parts) of census geographies
+    and interpolate a proportional weight of the source attribute that
+    lies within the target geography.
     
     Parameters
     ----------
     
     df : pandas.DataFrame
-        input data
+        The input data. See ``GeoCrossWalk.base``.
     
     weight : str
-        weight colum name(s)
+        The weight colum name(s).
     
     input_var : str or iterable
-        input variable column name(s)
+        The input variable column name(s).
     
     weight_var : str or iterable
-        groupby and summed variable column name(s)
+        The groupby and summed variable column name(s).
     
     weight_prefix : str
-        Prepend this prefix to the the `weight_var` column name.
+        Prepend this prefix to the the ``weight_var`` column name.
     
     source_id : str
-        Source ID column name.
+        The source ID column name.
     
     groupby_cols : list
-        dataframe columns to perform groupby
+        The dataframe columns on which to perform groupby.
     
     Returns
     -------
     
     atoms : pandas.DataFrame
-        all intersections between source and target geographies, and 
+        All intersections between ``source`` and ``target`` geographies, and 
         the interpolated weight calculations for the propotion of
         source area attributes that are in the target area.
     
