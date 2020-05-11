@@ -136,7 +136,7 @@ class GeoCrossWalk:
     This synthetic data is comprised of 1990 and 2010 census blocks (``blk1990``
     and ``blk2010``, respectively); the base atomic crosswalk. Since the
     boundaries of census blocks are subject to change over time, the 1990
-    blocks nest don't perfectly in the 2010 blocks. The magnitude of this
+    blocks don't nest perfectly in the 2010 blocks. The magnitude of this
     imperfect nesting is represented in the weight column (``wt``), which
     records the areal portion of the 1990 block that intersects with the 2010
     blocks. Further, the population and household counts for the 1990 blocks
@@ -308,10 +308,10 @@ class GeoCrossWalk:
 
     def generate_source_ids(self):
         """Add source geographic unit ID to the base crosswalk."""
-        cols = code_cols(self.source_geo, self.source_year)
         if self.source_geo == "blk":
             raise AttributeError()
         elif self.source_geo == "bgp":
+            cols = code_cols(self.source_geo, self.source_year)
             func = bgp_id
         elif self.source_geo == "bkg":
             raise AttributeError()

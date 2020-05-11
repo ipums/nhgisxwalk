@@ -116,6 +116,62 @@ class Test_GeoCrossWalk(unittest.TestCase):
         observed_values = read_xwalk.xwalk["wt_pop"].values
         numpy.testing.assert_allclose(known_values, observed_values)
 
+    def test_xwalk_source_code_blk(self):
+        # testing for triggered errors
+        with self.assertRaises(AttributeError):
+            observed_xwalk = nhgisxwalk.GeoCrossWalk(
+                self.base_xwalk,
+                source_year=self.source_year,
+                target_year=self.target_year,
+                source_geo="blk",
+                target_geo="trt",
+                base_source_table=self.tab_data_path,
+                input_var=self.input_vars,
+                weight_var=self.input_var_tags,
+            )
+
+    def test_xwalk_source_code_bkg(self):
+        # testing for triggered errors
+        with self.assertRaises(AttributeError):
+            observed_xwalk = nhgisxwalk.GeoCrossWalk(
+                self.base_xwalk,
+                source_year=self.source_year,
+                target_year=self.target_year,
+                source_geo="bkg",
+                target_geo="trt",
+                base_source_table=self.tab_data_path,
+                input_var=self.input_vars,
+                weight_var=self.input_var_tags,
+            )
+
+    def test_xwalk_source_code_trt(self):
+        # testing for triggered errors
+        with self.assertRaises(AttributeError):
+            observed_xwalk = nhgisxwalk.GeoCrossWalk(
+                self.base_xwalk,
+                source_year=self.source_year,
+                target_year=self.target_year,
+                source_geo="trt",
+                target_geo="trt",
+                base_source_table=self.tab_data_path,
+                input_var=self.input_vars,
+                weight_var=self.input_var_tags,
+            )
+
+    def test_xwalk_source_code_cty(self):
+        # testing for triggered errors
+        with self.assertRaises(AttributeError):
+            observed_xwalk = nhgisxwalk.GeoCrossWalk(
+                self.base_xwalk,
+                source_year=self.source_year,
+                target_year=self.target_year,
+                source_geo="cty",
+                target_geo="trt",
+                base_source_table=self.tab_data_path,
+                input_var=self.input_vars,
+                weight_var=self.input_var_tags,
+            )
+
     def test_xwalk_code_type_ge(self):
         # testing for triggered errors
         with self.assertRaises(RuntimeError):
