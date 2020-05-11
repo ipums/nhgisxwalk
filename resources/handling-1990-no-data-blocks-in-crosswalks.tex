@@ -1,0 +1,59 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[left=2.50cm, right=2.50cm, top=2.50cm, bottom=2.50cm]{geometry}
+\usepackage{enumitem}
+\usepackage{bm}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,
+    urlcolor=cyan,
+}
+
+\title{Handling 1990 No-Data Blocks in Crosswalks}
+\author{Jonathon Schroeder and James Gaboardi}
+\date{May 2020}
+
+\begin{document}
+
+\maketitle
+
+
+
+\section{Problem}
+
+\begin{itemize}
+  \item \href{https://github.com/jGaboardi/nhgisxwalk/blob/master/resources/general-crosswalk-construction-framework.pdf}{General goal}: Generate a crosswalk from source zones to target zones by aggregating up from a block-to-block crosswalk.
+  \begin{itemize}
+      \item Ideally, the crosswalk should include at least one record for every source zone and at least one for every target zone, so all source and target zones are represented.
+  \end{itemize}
+  \item This framework requires an association between each block in the base crosswalk and its encompassing source/target zone.
+  \item To associate blocks with block group parts (BGPs) requires more information than is available in the base crosswalk...
+  \begin{itemize}
+      \item The base crosswalk includes block IDs, from which we can derive codes for the state, county, tract, and block group that contain each block.
+      \item Identifying BGPs \textit{additionally} requires (in 1990) codes for the place, county subdivision, AIANHH area, CD, and urban area.
+  \end{itemize}
+  \item The additional required codes are available in 1990 block data tables from NHGIS, \textbf{\textit{but}}...
+  \item 1990 data tables include no records for blocks that have no population and no housing units (i.e., ``no-data blocks'').
+  \item Therefore, we \textbf{can't\footnote{We could determine associations from 2000 TIGER/Line data or NHGIS shapefiles, but the former would be complicated (3,000+ county-extent data files in an old format) and the latter would be time-consuming (overlay of several big nationwide shapefiles, some of which contain invalid offshore slivers that should first be cleaned up) and not totally reliable (potential inconsistencies due to differences in how each file was transformed from base TIGER files.) Meanwhile, determining exact associations shouldn't be important because we \textbf{already know} that no population or housing units were in these areas, and it's OK (even if not ideal) if we produce a crosswalk that includes ``dummy'' atoms for nonexistent source-target intersections, as long as the weights for those atoms are all zero, and all source and target zones are represented.} directly associate 1990 no-data blocks with BGPs}.
+\end{itemize}
+
+
+\section{Solution}
+
+\begin{itemize}
+  \item General concept: Use the associations between no-data 1990 blocks and \textit{whole block groups} (BGs) to ensure that any intersection between a 1990 BG and a target zone is represented in the crosswalk from 1990 BGPs to target zones.
+  \item Steps
+  \begin{enumerate}
+      \item Construct initial BGP crosswalk using only the ``inhabited'' blocks--those in 1990 data table.
+      \item Construct BG crosswalk using \textit{only} no-data blocks (all counts are 0).
+      \item Add intersections from the ``no-data BG crosswalk'' (from Step 2) to the BGP crosswalk (from Step 1), associating each ``no-data atom'' with \textit{all} of the BG's parts.
+      \begin{enumerate}
+        \item Skip adding atoms that already exist in the initial BGP crosswalk (from Step 1)
+      \end{enumerate}
+  \end{enumerate}
+\end{itemize}.
+
+
+\end{document}
