@@ -300,12 +300,13 @@ class GeoCrossWalk:
 
     def join_source_base_tabular(self):
         """Join tabular attributes to base crosswalk."""
+
         # read in national tabular data
         data_types = str_types(self.base_source_id_components["Variable"])
         tab_df = pandas.read_csv(self.base_source_table, dtype=data_types)
 
         # special case for 2000 blocks (of 2000 bgp)-- needs Urban/Rural code
-        if self.base_source_col == "blk2000" and self.source == "bgp2000":
+        if self.base_source_geo == "blk" and self.source == "bgp2000":
             tab_df = _add_ur_code_blk2000(tab_df)
 
         # do left merge

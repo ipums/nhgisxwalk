@@ -136,8 +136,6 @@ def bgp_id(df, order, cname="_GJOIN", tzero=["STATEA", "COUNTYA"], nhgis=True):
 
         return id_str
 
-    print(df.columns)
-
     # recreate GISJOIN ID (_GJOIN, [or other])
     df[cname] = [_gjoin(record) for record in df.itertuples()]
 
@@ -169,10 +167,8 @@ def bkg_id(year, _id, nhgis):
     """
 
     # 1990 -- Block Group (by State--County--Census Tract)
-
+    block_group_id = None
     pass
-
-    block_group_id = Nones
 
 
 def trt_id(year, _id, nhgis):
@@ -349,8 +345,12 @@ def _add_ur_code_blk2000(df):
         The input ``df`` with new column.
     
     """
-    cols = df.columns
+
+    # generate Urban/Rural identifier
     df["URBRURALA"] = df["FXT001"].map(lambda x: "U" if x > 0 else "R")
+    # reorder columns
+    cols = df.columns
     reorder_cols = list(cols[:12]) + list(cols[-1:]) + list(cols[12:-1])
     df = df[reorder_cols]
+
     return df
