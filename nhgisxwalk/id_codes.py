@@ -9,7 +9,9 @@ from io import StringIO
 
 
 def code_cols(geog, year):
-    """Geography ID coded columns.
+    """Geography ID coded columns.  ############################################# This maybe only needs to support BGP...
+                                    ############################################# All other geography IDs can easily
+                                    ############################################# be obtained...
     
     Parameters
     ----------
@@ -32,27 +34,39 @@ def code_cols(geog, year):
     # ensure `year` is a str
     year = str(year)
 
-    if geog == "bgp" and year == "1990":
-        cols = [
-            "STATEA",
-            "COUNTYA",
-            "CTY_SUBA",
-            "PLACEA",
-            "TRACTA",
-            "CDA",  ########################################### swap out "CD103A"
-            "AIANHHA",
-            "RES_TRSTA",
-            "ANRCA",
-            "URB_AREAA",
-            "URBRURALA",
-            "BLCK_GRPA",
-        ]
+    if geog == "bgp":
+        if year == "1990":
+            cols = [
+                "STATEA",
+                "COUNTYA",
+                "CTY_SUBA",
+                "PLACEA",
+                "TRACTA",
+                "CDA",  ###################################### swap out "CD103A"
+                "AIANHHA",
+                "RES_TRSTA",
+                "ANRCA",
+                "URB_AREAA",
+                "URBRURALA",
+                "BLCK_GRPA",
+            ]
+        if year == "2000":
+            # Geographic level: Block Group (by State--County--County Subdivision--Place/Remainder--Census Tract--Urban/Rural)
+            cols = [
+                "STATEA",
+                "COUNTYA",
+                "CTY_SUBA",
+                "PLACEA",
+                "TRACTA",
+                "URBRURALA",
+                "BLCK_GRPA",
+            ]
 
     return cols
 
 
 def blk_id():
-    """
+    """######################################################################### Probably don't need this?
     """
 
     pass
@@ -122,17 +136,43 @@ def bgp_id(df, order, cname="_GJOIN", tzero=["STATEA", "COUNTYA"], nhgis=True):
 
         return id_str
 
+    print(df.columns)
+
     # recreate GISJOIN ID (_GJOIN, [or other])
     df[cname] = [_gjoin(record) for record in df.itertuples()]
 
     return df
 
 
-def bkg_id():
-    """
+def bkg_id(year, _id, nhgis):
+    """Extract the block group ID from the block ID.
+    
+    Parameters
+    ----------
+    
+    year : str
+        The census collection year.
+    
+    _id : str
+        The block GISJOIN/GEOID.
+    
+    nhgis : bool
+        Set to ``True`` to add 'G' and trailing zeros.
+        See `GISJOIN identifiers <https://www.nhgis.org/user-resources/geographic-crosswalks>`_.
+    
+    Returns
+    -------
+    
+    block_group_id : str
+        The block group GISJOIN/GEOID.
+    
     """
 
+    # 1990 -- Block Group (by State--County--Census Tract)
+
     pass
+
+    block_group_id = Nones
 
 
 def trt_id(year, _id, nhgis):
@@ -254,10 +294,9 @@ def id_code_components(year, geo):
 
     if year == "2000":
         if geo == "blk":
-            raise AttributeError()
-            # components
+            components = blk2000
         if geo == "bgp":
-            raise AttributeError()
+            components = bgp2000
             # components
         if geo == "bkg":
             raise AttributeError()
@@ -290,4 +329,28 @@ def id_code_components(year, geo):
     df.index.name = geo + year
     df.columns = ["Variable", "Description"]
 
+    return df
+
+
+def _add_ur_code_blk2000(df):
+    """ Special case function to give 2000 blocks an Urban/Rural
+    identifier for 2000 Block Group Parts
+    
+    Parameters
+    ----------
+    
+    df : pandas.DataFrame
+        The input dataframe.
+    
+    Returns
+    -------
+    
+    df : pandas.DataFrame
+        The input ``df`` with new column.
+    
+    """
+    cols = df.columns
+    df["URBRURALA"] = df["FXT001"].map(lambda x: "U" if x > 0 else "R")
+    reorder_cols = list(cols[:12]) + list(cols[-1:]) + list(cols[12:-1])
+    df = df[reorder_cols]
     return df

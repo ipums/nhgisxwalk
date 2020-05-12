@@ -72,9 +72,37 @@ cty1990 = None
 
 # ------------------------------------------------------------------------- 2000
 
-blk2000 = None
+blk2000 = r"""
+GISJOIN,     GIS Join Match Code
+YEAR,        Data File Year
+STATE,       State Name
+STATEA,      State Code
+COUNTY,      County Name
+COUNTYA,     County Code
+CTY_SUBA,    County Subdivision Code
+PLACEA,      Place Code
+TRACTA,      Census Tract Code
+BLCK_GRPA,   Block Group Code
+BLOCKA,      Block Code
+AIANHHA,     American Indian Area/Alaska Native Area/Hawaiian Home Land Code
+NAME,        Area Name-Legal/Statistical Area Description (LSAD) Term-Part Indicator"""
 
-bgp2000 = None
+bgp2000 = r"""
+GISJOIN,     GIS Join Match Code
+YEAR,        Data File Year
+STATE,       State Name
+STATEA,      State Code
+COUNTY,      County Name
+COUNTYA,     County Code
+CTY_SUB,     County Subdivision Name
+CTY_SUBA,    County Subdivision Code
+PLACE,       Place Name
+PLACEA,      Place Code
+TRACTA,      Census Tract Code
+BLCK_GRPA,   Block Group Code
+AIANHHA,     American Indian Area/Alaska Native Area/Hawaiian Home Land Code
+URBRURALA,   Urban/Rural Code
+NAME,        Area Name-Legal/Statistical Area Description (LSAD) Term-Part Indicator"""
 
 bkg2000 = None
 
