@@ -248,10 +248,10 @@ class GeoCrossWalk:
         self.join_source_base_tabular()
 
         # add source geographic unit ID to the base crosswalk
-        self.generate_source_ids()
+        self.generate_ids("source", vectorized)
 
         # add target geographic unit ID to the base crosswalk
-        self.generate_target_ids(vectorized)
+        self.generate_ids("target", vectorized)
 
         # Create atomic crosswalk
         # calculate the source to target atom values
@@ -306,30 +306,27 @@ class GeoCrossWalk:
             validate="many_to_many",
         )
 
-    def generate_source_ids(self):
-        """Add source geographic unit ID to the base crosswalk."""
-        if self.source_geo == "blk":
-            raise AttributeError()
-        elif self.source_geo == "bgp":
-            cols = code_cols(self.source_geo, self.source_year)
-            func = bgp_id
-        elif self.source_geo == "bkg":
-            raise AttributeError()
-        elif self.source_geo == "trt":
-            raise AttributeError()
-        elif self.source_geo == "cty":
-            raise AttributeError()
-        else:
-            raise AttributeError()
-        # generate source geographic ID
-        self.base = func(self.base, cols, cname=self.source, nhgis=self.nhgis)
+    def generate_ids(self, id_type, vect):
+        """Add source or target geographic unit ID to the base crosswalk."""
 
-    def generate_target_ids(self, vect):
-        """Add target geographic unit ID to the base crosswalk."""
-        func = id_generators["%s_id" % self.target_geo]
-        self.base[self.target] = id_from(
-            func, self.target_year, self.base[self.base_target_col], self.nhgis, vect
-        )
+        # declare id type-specific variables
+        if id_type == "source":
+            cname, year = self.source, self.source_year
+            geog, base_col = self.source_geo, self.base_source_col
+        else:
+            cname, year = self.target, self.target_year
+            geog, base_col = self.target_geo, self.base_target_col
+        # generate IDS
+        if geog == "bgp":
+            cols, func = code_cols(geog, year), bgp_id
+            args = self.base, cols
+            self.base = func(*args, cname=cname, nhgis=self.nhgis)
+        else:
+            if id_type == "source" and geog == "blk":
+                raise AttributeError()
+            func = id_generators["%s_id" % geog]
+            args = func, year, self.base[base_col], self.nhgis, vect
+            self.base[cname] = id_from(*args)
 
     def xwalk_to_csv(self, loc="", fext=".zip"):
         """Write the produced crosswalk to .csv.zip."""

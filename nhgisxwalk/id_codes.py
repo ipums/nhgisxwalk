@@ -243,46 +243,46 @@ def id_code_components(year, geo):
         if geo == "bgp":
             components = bgp1990
         if geo == "bkg":
-            pass
+            raise AttributeError()
             # components
         if geo == "trt":
-            pass
+            raise AttributeError()
             # components
         if geo == "cty":
-            pass
+            raise AttributeError()
             # components
 
     if year == "2000":
         if geo == "blk":
-            pass
+            raise AttributeError()
             # components
         if geo == "bgp":
-            pass
+            raise AttributeError()
             # components
         if geo == "bkg":
-            pass
+            raise AttributeError()
             # components
         if geo == "trt":
-            pass
+            raise AttributeError()
             # components
         if geo == "cty":
-            pass
+            raise AttributeError()
             # components
 
     if year == "2010":
         if geo == "blk":
-            pass
+            raise AttributeError()
             # components
         if geo == "bgp":
-            pass
+            raise AttributeError()
             # components
         if geo == "bkg":
-            pass
+            raise AttributeError()
             # components
         if geo == "trt":
             components = trt2010
         if geo == "cty":
-            pass
+            raise AttributeError()
             # components
 
     # create ID components dataframe
