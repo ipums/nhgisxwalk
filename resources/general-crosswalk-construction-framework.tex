@@ -12,10 +12,7 @@
 
 \maketitle
 
-
-
 \section{Notation formatting}
-
 \begin{itemize}
   \item {\bf Bold} = variable or set
   \item \textit{Italic} = a single instance (= item in set)
@@ -24,9 +21,7 @@
   \item lower case = derived from input parameters
 \end{itemize}
 
-
 \section{Goal specification}
-
 Generate a crosswalk $\bm{X_{\mathbf{ST}}}$ ...
 \begin{itemize}
   \item From source zones $\mathbf{S}$ (geographic level $\bm{G_{\mathbf{S}}}$ in year $\bm{Y_{\mathbf{S}}}$)
@@ -53,13 +48,14 @@ Generate a crosswalk $\bm{X_{\mathbf{ST}}}$ ...
     \end{itemize}
   \item Include every $\bm{s}$ in $\mathbf{S}$ and every $\bm{t}$ in $\mathbf{T}$.
     \begin{itemize}
-    \item Some atoms may have null $\bm{s}$ (where $\bm{t}$ lies outside of any source zone).
+    \item Atom records may have \textit{null} $\bm{s}$ where $\bm{t}$ where a zone in one set lies beyond the spatial extent of the other set, or the intersection is outside the extent of $\bm{X_{\mathbf{S^\prime T^\prime}}}$.
+      \begin{itemize}
+      \item In our case, $\bm{X_{\mathbf{S^\prime T^\prime}}}$ is a block-to-block crosswalk based on NHGIS shapefiles, which are clipped at the coast. The 1990-2010 crosswalk omits ``off-coast'' 1990 blocks that are not in the shapefile. For crosswalks with 1990 source zones, we may have \textit{null} $\bm{t}$ for source zones that lie entirely off-coast.
+      \end{itemize}
     \end{itemize}
 \end{itemize}
 
-
 \section{Summary of key input parameters}
-
 \begin{itemize}
   \item $\bm{G_{\mathbf{S}}} = $ source geographic level
   \item $\bm{Y_{\mathbf{S}}} = $ source year
@@ -67,7 +63,6 @@ Generate a crosswalk $\bm{X_{\mathbf{ST}}}$ ...
   \item $\bm{Y_{\mathbf{T}}} = $ target year
   \item $\mathbf{C} = $ set of count variables for which to derive separate weights
 \end{itemize}
-
 
 \section{General steps}
 
@@ -90,6 +85,10 @@ Generate a crosswalk $\bm{X_{\mathbf{ST}}}$ ...
       \item 1990 block-group parts require some special handling because neither 4a nor 4b pertain to all BGPs.
       \item If we generate crosswalks for target zones that cannot be identified from block IDs (e.g., places, county subdivisions, etc.), we'll need to add a step to join block crosswalk to target-year block data that includes identifiers for the target zones.
      \end{enumerate}
+   \item Where $\bm{s^\prime}$ is \textit{null} (= ``''), omit these dummy sub-zone atoms from subsequent computations.
+      \begin{enumerate}
+      \item This may drop some valid $\bm{t}$ from the computations, but step 9 will re-add them if needed.
+      \end{enumerate}
    \end{enumerate}
 \item Compute counts for all weighting variables in each sub-zone atom: $\bm{c_{\mathbf{S^\prime T^\prime}}} = \bm{w_{\mathbf{S^\prime T^\prime}}} * \bm{C_{\mathbf{S^\prime}}}$.
 \item Compute counts for all weighting variables in each atom of interest: $\bm{c_{\mathbf{ST}}} = \sum \bm{c_{\mathbf{S^\prime T^\prime}}}$ group by $\mathbf{S}$, $\mathbf{T}$.
@@ -99,8 +98,10 @@ Generate a crosswalk $\bm{X_{\mathbf{ST}}}$ ...
 \item Compute counts for all weighting variables in each source zone: $\bm{c_{\mathbf{S}}} = \sum \bm{c_{\mathbf{ST}}}$ group by $\mathbf{S}$.
 \item Compute all weights for all atoms of interest: $\bm{w_{\mathbf{CST}}} = \displaystyle \frac{\bm{c_{st}}}{\bm{c_{s}}}$.
   \begin{enumerate}
-  \item If $\displaystyle \frac{\bm{c_{st}}}{\bm{c_{s}}}$ is NaN/null (because $\bm{c_{s}} = 0$ or $\bm{s}$ is null), $\bm{w_{\mathbf{cst}}} = 0$.
+  \item If $\bm{c_{s}} = 0$, set $\bm{w_{\mathbf{cst}}} = 0$.
   \end{enumerate}
+\item If $\bm{w_{\mathbf{cst}}}$ is missing data for any $\bm{s}$ in $\mathbf{S}$ or $\bm{t}$ in $\mathbf{T}$, add dummy atoms with \textit{null} $\bm{t}$ for non-\textit{null} $\bm{s}$ or \textit{null} $\bm{s}$ for non-\textit{null} $\bm{t}$, and set wCst = 0.
+
 \item Export clean, complete file for distribution.
   \begin{enumerate}
   \item Exact specifications TBD.
