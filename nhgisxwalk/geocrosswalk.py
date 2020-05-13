@@ -10,7 +10,8 @@ TO DO:
 """
 
 
-from .id_codes import code_cols, bgp_id, trt_id, id_from, id_code_components
+from .id_codes import bgp_id, trt_id, id_from, id_code_components
+from .id_codes import code_cols, _add_ur_code_blk2000
 
 import numpy
 import pandas
@@ -18,8 +19,15 @@ import pandas
 import pickle
 
 
-# used to fetch/vectorize ID generation fucntions
-id_generators = {f.__name__: f for f in [bgp_id, trt_id]}
+# used to fetch/vectorize ID generation functions
+id_generator_funcs = [
+    # blk_id,
+    bgp_id,
+    # bkg_id,
+    trt_id,
+    # cty_id
+]
+id_generators = {f.__name__: f for f in id_generator_funcs}
 
 
 class GeoCrossWalk:
@@ -292,9 +300,14 @@ class GeoCrossWalk:
 
     def join_source_base_tabular(self):
         """Join tabular attributes to base crosswalk."""
+
         # read in national tabular data
         data_types = str_types(self.base_source_id_components["Variable"])
         tab_df = pandas.read_csv(self.base_source_table, dtype=data_types)
+
+        # special case for 2000 blocks (of 2000 bgp)-- needs Urban/Rural code
+        if self.base_source_geo == "blk" and self.source == "bgp2000":
+            tab_df = _add_ur_code_blk2000(tab_df)
 
         # do left merge
         self.base = pandas.merge(
@@ -344,7 +357,7 @@ class GeoCrossWalk:
     @staticmethod
     def xwalk_from_csv(fname, fext=".zip"):
         """Read in a produced crosswalk from .csv.zip."""
-        xwalk = pandas.read_csv(fname + ".csv" + fext)
+        xwalk = pandas.read_csv(fname + ".csv" + fext, index_col=0)
         return xwalk
 
     @staticmethod
