@@ -357,7 +357,7 @@ class GeoCrossWalk:
     @staticmethod
     def xwalk_from_csv(fname, fext=".zip"):
         """Read in a produced crosswalk from .csv.zip."""
-        xwalk = pandas.read_csv(fname + ".csv" + fext)
+        xwalk = pandas.read_csv(fname + ".csv" + fext, index_col=0)
         return xwalk
 
     @staticmethod
