@@ -7,7 +7,7 @@
 \hypersetup{
     colorlinks=true,
     linkcolor=blue,
-    filecolor=magenta,
+    filecolor=magenta,      
     urlcolor=cyan,
 }
 
@@ -22,7 +22,6 @@
 
 
 \section{Problem}
-
 \begin{itemize}
   \item \href{https://github.com/jGaboardi/nhgisxwalk/blob/master/resources/general-crosswalk-construction-framework.pdf}{General goal}: Generate a crosswalk from source zones to target zones by aggregating up from a block-to-block crosswalk.
   \begin{itemize}
@@ -36,24 +35,61 @@
   \end{itemize}
   \item The additional required codes are available in 1990 block data tables from NHGIS, \textbf{\textit{but}}...
   \item 1990 data tables include no records for blocks that have no population and no housing units (i.e., ``no-data blocks'').
-  \item Therefore, we \textbf{can't\footnote{We could determine associations from 2000 TIGER/Line data or NHGIS shapefiles, but the former would be complicated (3,000+ county-extent data files in an old format) and the latter would be time-consuming (overlay of several big nationwide shapefiles, some of which contain invalid offshore slivers that should first be cleaned up) and not totally reliable (potential inconsistencies due to differences in how each file was transformed from base TIGER files.) Meanwhile, determining exact associations shouldn't be important because we \textbf{already know} that no population or housing units were in these areas, and it's OK (even if not ideal) if we produce a crosswalk that includes some ``dummy'' atoms for nonexistent source-target intersections, as long as the weights for those atoms are all zero, and all source and target zones are represented.} directly associate 1990 no-data blocks with BGPs}.
+  \item Therefore, we \textbf{can't\footnote{We could determine associations from 2000 TIGER/Line data or NHGIS shapefiles, but the former would be complicated (3,000+ county-extent data files in an old format) and the latter would be time-consuming (overlay of several big nationwide shapefiles, some of which contain invalid offshore slivers that should first be cleaned up) and not totally reliable (potential inconsistencies due to differences in how each file was transformed from base TIGER files.) Meanwhile, determining exact associations shouldn't be important because we \textbf{already know} that no population or housing units were in these areas, and it's OK (even if not ideal) if we produce a crosswalk that includes ``dummy'' atoms for nonexistent source-target intersections, as long as the weights for those atoms are all zero, and all source and target zones are represented.} directly associate 1990 no-data blocks with BGPs}.
 \end{itemize}
-
 
 \section{Solution}
 
-\begin{itemize}
-  \item General concept: Use the associations between no-data 1990 blocks and \textit{whole block groups} (BGs) to ensure that any intersection between a 1990 BG and a target zone is represented in the crosswalk from 1990 BGPs to target zones.
-  \item Steps
-  \begin{enumerate}
-      \item Construct initial BGP crosswalk using only the ``inhabited'' blocks--those in 1990 data table.
-      \item Construct BG crosswalk using \textit{only} no-data blocks (all counts are 0).
-      \item Add intersections from the ``no-data BG crosswalk'' (from Step 2) to the BGP crosswalk (from Step 1), associating each ``no-data atom'' with \textit{all} of the BG's parts.
-      \begin{enumerate}
-        \item Skip adding atoms that already exist in the initial BGP crosswalk (from Step 1)
-      \end{enumerate}
-  \end{enumerate}
-\end{itemize}.
+General concept: Use the associations between no-data 1990 blocks and \textit{whole block groups} (BGs) to ensure that any intersection between a 1990 BG and a target zone is represented in the crosswalk from 1990 BGPs to target zones...
+
+\begin{enumerate}
+
+\item Construct initial BGP crosswalk using only the ``inhabited'' blocks--those in 1990 data table.
+    \begin{enumerate}
+    \item Follow \href{https://github.com/jGaboardi/nhgisxwalk/blob/master/resources/general-crosswalk-construction-framework.pdf}{general steps} 1-8, using option 4a for target zones and 4b for source zones
+    \end{enumerate}
+
+\item Construct BG crosswalk using \textit{only} no-data blocks (all counts are 0)
+Repeat general steps 3-8 but...
+    \begin{enumerate}
+    \item In step 3, drop all block atoms that \textit{have} a match in the 1990 summary data, keeping only atoms that have no match.
+    \item Use option 4a for both source \& target zones.
+    \item Make sure to observe 4b: drop sub-zone atoms where the 1990 block GISJOIN = ``''.
+    \item Skip steps 5-7: no need to compute counts because all are (should be) zero.
+    \item In step 8, set all $\bm{w_{\mathbf{cst}}}$.
+    \end{enumerate}
+    
+\item Add intersections from the ``no-data BG crosswalk'' (from b above) to the BGP crosswalk (from a), associating each ``no-data atom'' with all of the BG's parts...
+    \begin{enumerate}
+    \item Obtain and load summary data table for 1990 BGPs
+        \begin{enumerate}
+        \item Need this to identify all BGPs that should be included in final crosswalk.
+        \end{enumerate}
+    \item For every BGP in the BGP data table, identify its containing BG.
+        \begin{enumerate}
+        \item One approach: Store the BG id in a temporary new field to the data table.
+        \end{enumerate}
+    \item For every BGP in the initial BGP crosswalk, identify its containing BG.
+        \begin{enumerate}
+        \item One approach: Store the BG id in a temporary new field to the crosswalk table.
+        \end{enumerate}
+    \item ``Expand'' the no-data BG crosswalk for all associated BGPs...
+        \begin{enumerate}
+        \item One approach: Join the no-data BG crosswalk to the BGP data table.
+        \item Outcome: Now any target zone associated with a 1990 BG through ``no-data blocks'' is also associated with all BGPs in that 1990 BG.
+        \end{enumerate}
+    \item Remove any records in the expanded no-data BGP crosswalk where the 1990 BGP \& target zone match a combo that already exists in the initial BGP crosswalk.
+        \begin{enumerate}
+        \item Many source-target atoms contain a mix of inhabited and no-data 1990 blocks. The key info about these atoms was produced in step a above. We don't need to add the no-data records for these.
+        \end{enumerate}
+    \item Add the remaining no-data BGP crosswalk records to the initial BGP crosswalk initial BGP crosswalk (from Step 1).
+    
+    \end{enumerate}
+
+\item Proceed to general step 9.
+
+\end{enumerate}
+
 
 
 \end{document}
