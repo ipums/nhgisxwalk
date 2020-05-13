@@ -330,7 +330,9 @@ def id_code_components(year, geo):
 
 def _add_ur_code_blk2000(df):
     """ Special case function to give 2000 blocks an Urban/Rural
-    identifier for 2000 Block Group Parts
+    identifier for 2000 Block Group Parts. The urban/rural identifier is
+    based on NHGIS code FXT001. For more details see ``code_desc_2000_SF1b``
+    in variable_codes.py.
     
     Parameters
     ----------
