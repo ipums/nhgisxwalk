@@ -29,9 +29,10 @@ Currently `nhgisxwalk` officially supports Python [3.6](https://docs.python.org/
 $ pip install git+https://github.com/jGaboardi/nhgisxwalk
 ```
 
-## Citation
-If you use `nhgisxwalk` in a scientific publication, we would appreciate using the following citation:
+## Citations
+If you use `nhgisxwalk` in a scientific publication, we would appreciate using the following citations:
 * **Steven Manson, Jonathan Schroeder, David Van Riper, and Steven Ruggles**. *IPUMS National Historical Geographic Information System: Version 14.0* [Database]. Minneapolis, MN: IPUMS. 2019. http://doi.org/10.18128/D050.V14.0
+* **James Gaboardi**. *[jGaboardi/nhgisxwalk](https://github.com/jGaboardi/nhgisxwalk)*. Zenodo. 2020. http://doi.org/10.5281/zenodo.3825134
 
 
 ## License
