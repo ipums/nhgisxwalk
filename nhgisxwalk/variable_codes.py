@@ -59,14 +59,6 @@ code_desc_2000_SF1b = {
         "NHGIS code": "FV5",
         "FV5001": "Total",
     },
-    "Population by Urban and Rural": {
-        "Universe": "Persons",
-        "Source code": "NP002A",
-        "NHGIS code": "FXT",
-        "FXT001": "Urban",
-        "FXT002": "Rural",
-        "FXT003": "Not defined for this file",
-    },
 }
 
 # Descriptive to code lookup
