@@ -326,33 +326,3 @@ def id_code_components(year, geo):
     df.columns = ["Variable", "Description"]
 
     return df
-
-
-def _add_ur_code_blk2000(df):
-    """ Special case function to give 2000 blocks an Urban/Rural
-    identifier for 2000 Block Group Parts. The urban/rural identifier is
-    based on NHGIS code FXT001. For more details see ``code_desc_2000_SF1b``
-    in variable_codes.py.
-    
-    Parameters
-    ----------
-    
-    df : pandas.DataFrame
-        The input dataframe.
-    
-    Returns
-    -------
-    
-    df : pandas.DataFrame
-        The input ``df`` with new column.
-    
-    """
-
-    # generate Urban/Rural identifier
-    df["URBRURALA"] = df["FXT001"].map(lambda x: "U" if x > 0 else "R")
-    # reorder columns
-    cols = df.columns
-    reorder_cols = list(cols[:12]) + list(cols[-1:]) + list(cols[12:-1])
-    df = df[reorder_cols]
-
-    return df
