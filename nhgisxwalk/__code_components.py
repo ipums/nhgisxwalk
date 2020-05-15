@@ -71,7 +71,7 @@ trt1990 = None
 cty1990 = None
 
 # ------------------------------------------------------------------------- 2000
-
+# *** NOTE *** The URBRURALA code is added. For more details see: https://gist.github.com/jGaboardi/36c7640af1f228cdc8a691505262e543
 blk2000 = r"""
 GISJOIN,     GIS Join Match Code
 YEAR,        Data File Year
@@ -85,6 +85,7 @@ TRACTA,      Census Tract Code
 BLCK_GRPA,   Block Group Code
 BLOCKA,      Block Code
 AIANHHA,     American Indian Area/Alaska Native Area/Hawaiian Home Land Code
+URBRURALA,   Urban/Rural Code
 NAME,        Area Name-Legal/Statistical Area Description (LSAD) Term-Part Indicator"""
 
 bgp2000 = r"""
