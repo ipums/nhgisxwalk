@@ -307,6 +307,8 @@ class GeoCrossWalk:
         # Special case for 2000 blocks (of 2000 bgp)-- needs Urban/Rural code
         # For more details see:
         # https://gist.github.com/jGaboardi/36c7640af1f228cdc8a691505262e543
+        # and
+        # nhgisxwalk/notebooks/build_subset.ipynb
 
         # do left merge
         self.base = pandas.merge(
