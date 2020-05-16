@@ -191,7 +191,7 @@ class GeoCrossWalk:
     `./testing_data_subsets/ <https://github.com/jGaboardi/nhgisxwalk/tree/master/testing_data_subsets>`_)
     are single state subsets (Delaware) for testing and demonstration purposes.
     
-    >>> subset_data_dir = "../testing_data_subsets"
+    >>> subset_data_dir = "./testing_data_subsets"
     >>> base_xwalk_name = "/nhgis_blk%s_blk%s_gj.csv.zip" % (source_year, target_year)
     >>> base_xwalk_file = subset_data_dir + base_xwalk_name
     >>> data_types = nhgisxwalk.str_types(["GJOIN%s"%source_year, "GJOIN%s"%target_year])
@@ -213,35 +213,11 @@ class GeoCrossWalk:
     the source and target geographies to ``bgp`` and ``trt``, respectively.
     
     >>> nhgisxwalk.valid_geo_shorthand(shorthand_name=False)
-    {'block': 'blk',
-     'block group part': 'bgp',
-     'block group': 'bkg',
-     'tract': 'trt',
-     'county': 'cty'}
+    {'block': 'blk', 'block group part': 'bgp', 'block group': 'bkg', 'tract': 'trt', 'county': 'cty'}
     >>> source_geog, target_geog = "bgp", "trt"
     
-    Use the variable lookup tool for interpolated weight selection.
-    
-    >>> nhgisxwalk.desc_code_2000_SF1b
-    {'Persons': {'Persons': 'Universe',
-      'NP001A': 'Source code',
-      'FXS': 'NHGIS code',
-      'Total': 'FXS001'},
-     'Families': {'Families': 'Universe',
-      'NP031A': 'Source code',
-      'F2V': 'NHGIS code',
-      'Total': 'F2V001'},
-     'Households': {'Households': 'Universe',
-      'NP010A': 'Source code',
-      'FY4': 'NHGIS code',
-      'Total': 'FY4001'},
-     'Housing Units': {'Housing Units': 'Universe',
-      'NH001A': 'Source code',
-      'FV5': 'NHGIS code',
-      'Total': 'FV5001'}}
-    
-    Select Persons, Families, Households, and Housing Units, and
-    set column tags for the weights to be interpolated.
+    Select Persons, Families, Households, and Housing Units the variable
+    lookup tool, and set column tags for the weights to be interpolated.
     
     >>> input_vars = [
     ...    nhgisxwalk.desc_code_2000_SF1b["Persons"]["Total"],
@@ -257,7 +233,7 @@ class GeoCrossWalk:
     which will be a state-level crosswalk for Delaware (state FIPS code 10).
     
     >>> subset_state = "10"
-    ... bgp2000_to_trt2010 = nhgisxwalk.GeoCrossWalk(
+    >>> bgp2000_to_trt2010 = nhgisxwalk.GeoCrossWalk(
     ...     base_xwalk,
     ...     source_year=source_year,
     ...     target_year=target_year,
