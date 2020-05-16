@@ -36,6 +36,8 @@ class GeoCrossWalk:
     ID (geo+year), and target ID (geo+year), and at least one column
     of weights. The weights are the interpolated proportions of source
     attributes that are are calculated as being within the target units.
+    For a description of the algorithmic workflow see the
+    `General Crosswalk Construction Framework <https://github.com/jGaboardi/nhgisxwalk/blob/master/resources/general-crosswalk-construction-framework.pdf>`_.
     
     For further description see:
       * Schroeder, J. P. 2007. Target-density weighting interpolation
@@ -435,6 +437,16 @@ class GeoCrossWalk:
             self.xwalk_name += "_" + self.stfips
         with open(self.xwalk_name + fext, "wb") as pkl_xwalk:
             pickle.dump(self, pkl_xwalk, protocol=2)
+
+    def handle_1990_no_data(self):
+        """
+        
+        See the algorithmic workflow in
+        `Handling 1990 No-Data Blocks in Crosswalks <https://github.com/jGaboardi/nhgisxwalk/blob/master/resources/handling-1990-no-data-blocks-in-crosswalks.pdf>`_.
+        
+        """
+
+        pass
 
     @staticmethod
     def xwalk_from_csv(fname, fext=".zip"):
