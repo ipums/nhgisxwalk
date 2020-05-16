@@ -231,13 +231,13 @@ class Test_GeoCrossWalk(unittest.TestCase):
     # non-year, geography specific ---------------------------------------------
     def test_xwalk_write_read_csv(self):
         write_xwalk = nhgisxwalk.GeoCrossWalk(
-            base_xwalk_blk1990_blk2010,
-            source_year=_90,
+            base_xwalk_blk2000_blk2010,
+            source_year=_00,
             target_year=_10,
             source_geo=bgp,
             target_geo=trt,
-            base_source_table=tab_data_path_1990,
-            input_var=input_vars_1990,
+            base_source_table=tab_data_path_2000,
+            input_var=input_vars_2000_SF1b,
             weight_var=input_var_tags,
             keep_base=False,
             stfips=stfips,
@@ -250,13 +250,13 @@ class Test_GeoCrossWalk(unittest.TestCase):
 
     def test_xwalk_write_read_pickle(self):
         write_xwalk = nhgisxwalk.GeoCrossWalk(
-            base_xwalk_blk1990_blk2010,
-            source_year=_90,
+            base_xwalk_blk2000_blk2010,
+            source_year=_00,
             target_year=_10,
             source_geo=bgp,
             target_geo=trt,
-            base_source_table=tab_data_path_1990,
-            input_var=input_vars_1990,
+            base_source_table=tab_data_path_2000,
+            input_var=input_vars_2000_SF1b,
             weight_var=input_var_tags,
             keep_base=False,
             stfips=stfips,
@@ -271,13 +271,13 @@ class Test_GeoCrossWalk(unittest.TestCase):
         # testing for triggered errors
         with self.assertRaises(RuntimeError):
             observed_xwalk = nhgisxwalk.GeoCrossWalk(
-                base_xwalk_blk1990_blk2010,
-                source_year=_90,
+                base_xwalk_blk2000_blk2010,
+                source_year=_00,
                 target_year=_10,
                 source_geo=bgp,
                 target_geo=trt,
-                base_source_table=tab_data_path_1990,
-                input_var=input_vars_1990,
+                base_source_table=tab_data_path_2000,
+                input_var=input_vars_2000_SF1b,
                 weight_var=input_var_tags,
                 stfips=stfips,
                 code_type="NAN",
@@ -287,13 +287,13 @@ class Test_GeoCrossWalk(unittest.TestCase):
         # testing for triggered errors
         with self.assertRaises(RuntimeError):
             observed_xwalk = nhgisxwalk.GeoCrossWalk(
-                base_xwalk_blk1990_blk2010,
-                source_year=_90,
+                base_xwalk_blk2000_blk2010,
+                source_year=_00,
                 target_year=_10,
                 source_geo=bgp,
                 target_geo=trt,
-                base_source_table=tab_data_path_1990,
-                input_var=input_vars_1990,
+                base_source_table=tab_data_path_2000,
+                input_var=input_vars_2000_SF1b,
                 weight_var=["one", "two"],
                 stfips=stfips,
             )
