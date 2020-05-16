@@ -179,7 +179,7 @@ class GeoCrossWalk:
     
     
     
-    
+    ################################################################################### 2000 - 2010 bgp-trt
     
     
     
@@ -413,6 +413,11 @@ def calculate_atoms(
         All intersections between ``source`` and ``target`` geographies, and 
         the interpolated weight calculations for the propotion of
         source area attributes that are in the target area.
+    
+    Notes
+    -----
+    
+    See example 1 in the ``GeoCrossWalk`` Examples section.
     
     """
 
