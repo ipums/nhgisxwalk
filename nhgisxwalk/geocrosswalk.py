@@ -10,8 +10,7 @@ TO DO:
 """
 
 
-from .id_codes import bgp_id, trt_id, id_from, id_code_components
-from .id_codes import code_cols, _add_ur_code_blk2000
+from .id_codes import code_cols, bgp_id, trt_id, id_from, id_code_components
 
 import numpy
 import pandas
@@ -305,9 +304,11 @@ class GeoCrossWalk:
         data_types = str_types(self.base_source_id_components["Variable"])
         tab_df = pandas.read_csv(self.base_source_table, dtype=data_types)
 
-        # special case for 2000 blocks (of 2000 bgp)-- needs Urban/Rural code
-        if self.base_source_geo == "blk" and self.source == "bgp2000":
-            tab_df = _add_ur_code_blk2000(tab_df)
+        # Special case for 2000 blocks (of 2000 bgp)-- needs Urban/Rural code
+        # For more details see:
+        # https://gist.github.com/jGaboardi/36c7640af1f228cdc8a691505262e543
+        # and
+        # nhgisxwalk/notebooks/build_subset.ipynb
 
         # do left merge
         self.base = pandas.merge(
