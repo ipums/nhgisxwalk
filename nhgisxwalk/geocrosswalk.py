@@ -128,7 +128,7 @@ class GeoCrossWalk:
     Examples
     --------
     
-    Ex. 1: Instantiate the example data and calculate an atomic crosswalk.
+    **Ex. 1:** Instantiate the example data and calculate an atomic crosswalk.
     
     >>> import nhgisxwalk
     >>> df = nhgisxwalk.example_crosswalk_data()
@@ -173,16 +173,97 @@ class GeoCrossWalk:
     block group parts and the 2010 census tracts with varying population
     and household proportional weights.
     
-    Ex. 2: Instantiate the example data and calculate atomic crosswalk.
+    **Ex. 2:** Generate an empirical crosswalk between block group parts from
+    the 2000 Decennial Census and tracts from the 2010 Decennial Census.
     
     >>> import nhgisxwalk
     
+    Set the source and target years to 2000 and 2010, respectively.
     
+    >>> source_year, target_year = "2000", "2010"
     
+    Read in the base unit crosswalk. This is the crosswalk that is used
+    to build up the source and and target units from the source and and target
+    years. Currently supported base crosswalks are 1990-2010 blocks and
+    2000-2010 blocks, which can be downloaded from
+    `NHGIS <https://github.com/jGaboardi/nhgisxwalk/wiki/FAQ-&-Resources#where-can-i-download-the-base-geographic-crosswalks>`_.
+    The versions found within ``nhgisxwalk`` (see 
+    `./testing_data_subsets/ <https://github.com/jGaboardi/nhgisxwalk/tree/master/testing_data_subsets>`_)
+    are single state subsets (Delaware) for testing and demonstration purposes.
     
+    >>> subset_data_dir = "./testing_data_subsets"
+    >>> base_xwalk_name = "/nhgis_blk%s_blk%s_gj.csv.zip" % (source_year, target_year)
+    >>> base_xwalk_file = subset_data_dir + base_xwalk_name
+    >>> data_types = nhgisxwalk.str_types(["GJOIN%s"%source_year, "GJOIN%s"%target_year])
+    >>> base_xwalk = pandas.read_csv(base_xwalk_file, index_col=0, dtype=data_types)
+    >>> base_xwalk.head()
+                GJOIN2000           GJOIN2010    WEIGHT     PAREA
+    0  G10000100401001000  G10000100401001000  1.000000  1.000000
+    1  G10000100401001001  G10000100401001001  0.999981  0.999988
+    2  G10000100401001001  G10000100401001003  0.000019  0.000012
+    3  G10000100401001002  G10000100401001002  1.000000  1.000000
+    4  G10000100401001003  G10000100401001003  1.000000  1.000000
     
+    This base unit crosswalk shows the areal portion (``WEIGHT``) of the
+    source units (``GJOIN2000``) in the target units (``GJOIN2010``).
+    For example, the vast majority of 2000 block ``G10000100401001001``
+    intersects with 2010 block ``G10000100401001001``, but a minute portion
+    intersects with 2010 block ``G10000100401001003``.
+    Next, use the shorthand lookup tool for geography abbreviations and set
+    the source and target geographies to ``bgp`` and ``trt``, respectively.
     
+    >>> nhgisxwalk.valid_geo_shorthand(shorthand_name=False)
+    {'block': 'blk', 'block group part': 'bgp', 'block group': 'bkg', 'tract': 'trt', 'county': 'cty'}
+    >>> source_geog, target_geog = "bgp", "trt"
     
+    Select the Persons and Families variables with the lookup tool
+    for the 2000 Summary File 1b (``desc_code_2000_SF1b``), and set
+    column tags for the weights to be interpolated.
+    
+    >>> input_vars = [
+    ...    nhgisxwalk.desc_code_2000_SF1b["Persons"]["Total"],
+    ...    nhgisxwalk.desc_code_2000_SF1b["Families"]["Total"],
+    ... ]
+    >>> input_vars
+    ['FXS001', 'F2V001']
+    >>> input_var_tags = ["pop", "fam"]
+    
+    At this point an ``nhgisxwalk.GeoCrossWalk`` object can be instantiated,
+    which will be a state-level crosswalk for Delaware (state FIPS code 10).
+    
+    >>> subset_state = "10"
+    >>> bgp2000_to_trt2010 = nhgisxwalk.GeoCrossWalk(
+    ...     base_xwalk,
+    ...     source_year=source_year,
+    ...     target_year=target_year,
+    ...     source_geo=source_geog,
+    ...     target_geo=target_geog,
+    ...     base_source_table=subset_data_dir+"/2000_block.csv.zip",
+    ...     input_var=input_vars,
+    ...     weight_var=input_var_tags,
+    ...     stfips=subset_state
+    ... )
+    >>> bgp2000_to_trt2010.xwalk[1020:1031]
+                             bgp2000         trt2010    wt_pop    wt_fam
+    1020  G10000509355299999051301U2  G1000050051301  1.000000  1.000000
+    1021  G10000509355299999051302R1  G1000050051302  1.000000  1.000000
+    1022  G10000509355299999051302R2  G1000050051302  1.000000  1.000000
+    1023  G10000509355299999051302U1  G1000050051302  1.000000  1.000000
+    1024  G10000509355299999051303R1  G1000050051303  1.000000  1.000000
+    1025  G10000509355299999051303U1  G1000050051303  1.000000  1.000000
+    1026  G10000509355299999051304R1  G1000050051305  0.680605  0.633909
+    1027  G10000509355299999051304R1  G1000050051306  0.319167  0.365782
+    1028  G10000509355299999051304R1  G1000050051400  0.000227  0.000309
+    1029  G10000509355299999051304R2  G1000050051305  0.802661  0.817568
+    1030  G10000509355299999051304R2  G1000050051306  0.197339  0.182432
+    
+    The above slice of the generated crosswalk provides two key insights.
+    First, the initial 6 atoms show that the corresponding 2000 block group
+    parts nest entirely within the intersecting 2010 tracts. However, the
+    following 5 atoms partially intersect to varying degrees. Second,
+    the proportional weight for each variable will likely differ based on
+    the counts used for interpolation. This is the reason why a single
+    weighted portion can't be used for all variables.
     
     """
 
@@ -413,6 +494,11 @@ def calculate_atoms(
         All intersections between ``source`` and ``target`` geographies, and 
         the interpolated weight calculations for the propotion of
         source area attributes that are in the target area.
+    
+    Notes
+    -----
+    
+    See example 1 in the ``GeoCrossWalk`` Examples section.
     
     """
 
