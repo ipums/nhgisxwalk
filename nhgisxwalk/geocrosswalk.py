@@ -216,18 +216,17 @@ class GeoCrossWalk:
     {'block': 'blk', 'block group part': 'bgp', 'block group': 'bkg', 'tract': 'trt', 'county': 'cty'}
     >>> source_geog, target_geog = "bgp", "trt"
     
-    Select Persons, Families, Households, and Housing Units the variable
-    lookup tool, and set column tags for the weights to be interpolated.
+    Select the Persons and Families variables with the lookup tool
+    for the 2000 Summary File 1b (``desc_code_2000_SF1b``), and set
+    column tags for the weights to be interpolated.
     
     >>> input_vars = [
     ...    nhgisxwalk.desc_code_2000_SF1b["Persons"]["Total"],
     ...    nhgisxwalk.desc_code_2000_SF1b["Families"]["Total"],
-    ...    nhgisxwalk.desc_code_2000_SF1b["Households"]["Total"],
-    ...    nhgisxwalk.desc_code_2000_SF1b["Housing Units"]["Total"]
     ... ]
     >>> input_vars
-    ['FXS001', 'F2V001', 'FY4001', 'FV5001']
-    >>> input_var_tags = ["pop", "fam", "hh", "hu"]
+    ['FXS001', 'F2V001']
+    >>> input_var_tags = ["pop", "fam"]
     
     At this point an ``nhgisxwalk.GeoCrossWalk`` object can be instantiated,
     which will be a state-level crosswalk for Delaware (state FIPS code 10).
@@ -245,18 +244,18 @@ class GeoCrossWalk:
     ...     stfips=subset_state
     ... )
     >>> bgp2000_to_trt2010.xwalk[1020:1031]
-                             bgp2000         trt2010    wt_pop    wt_fam     wt_hh     wt_hu
-    1020  G10000509355299999051301U2  G1000050051301  1.000000  1.000000  1.000000  1.000000
-    1021  G10000509355299999051302R1  G1000050051302  1.000000  1.000000  1.000000  1.000000
-    1022  G10000509355299999051302R2  G1000050051302  1.000000  1.000000  1.000000  1.000000
-    1023  G10000509355299999051302U1  G1000050051302  1.000000  1.000000  1.000000  1.000000
-    1024  G10000509355299999051303R1  G1000050051303  1.000000  1.000000  1.000000  1.000000
-    1025  G10000509355299999051303U1  G1000050051303  1.000000  1.000000  1.000000  1.000000
-    1026  G10000509355299999051304R1  G1000050051305  0.680605  0.633909  0.657366  0.659502
-    1027  G10000509355299999051304R1  G1000050051306  0.319167  0.365782  0.342282  0.340111
-    1028  G10000509355299999051304R1  G1000050051400  0.000227  0.000309  0.000352  0.000387
-    1029  G10000509355299999051304R2  G1000050051305  0.802661  0.817568  0.820896  0.836237
-    1030  G10000509355299999051304R2  G1000050051306  0.197339  0.182432  0.179104  0.163763
+                             bgp2000         trt2010    wt_pop    wt_fam
+    1020  G10000509355299999051301U2  G1000050051301  1.000000  1.000000
+    1021  G10000509355299999051302R1  G1000050051302  1.000000  1.000000
+    1022  G10000509355299999051302R2  G1000050051302  1.000000  1.000000
+    1023  G10000509355299999051302U1  G1000050051302  1.000000  1.000000
+    1024  G10000509355299999051303R1  G1000050051303  1.000000  1.000000
+    1025  G10000509355299999051303U1  G1000050051303  1.000000  1.000000
+    1026  G10000509355299999051304R1  G1000050051305  0.680605  0.633909
+    1027  G10000509355299999051304R1  G1000050051306  0.319167  0.365782
+    1028  G10000509355299999051304R1  G1000050051400  0.000227  0.000309
+    1029  G10000509355299999051304R2  G1000050051305  0.802661  0.817568
+    1030  G10000509355299999051304R2  G1000050051306  0.197339  0.182432
     
     The above slice of the generated crosswalk provides two key insights.
     First, the initial 6 atoms show that the corresponding 2000 block group
