@@ -3,6 +3,13 @@
 \usepackage[left=2.50cm, right=2.50cm, top=2.50cm, bottom=2.50cm]{geometry}
 \usepackage{enumitem}
 \usepackage{bm}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,
+    urlcolor=cyan,
+}
 
 \title{General Crosswalk Construction Framework}
 \author{Jonathon Schroeder and James Gaboardi}
@@ -82,7 +89,7 @@ Generate a crosswalk $\bm{X_{\mathbf{ST}}}$ ...
     \item Else if possible, derive $\mathbf{S}$ identifiers from source sub-zone data from step 2.
     \item Else, obtain identifiers through other means...
       \begin{enumerate}
-      \item 1990 block-group parts require some special handling because neither 4a nor 4b pertain to all BGPs.
+      \item 1990 block-group parts require some \href{https://github.com/jGaboardi/nhgisxwalk/blob/master/resources/handling-1990-no-data-blocks-in-crosswalks.pdf}{special handling} because neither 4a nor 4b pertain to all BGPs.
       \item If we generate crosswalks for target zones that cannot be identified from block IDs (e.g., places, county subdivisions, etc.), we'll need to add a step to join block crosswalk to target-year block data that includes identifiers for the target zones.
      \end{enumerate}
    \item Where $\bm{s^\prime}$ is \textit{null} (= ``''), omit these dummy sub-zone atoms from subsequent computations.
