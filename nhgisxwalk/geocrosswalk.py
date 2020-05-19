@@ -75,9 +75,8 @@ class GeoCrossWalk:
         census year.
     
     code_type : str
-        Either ``gj`` for the GISJOIN (NHGIS) code formatting or ``ge`` for
-        the original census GEOID code formatting. Default is ``gj``. For more
-        information see the specifics of the
+        Only ``gj`` for the GISJOIN (NHGIS) code formatting is supported.
+        For more information see the specifics of the
         `technical details <https://www.nhgis.org/user-resources/geographic-crosswalks#details>`_.
     
     stfips : str
@@ -111,9 +110,6 @@ class GeoCrossWalk:
     
     wt : str
         See ``weight`` parameter.
-    
-    nhgis : bool
-        See the ``code_type`` parameter.
     
     source_id_components : pandas.DataFrame
         The ``source`` result from ``id_codes.id_code_components()``.
@@ -247,17 +243,17 @@ class GeoCrossWalk:
     ... )
     >>> bgp2000_to_trt2010.xwalk[1020:1031]
                              bgp2000         trt2010    wt_pop    wt_fam
-    1020  G10000509355299999051301U2  G1000050051301  1.000000  1.000000
-    1021  G10000509355299999051302R1  G1000050051302  1.000000  1.000000
-    1022  G10000509355299999051302R2  G1000050051302  1.000000  1.000000
-    1023  G10000509355299999051302U1  G1000050051302  1.000000  1.000000
-    1024  G10000509355299999051303R1  G1000050051303  1.000000  1.000000
-    1025  G10000509355299999051303U1  G1000050051303  1.000000  1.000000
-    1026  G10000509355299999051304R1  G1000050051305  0.680605  0.633909
-    1027  G10000509355299999051304R1  G1000050051306  0.319167  0.365782
-    1028  G10000509355299999051304R1  G1000050051400  0.000227  0.000309
-    1029  G10000509355299999051304R2  G1000050051305  0.802661  0.817568
-    1030  G10000509355299999051304R2  G1000050051306  0.197339  0.182432
+    1020  G10000509355299999051302R1  G1000050051302  1.000000  1.000000
+    1021  G10000509355299999051302R2  G1000050051302  1.000000  1.000000
+    1022  G10000509355299999051302U1  G1000050051302  1.000000  1.000000
+    1023  G10000509355299999051303R1  G1000050051303  1.000000  1.000000
+    1024  G10000509355299999051303U1  G1000050051303  1.000000  1.000000
+    1025  G10000509355299999051304R1  G1000050051305  0.680605  0.633909
+    1026  G10000509355299999051304R1  G1000050051306  0.319167  0.365782
+    1027  G10000509355299999051304R1  G1000050051400  0.000227  0.000309
+    1028  G10000509355299999051304R2  G1000050051305  0.802661  0.817568
+    1029  G10000509355299999051304R2  G1000050051306  0.197339  0.182432
+    1030  G10000509355299999051304U2  G1000050051305  0.530658  0.557464
     
     The above slice of the generated crosswalk provides two key insights.
     First, the initial 6 atoms show that the corresponding 2000 block group
@@ -300,17 +296,11 @@ class GeoCrossWalk:
         self.input_var, self.weight_var = input_var, weight_var
         self.base_weight = base_weight
         self.wt = weight_prefix
-        # set for gj (nhgis ID) vs. ge (census ID)
+        # set for gj (nhgis ID)
         self.code_type = code_type
-        self.nhgis = True if self.code_type == "gj" else False
         if self.code_type == "gj":
             self.code_label = "GJOIN"
             self.tabular_code_label = "GISJOIN"
-        elif self.code_type == "ge":
-            self.code_label = "GEOID"
-            self.tabular_code_label = self.code_label
-            msg = "%s functionality is not currently supported." % self.code_label
-            raise RuntimeError(msg)
         else:
             msg = "%s is not a recognized `code_type`." % self.code_type
             raise RuntimeError(msg)
@@ -417,13 +407,12 @@ class GeoCrossWalk:
         if geog == "bgp":
             cols, func = code_cols(geog, year), bgp_id
             args = self.base, cols
-            self.base = func(*args, cname=cname, nhgis=self.nhgis)
+            self.base = func(*args, cname=cname)
         else:
             if id_type == "source" and geog == "blk":
                 raise AttributeError()
             func = id_generators["%s_id" % geog]
-            args = func, year, self.base[base_col], self.nhgis, vect
-            self.base[cname] = id_from(*args)
+            self.base[cname] = id_from(func, year, self.base[base_col], vect)
 
     def xwalk_to_csv(self, loc="", fext=".zip"):
         """Write the produced crosswalk to .csv.zip."""

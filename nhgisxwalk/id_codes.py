@@ -12,6 +12,10 @@ def code_cols(geog, year):
     """Geography ID coded columns.  ############################################# This maybe only needs to support BGP...
                                     ############################################# All other geography IDs can easily
                                     ############################################# be obtained...
+                                    
+                                    ############################################# maybe not true...
+                                    ############################################# Will support more complex and 
+                                    ############################################# backwards crosswalks in the future.
     
     Parameters
     ----------
@@ -36,13 +40,26 @@ def code_cols(geog, year):
 
     if geog == "bgp":
         if year == "1990":
+            # Geographic level (598_103):
+            #       Block Group by:
+            #                   State--
+            #                   County--
+            #                   County Subdivision--
+            #                   Place/Remainder--
+            #                   Census Tract--
+            #                   Congressional District (1993-1995, 103rd Congress)--    # Should be Congressional District (101st)
+            #                   American Indian/Alaska Native Area/Remainder--
+            #                   Reservation/Trust Lands/Remainder--
+            #                   Alaska Native Regional Corporation/Remainder--
+            #                   Urbanized Area/Remainder--
+            #                   Urban/Rural
             cols = [
                 "STATEA",
                 "COUNTYA",
                 "CTY_SUBA",
                 "PLACEA",
                 "TRACTA",
-                "CDA",  ###################################### swap out "CD103A"
+                "CDA",  ######################################################### swap out "CD103A"
                 "AIANHHA",
                 "RES_TRSTA",
                 "ANRCA",
@@ -51,7 +68,14 @@ def code_cols(geog, year):
                 "BLCK_GRPA",
             ]
         if year == "2000":
-            # Geographic level: Block Group (by State--County--County Subdivision--Place/Remainder--Census Tract--Urban/Rural)
+            # Geographic level (_90):
+            #       Block Group by:
+            #                   State--
+            #                   County--
+            #                   County Subdivision--
+            #                   Place/Remainder--
+            #                   Census Tract--
+            #                   Urban/Rural
             cols = [
                 "STATEA",
                 "COUNTYA",
@@ -65,15 +89,54 @@ def code_cols(geog, year):
     return cols
 
 
-def blk_id():
-    """######################################################################### Probably don't need this?
+def gisjoin_id(record, component_order, trailing_zeros):
+    """GISJOIN ID generator. Add 'G' and trailing zeros.
+    See `GISJOIN identifiers <https://www.nhgis.org/user-resources/geographic-crosswalks>`_.
+    
+    Parameters
+    ----------
+    
+    record : namedtuple
+        A single record instance of a ``pandas.DataFrame``.
+    
+    component_order : list
+         The correct ordering of columns to create the ID.
+    
+    trailing_zeros : list
+        The specific columns to add a trailing zero.
+    
+    Returns
+    -------
+    
+    _id : str, numpy.nan
+        The GISJOIN version of a census geography ID if the geography
+        exists, otherwise ``numpy.nan``.
+    
     """
 
-    pass
+    endex = -1
+    vend = getattr(record, component_order[endex])
+    # if the block ID isn't in the summary data
+    if str(vend) == "nan":
+        _id = vend
+    else:
+        # G prefix for GISJOIN
+        join_id_vals = ["G"]
+        for co in component_order[:endex]:
+            v = getattr(record, co)
+            # add trailing zero for NHGIS
+            if co in trailing_zeros:
+                v += "0"
+            # append ID component to ID list
+            join_id_vals.append(v)
+        # concatenate ID components
+        _id = "".join(join_id_vals + [vend])
+
+    return _id
 
 
-def bgp_id(df, order, cname="_GJOIN", tzero=["STATEA", "COUNTYA"], nhgis=True):
-    """Recreate BGPs GISJOIN/GEOID.
+def blk_id(df, order, cname="GISJOIN", tzero=["STATE", "COUNTY"]):
+    """Recreate BLK GISJOIN ---- Used to extract 2000 block UR codes.
     
     Parameters
     ----------
@@ -85,14 +148,10 @@ def bgp_id(df, order, cname="_GJOIN", tzero=["STATEA", "COUNTYA"], nhgis=True):
         The correct ordering of columns.
     
     cname : str
-        The name for the new column.
+        The name for the new column. Default is 'GISJOIN'.
     
     tzeros : list
-        The columns to add trailing zero. ``nhgis`` must be ``True``.
-    
-    nhgis : bool
-        Set to ``True`` to add 'G' and trailing zeros.
-        See `GISJOIN identifiers <https://www.nhgis.org/user-resources/geographic-crosswalks>`_.
+        The columns to add trailing zero. Default is ['STATE', 'COUNTY'].
     
     Returns
     -------
@@ -102,48 +161,44 @@ def bgp_id(df, order, cname="_GJOIN", tzero=["STATEA", "COUNTYA"], nhgis=True):
     
     """
 
-    def _gjoin(x):
-        """Internal GISJOIN/GEOID generator."""
-
-        # container for ID components
-        join_id_vals = []
-        for o in order:
-
-            # if the val associated with `o` is a numpy.float
-            v = getattr(x, o)
-
-            try:
-                # handle NaN values
-                if not numpy.isnan(v):
-                    _id_val = str(v)
-                else:
-                    _id_val = ""
-
-            # if the val associated with `o` is a str
-            except TypeError:
-                _id_val = str(v)
-
-            # trailing zero for NHGIS
-            if nhgis and o in tzero:
-                _id_val += "0"
-            # append ID component to ID list
-            join_id_vals.append(_id_val)
-
-        id_str = "".join(join_id_vals)
-        if nhgis:
-            # G prefix for GISJOIN and concatentate ID components
-            id_str = "G" + id_str
-
-        return id_str
-
-    # recreate GISJOIN ID (_GJOIN, [or other])
-    df[cname] = [_gjoin(record) for record in df.itertuples()]
-
+    df[cname] = [gisjoin_id(record, order, tzero) for record in df.itertuples()]
     return df
 
 
-def bkg_id(year, _id, nhgis):
+def bgp_id(df, order, cname="_GJOIN", tzero=["STATEA", "COUNTYA"]):
+    """Recreate BGPs GISJOIN ID.
+    
+    Parameters
+    ----------
+    
+    df : pandas.DataFrame
+        The input dataframe.
+    
+    order : list-like
+        The correct ordering of columns.
+    
+    cname : str
+        The name for the new column. Default is '_GJOIN'.
+    
+    tzeros : list
+        The columns to add trailing zero. Default is ['STATEA', 'COUNTYA'].
+    
+    Returns
+    -------
+    
+    df : pandas.DataFrame
+        The input ``df`` with new column.
+    
+    """
+
+    # recreate GISJOIN ID (_GJOIN, [or other])
+    df[cname] = [gisjoin_id(record, order, tzero) for record in df.itertuples()]
+    return df
+
+
+def bkg_id(year, _id):
     """Extract the block group ID from the block ID.
+    See `GISJOIN identifiers <https://www.nhgis.org/user-resources/geographic-crosswalks>`_.
     
     Parameters
     ----------
@@ -153,10 +208,6 @@ def bkg_id(year, _id, nhgis):
     
     _id : str
         The block GISJOIN/GEOID.
-    
-    nhgis : bool
-        Set to ``True`` to add 'G' and trailing zeros.
-        See `GISJOIN identifiers <https://www.nhgis.org/user-resources/geographic-crosswalks>`_.
     
     Returns
     -------
@@ -168,11 +219,12 @@ def bkg_id(year, _id, nhgis):
 
     # 1990 -- Block Group (by State--County--Census Tract)
     block_group_id = None
-    pass
+    pass  #############################################################################################
 
 
-def trt_id(year, _id, nhgis):
+def trt_id(year, _id):
     """Extract the tract ID from the block ID.
+    See `GISJOIN identifiers <https://www.nhgis.org/user-resources/geographic-crosswalks>`_.
     
     Parameters
     ----------
@@ -181,24 +233,18 @@ def trt_id(year, _id, nhgis):
         The census collection year.
     
     _id : str
-        The block GISJOIN/GEOID.
-    
-    nhgis : bool
-        Set to ``True`` to add 'G' and trailing zeros.
-        See `GISJOIN identifiers <https://www.nhgis.org/user-resources/geographic-crosswalks>`_.
+        The block GISJOIN.
     
     Returns
     -------
     
     tract_id : str
-        The tract GISJOIN/GEOID.
+        The tract GISJOIN.
     
     """
 
     if year == "2010":
         indexer = 14
-        if not nhgis:
-            indexer = "?"
         # slice out tract ID
         tract_id = _id[:indexer]
     else:
@@ -212,10 +258,10 @@ def cty_id():
     """
     """
 
-    pass
+    pass  ######################################################################################
 
 
-def id_from(target_func, target_year, source, nhgis, vectorized):
+def id_from(target_func, target_year, source, vectorized):
     """Create target IDs from source IDs.
     
     Parameters
@@ -243,9 +289,9 @@ def id_from(target_func, target_year, source, nhgis, vectorized):
 
     # generate IDs from source geographies to target geographies
     if vectorized:
-        result = numpy.vectorize(target_func)(target_year, source, nhgis)
+        result = numpy.vectorize(target_func)(target_year, source)
     else:
-        result = [target_func(target_year, rec, nhgis) for rec in source]
+        result = [target_func(target_year, rec) for rec in source]
 
     return result
 
