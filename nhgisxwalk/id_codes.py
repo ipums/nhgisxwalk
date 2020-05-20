@@ -59,7 +59,7 @@ def code_cols(geog, year):
                 "CTY_SUBA",
                 "PLACEA",
                 "TRACTA",
-                "CDA",  ######################################################### swap out "CD103A"
+                "CDA",  ################################################################# swap out "CD103A"
                 "AIANHHA",
                 "RES_TRSTA",
                 "ANRCA",
