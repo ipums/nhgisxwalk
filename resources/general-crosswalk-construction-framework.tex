@@ -97,17 +97,17 @@ Generate a crosswalk $\bm{X_{\mathbf{ST}}}$ ...
       \item This may drop some valid $\bm{t}$ from the computations, but step 9 will re-add them if needed.
       \end{enumerate}
    \end{enumerate}
-\item Compute counts for all weighting variables in each sub-zone atom: $\bm{c_{\mathbf{S^\prime T^\prime}}} = \bm{w_{\mathbf{S^\prime T^\prime}}} * \bm{C_{\mathbf{S^\prime}}}$.
-\item Compute counts for all weighting variables in each atom of interest: $\bm{c_{\mathbf{ST}}} = \sum \bm{c_{\mathbf{S^\prime T^\prime}}}$ group by $\mathbf{S}$, $\mathbf{T}$.
+\item Compute counts for all weighting variables in each sub-zone atom: $\mathbf{c_{\mathbf{S^\prime T^\prime}}} = \mathbf{w_{\mathbf{S^\prime T^\prime}}} * \mathbf{C_{\mathbf{S^\prime}}}$.
+\item Compute counts for all weighting variables in each atom of interest: $\mathbf{c_{\mathbf{ST}}} = \sum \mathbf{c_{\mathbf{S^\prime T^\prime}}}$ group by $\mathbf{S}$, $\mathbf{T}$.
   \begin{enumerate}
-  \item Steps 5 \& 6 can be combined into single formula by substituting $\bm{w_{\mathbf{S^\prime T^\prime}}} * \bm{C_{\mathbf{S^\prime}}}$ for $\bm{c_{\mathbf{S^\prime T^\prime}}}$ in step 6.
+  \item Steps 5 \& 6 can be combined into single formula by substituting $\mathbf{w_{\mathbf{S^\prime T^\prime}}} * \mathbf{C_{\mathbf{S^\prime}}}$ for $\mathbf{c_{\mathbf{S^\prime T^\prime}}}$ in step 6.
   \end{enumerate}
-\item Compute counts for all weighting variables in each source zone: $\bm{c_{\mathbf{S}}} = \sum \bm{c_{\mathbf{ST}}}$ group by $\mathbf{S}$.
-\item Compute all weights for all atoms of interest: $\bm{w_{\mathbf{CST}}} = \displaystyle \frac{\bm{c_{st}}}{\bm{c_{s}}}$.
+\item Compute counts for all weighting variables in each source zone: $\mathbf{c_{\mathbf{S}}} = \sum \mathbf{c_{\mathbf{ST}}}$ group by $\mathbf{S}$.
+\item Compute all weights for all atoms of interest: $\mathbf{w_{\mathbf{CST}}} = \displaystyle \frac{\mathbf{c_{st}}}{\mathbf{c_{s}}}$.
   \begin{enumerate}
-  \item If $\bm{c_{s}} = 0$, set $\bm{w_{\mathbf{cst}}} = 0$.
+  \item Where $\bm{c_{s}} = 0$, set all $\bm{w_{\bm{cst}}} = 0$.
   \end{enumerate}
-\item If $\bm{w_{\mathbf{CST}}}$ is missing data for any $\bm{s}$ in $\mathbf{S}$ or $\bm{t}$ in $\mathbf{T}$, add dummy atoms with \textit{null} $\bm{t}$ for non-\textit{null} $\bm{s}$ or \textit{null} $\bm{s}$ for non-\textit{null} $\bm{t}$, and set $\bm{w_{\mathbf{cst}}}$ = 0.
+\item If $\mathbf{w_{\mathbf{CST}}}$ is missing data for any $\bm{s}$ in $\mathbf{S}$ or $\bm{t}$ in $\mathbf{T}$, add dummy atoms with \textit{null} $\bm{t}$ for non-\textit{null} $\bm{s}$ or \textit{null} $\bm{s}$ for non-\textit{null} $\bm{t}$, and for these atoms set all $\bm{w_{\bm{cst}}} = 0$.
 
 \item Export clean, complete file for distribution.
   \begin{enumerate}
