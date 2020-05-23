@@ -108,7 +108,12 @@ Generate a crosswalk $\bm{X_{\mathbf{ST}}}$ ...
   \item Where $\bm{c_{s}} = 0$, set all $\bm{w_{\bm{cst}}} = 0$.
   \end{enumerate}
 \item If $\mathbf{w_{\mathbf{CST}}}$ is missing data for any $\bm{s}$ in $\mathbf{S}$ or $\bm{t}$ in $\mathbf{T}$, add dummy atoms with \textit{null} $\bm{t}$ for non-\textit{null} $\bm{s}$ or \textit{null} $\bm{s}$ for non-\textit{null} $\bm{t}$, and for these atoms set all $\bm{w_{\bm{cst}}} = 0$.
-
+  \begin{enumerate}
+  \item As in step 4, it may not be possible to identify all $\bm{s}$ in $\mathbf{S}$ or $\bm{t}$ in $\mathbf{T}$ from the base sub-zone crosswalk.
+    \begin{enumerate}
+    \item e.g., for 1990 BGPs, obtain complete identifiers from 1990 STF1 BGP-level data.
+    \end{enumerate}
+  \end{enumerate}
 \item Export clean, complete file for distribution.
   \begin{enumerate}
   \item Exact specifications TBD.
