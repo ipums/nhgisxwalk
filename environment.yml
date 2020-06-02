@@ -1,4 +1,4 @@
- name: nhgis_env
+ name: nhgis
  channels:
    - conda-forge
  dependencies:
