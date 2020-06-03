@@ -523,23 +523,13 @@ class GeoCrossWalk:
         )
 
         # drop unneeded weight/area columns (these should all be zero anyway)
-        self.nopop_base = self.nopop_base[
-            [self.supp_source_geo, self.base_source_col, self.base_target_col]
-        ]
+        _id_cols_ = [self.supp_source, self.base_source_col, self.base_target_col]
+        self.nopop_base = self.nopop_base[_id_cols_]
 
         # add target geographic unit ID to the base crosswalk
         self.nopop_base = self.generate_ids(
             "target", vect, supp=True, supp_base=self.nopop_base
         )
-
-        """###############################################################################################
-        
-        source ids
-        
-        
-        target ids
-        
-        """  ###############################################################################################
 
         # Step 2(c) ----------------------------------------------------------------------
         # Drop records with a null value for GJOIN1990 block IDs (if present)
