@@ -200,6 +200,9 @@ def bkg_id(year, _id):
     """Extract the block group ID from the block ID.
     See `GISJOIN identifiers <https://www.nhgis.org/user-resources/geographic-crosswalks>`_.
     
+    The 1990 block group ID is the first character of the block ID, so
+    the GISJOIN ID for a block group is G+state+0+county+0+tract+block[0].
+    
     Parameters
     ----------
     
@@ -218,8 +221,14 @@ def bkg_id(year, _id):
     """
 
     # 1990 -- Block Group (by State--County--Census Tract)
-    block_group_id = None
-    pass  #############################################################################################
+    if year == "1990":
+        len_id = len(_id)
+        if len_id % 2 == 0:
+            indexer = 3
+        else:
+            indexer = 2
+    block_group_id = _id[:-indexer]
+    return block_group_id
 
 
 def trt_id(year, _id):
