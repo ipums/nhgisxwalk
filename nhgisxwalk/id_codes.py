@@ -9,13 +9,7 @@ from io import StringIO
 
 
 def code_cols(geog, year):
-    """Geography ID coded columns.  ############################################# This maybe only needs to support BGP...
-                                    ############################################# All other geography IDs can easily
-                                    ############################################# be obtained...
-                                    
-                                    ############################################# maybe not true...
-                                    ############################################# Will support more complex and 
-                                    ############################################# backwards crosswalks in the future.
+    """Geography ID coded columns.
     
     Parameters
     ----------
@@ -86,7 +80,17 @@ def code_cols(geog, year):
                 "BLCK_GRPA",
             ]
 
+    if geog == "bkg":
+        if year == "1990":
+            cols = ["STATEA", "COUNTYA", "TRACTA", "BLCK_GRPA"]
+
     return cols
+
+
+def generate_atom_id(df, c1, c2, cname):
+    """Generate a single "atom ID" to perform a set difference."""
+    df[cname] = df[c1] + df[c2]
+    return df
 
 
 def gisjoin_id(record, component_order, trailing_zeros):
@@ -196,7 +200,9 @@ def bgp_id(df, order, cname="_GJOIN", tzero=["STATEA", "COUNTYA"]):
     return df
 
 
-def bkg_id(year, _id):
+def bkg_id(
+    year, _id, df=None, order=None, cname="GISJOIN", tzero=["STATEA", "COUNTYA"]
+):
     """Extract the block group ID from the block ID.
     See `GISJOIN identifiers <https://www.nhgis.org/user-resources/geographic-crosswalks>`_.
     
@@ -212,23 +218,46 @@ def bkg_id(year, _id):
     _id : str
         The block GISJOIN/GEOID.
     
+    df : pandas.DataFrame
+        The input dataframe.
+    
+    order : list-like
+        The correct ordering of columns.
+    
+    cname : str
+        The name for the new column. Default is 'GISJOIN'.
+    
+    tzeros : list
+        The columns to add trailing zero. Default is ['STATEA', 'COUNTYA'].
+    
     Returns
     -------
     
     block_group_id : str
         The block group GISJOIN/GEOID.
     
+    df : pandas.DataFrame
+        The input ``df`` with new column.
+    
     """
 
-    # 1990 -- Block Group (by State--County--Census Tract)
-    if year == "1990":
-        len_id = len(_id)
-        if len_id % 2 == 0:
-            indexer = 3
-        else:
-            indexer = 2
-    block_group_id = _id[:-indexer]
-    return block_group_id
+    # scenario 1: map function to each row of dataframe to extract ID
+    if _id:
+        # 1990 -- Block Group (by State--County--Census Tract)
+        if year == "1990":
+            len_id = len(_id)
+            if len_id % 2 == 0:
+                indexer = 3
+            else:
+                indexer = 2
+        block_group_id = _id[:-indexer]
+
+        return block_group_id
+
+    else:
+        # scenario 2: build ID from summary file (whole dataframe)
+        df[cname] = [gisjoin_id(record, order, tzero) for record in df.itertuples()]
+        return df
 
 
 def trt_id(year, _id):
