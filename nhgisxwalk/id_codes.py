@@ -93,6 +93,33 @@ def generate_atom_id(df, c1, c2, cname):
     return df
 
 
+def generate_geoid(in_id):
+    """Convert a GISJOIN ID to a GEOID ID.
+    Note: NOT functional for Block Group Parts (only NHGIS).
+    
+    Parameters
+    ----------
+    
+    in_id : str
+        Input ID from particular year.
+    
+    Returns
+    -------
+    
+    out_id : str or numpy.nan
+        Converted ID.
+    
+    """
+
+    if str(in_id) == "nan":
+        out_id = in_id
+    else:
+        components = [in_id[1:3], in_id[4:7], in_id[8:12], in_id[12:]]
+        out_id = "".join(components)
+
+    return out_id
+
+
 def gisjoin_id(record, component_order, trailing_zeros):
     """GISJOIN ID generator. Add 'G' and trailing zeros.
     See `GISJOIN identifiers <https://www.nhgis.org/user-resources/geographic-crosswalks>`_.
@@ -139,7 +166,7 @@ def gisjoin_id(record, component_order, trailing_zeros):
     return _id
 
 
-def blk_id(df, order, cname="GISJOIN", tzero=["STATE", "COUNTY"]):
+def blk_gj(df, order, cname="GISJOIN", tzero=["STATE", "COUNTY"]):
     """Recreate BLK GISJOIN ---- Used to extract 2000 block UR codes.
     
     Parameters
@@ -169,7 +196,7 @@ def blk_id(df, order, cname="GISJOIN", tzero=["STATE", "COUNTY"]):
     return df
 
 
-def bgp_id(df, order, cname="_GJOIN", tzero=["STATEA", "COUNTYA"]):
+def bgp_gj(df, order, cname="_GJOIN", tzero=["STATEA", "COUNTYA"]):
     """Recreate BGPs GISJOIN ID.
     
     Parameters
@@ -200,7 +227,7 @@ def bgp_id(df, order, cname="_GJOIN", tzero=["STATEA", "COUNTYA"]):
     return df
 
 
-def bkg_id(
+def bkg_gj(
     year, _id, df=None, order=None, cname="GISJOIN", tzero=["STATEA", "COUNTYA"]
 ):
     """Extract the block group ID from the block ID.
@@ -234,7 +261,7 @@ def bkg_id(
     -------
     
     block_group_id : str
-        The block group GISJOIN/GEOID.
+        The block group GISJOIN.
     
     df : pandas.DataFrame
         The input ``df`` with new column.
@@ -260,7 +287,7 @@ def bkg_id(
         return df
 
 
-def trt_id(year, _id):
+def trt_gj(year, _id):
     """Extract the tract ID from the block ID.
     See `GISJOIN identifiers <https://www.nhgis.org/user-resources/geographic-crosswalks>`_.
     
@@ -334,7 +361,7 @@ def id_from(target_func, target_year, source, vectorized):
     return result
 
 
-def id_code_components(year, geo):
+def gj_code_components(year, geo):
     """Fetch the raw-string of the components used to create the specified
     year+geography ID, and return in a dataframe.
     
