@@ -4,11 +4,28 @@
 TO DO:
 
     * v0.0.2
-        * 1990 BGP SF1 file for **ALL** BGP IDS...
-        * ID generator: -- blk_id, bkg_id
         
-        * add geoids ........................................................................................................
+        COMPLETE
+        * ~~1990 BGP SF1 file for **ALL** BGP IDS...~~
+        * ~~ID generator: -- blk_id, bkg_id~~
+        * ~~add geoids~~
+        * ~~account step for 2000 data~~
+        * ~~remove stfips option ? -- maybe leave option to subset finished product~~
         
+        To DO
+        * create delaware subset based on BGPs FOLLOWING national crosswalk creation
+            - 1990
+                -- blk
+                -- also need BGP summary file
+            - 2000
+                -- blk
+            
+            --- compare...
+        
+        * check / update docstrings
+        * update unittests
+        * close out issues / project on GH
+        * v0.0.2 release
         
 """
 
@@ -99,7 +116,7 @@ class GeoCrossWalk:
         Note: 1990 is "PAREA_VIA_BLK00".
     
     stfips : str
-        If a state-level subset is desired, set the state FIPS code.############################################ remove...?
+        If a state-level subset is desired, set the state FIPS code.
     
     add_geoid : bool
         Add in the corresponding Census GEOID (``True``). Default is ``True``.
@@ -177,7 +194,18 @@ class GeoCrossWalk:
     weight_col : str or iterable
         Full weight column names (including prefixes).
         Declared in ``handle_1990_no_data``.
-        
+    
+    supp_geo : str
+        Type of geographic unit needed to determine unpopulated units. Currently
+        this can only be 1990 block groups ('bkg') for determining unpopulated
+        1990 NHGIS block group parts ('bgp').
+    
+    supp_source : str or None
+        The source supplementary unit.
+    
+    supp_target : str or None
+        The target supplementary unit.
+    
     src_unacc : numpy.array
         Unaccounted for / potential source IDs.
         Declared in ``handle_1990_no_data`` or ``accounting``.
@@ -387,14 +415,8 @@ class GeoCrossWalk:
         # path to the tabular data for the base source units
         self.base_source_table = base_source_table
 
-        # if creating a single state subset
-        self.stfips = stfips
-
         # Prepare base for output crosswalk ------------------------------------
         self.base = base
-        # initial subset of national base crosswalk to target state (if desired)
-        if self.stfips:
-            self.subset_target_to_state()
 
         # fetch all components of that constitute various geographic IDs -------
         self.fetch_gj_code_components()
@@ -424,9 +446,9 @@ class GeoCrossWalk:
         # Special case for handling 1990 data, where blocks --------------------
         # without population/housing where excluded from the
         # publicly-released summary files
-        if self.source_year or self.target_year == "1990":
+        if self.source_year == "1990" or self.target_year == "1990":
 
-            if self.source_geo or self.target_geo == "bgp":
+            if self.source_geo == "bgp" or self.target_geo == "bgp":
                 # block group IDs are needed to determine
                 # populated blocks in 1990
                 self.supp_geo = "bkg"
@@ -438,13 +460,11 @@ class GeoCrossWalk:
                     self.supp_source = None
                     self.supp_target = self.supp_geo + self.target_year + self.code_type
 
-                self.supp_geo_table = ""
-
                 # call special function
                 handle_1990_no_data(self, vectorized, supp_source_table, drop_supp_col)
 
             else:
-                raise RuntimeError("This is not functional yet.")
+                raise RuntimeError("Only 'bgp' as is functional.")
 
         # keep only the necessary base columns ---------------------------------
         if drop_base_cols:
@@ -473,6 +493,11 @@ class GeoCrossWalk:
             _id_cols = [c for c in self.xwalk.columns if c not in self.weight_col]
             self.xwalk = self.xwalk[_id_cols + self.weight_col]
 
+        # extract subset of national base crosswalk to target state (if desired)
+        if stfips:
+            self.stfips = stfips
+            self.extract_target_to_state(self.stfips, return_df=False)
+
     def _drop_base_cols(self):
         """Retain only ID columns and original weights in the base crosswalk."""
         retain = [
@@ -485,15 +510,6 @@ class GeoCrossWalk:
         ]
         order = [c for r in retain for c in self.base.columns if c.startswith(r)]
         self.base = self.base[order]
-
-    def subset_target_to_state(self):
-        """Subset a national crosswalk to state-level (within target year)."""
-
-        def _state(rec):
-            """Slice out a particular state by FIPS code."""
-            return rec[1:3] == self.stfips
-
-        self.base = self.base[self.base[self.base_target_col].map(lambda x: _state(x))]
 
     def fetch_gj_code_components(self):
         """Fetch dataframe that describes each component of a geographic unit ID."""
@@ -607,7 +623,9 @@ class GeoCrossWalk:
 
         # Isolate unaccounted for source geographies
         if not hasattr(self, "src_unacc"):
-            raise RuntimeError("Source-Unaccounted not yet determined.")
+            self.src_unacc = numpy.setdiff1d(
+                self.base[self.source].tolist(), self.xwalk[self.source].tolist(),
+            )
 
         # Isolate unaccounted for target geographies
         self.trg_unacc = numpy.setdiff1d(
@@ -615,7 +633,7 @@ class GeoCrossWalk:
         )
 
         # Append unaccounted source and target atoms
-        # last index
+        # start with the last index of the resultant crosswalk
         endex = self.xwalk.index[-1]
         # dict for source and target 'unaccounted for' ids
         unaccounted = {self.source_geo: self.src_unacc, self.target_geo: self.trg_unacc}
@@ -629,6 +647,9 @@ class GeoCrossWalk:
 
         # iterate over {geography_type: unaccounted_for_ids}
         for geo, unaccs in unaccounted.items():
+            # move to the geography type if there are no missing IDs
+            if unaccs.size == 0:
+                continue
             # iterate over each unaccounted for id}
             for idx, unacc in enumerate(unaccs, 1):
                 endex += idx
@@ -642,13 +663,79 @@ class GeoCrossWalk:
                     for c in self.xwalk.columns
                 ]
 
-    def xwalk_to_csv(self, loc="", fext=".zip"):
+    def extract_target_state(self, stfips, return_df=True, from_base=False):
+        """Subset a national crosswalk to state-level (within target year).
+        
+        Parameters
+        ----------
+        
+        stfips : str
+            See the ``stfips`` parameter in ``GeoCrossWalk``.
+            Set to 'nan' to extract geographies with no associated state.
+        
+        return_df : 
+            Return a copy of a state-level (target) crosswalk (``True``).
+            If ``False``, the ``GeoCrossWalk`` is returned with the ``xwalk``
+            attribute as a state-level (target) crosswalk. Default is ``True``.
+        
+        from_base : bool
+            Create a state extraction from the base-level (block) crosswalk
+            (``True``). When ``False`` the resultant crosswalk is subset.
+            Default is ``False``.
+        
+        Returns
+        -------
+        
+        df : pandas.DataFrame
+            A state-level (target) crosswalk.
+        
+        """
+
+        def _state(rec):
+            """Slice out a particular state by FIPS code."""
+            return rec[1:3] == stfips
+
+        if from_base:
+            if not hasattr(self, "base"):
+                msg = "This GeoCrossWalk has no base-level crosswalk. "
+                msg += "Try building the object again with the "
+                msg += "'keep_base' parameter set to True."
+                raise RuntimeError(msg)
+            crxwlk, column = self.base, self.base_target_col
+        else:
+            crxwlk, column = self.xwalk, self.target
+
+        # set NaN (null) extraction condition
+        _nan_ = True if stfips.lower() == "nan" else False
+
+        # set extraction condition
+        condition = crxwlk[column].map(
+            lambda x: _nan_ if str(x) == "nan" else _state(x)
+        )
+
+        if return_df:
+            df = crxwlk[condition].copy()
+            return df
+        else:
+            crxwlk = crxwlk[condition]
+
+    def extract_unique_stfips(self) -> set:
+        """Return a set of unique state FIPS codes."""
+
+        def _state(rec):
+            """Slice out a particular state by FIPS code."""
+            return "nan" if str(rec) == "nan" else rec[1:3]
+
+        unique_stfips = set(self.xwalk[self.target].map(lambda x: _state(x)))
+        return unique_stfips
+
+    def xwalk_to_csv(self, path="", fext=".zip"):
         """Write the produced crosswalk to .csv.zip."""
         if self.stfips:
             self.xwalk_name += "_" + self.stfips
         self.xwalk.to_csv(loc + self.xwalk_name + ".csv" + fext)
 
-    def xwalk_to_pickle(self, loc="", fext=".pkl"):
+    def xwalk_to_pickle(self, path="", fext=".pkl"):
         """Write the produced ``GeoCrossWalk`` object."""
         if self.stfips:
             self.xwalk_name += "_" + self.stfips
@@ -850,7 +937,6 @@ def handle_1990_no_data(geoxwalk, vect, supp_src_tab, drop_supp_col):
 
     # groupby the source and target
     src_trg_cols = [geoxwalk.supp_source, geoxwalk.target]
-
     nod_xwalk = geoxwalk.nopop_base.groupby(src_trg_cols).size().reset_index()
     geoxwalk.nod_xwalk = nod_xwalk[src_trg_cols]
 
