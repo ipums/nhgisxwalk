@@ -8,8 +8,9 @@ import pandas
 import nhgisxwalk
 
 # use sample data for all empirical tests
-data_dir = "./testing_data_subsets/"
+data_dir = "./testing_data_subsets"
 tabular_data_path = data_dir + "/%s_block.csv.zip"
+supplement_data_path_90 = data_dir + "/%s_blck_grp_598_103.csv.zip"
 
 # shorthand for geographies
 blk, bgp, bkg, trt, cty = "blk", "bgp", "bkg", "trt", "cty"
@@ -43,6 +44,8 @@ input_vars_1990 = [
 ]
 # empirical tabular data path
 tab_data_path_1990 = tabular_data_path % _90
+# supplementary empirical tabular data path (only for 1990)
+supplement_data_path_90 = tabular_data_path % _90
 
 # 2000 blocks to 2010 blocks ---------------------------------------------------
 base_xwalk_blk2000_blk2010 = fetch_base_xwalk(blk, blk, _00, _10)
