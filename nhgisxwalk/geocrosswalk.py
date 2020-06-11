@@ -23,6 +23,8 @@ TO DO:
             --- compare...
         
         * check / update docstrings
+        * check / update doctests
+        * check / update notebooks
         * update unittests
         * close out issues / project on GH
         * v0.0.2 release
@@ -390,6 +392,14 @@ class GeoCrossWalk:
         self.source_year, self.target_year = source_year, target_year
         self.source_geo, self.target_geo = source_geo, target_geo
 
+        # check that supplemental table is declared if 1990 block group parts
+        if self.source_year == "1990" and self.source_geo == "bgp":
+            if not supp_source_table:
+                msg = "The 'supp_source_table' parameter must be declared (and valid) "
+                msg += "when creating a crosswalk sourced from 1990 blocks/block group "
+                msg += "parts. The current value is '%s'." % supp_source_table
+                raise RuntimeError(msg)
+
         # set for gj (nhgis ID)
         self.code_type, self.code_label = "gj", "GJOIN"
         self.tabular_code_label = "GISJOIN"
@@ -493,10 +503,10 @@ class GeoCrossWalk:
             _id_cols = [c for c in self.xwalk.columns if c not in self.weight_col]
             self.xwalk = self.xwalk[_id_cols + self.weight_col]
 
-        # extract subset of national base crosswalk to target state (if desired)
+        # extract a subset of national resultant crosswalk to target state (if desired)
         if stfips:
             self.stfips = stfips
-            self.extract_target_to_state(self.stfips, return_df=False)
+            self.xwalk = self.extract_target_state(self.stfips)
 
     def _drop_base_cols(self):
         """Retain only ID columns and original weights in the base crosswalk."""
@@ -663,7 +673,7 @@ class GeoCrossWalk:
                     for c in self.xwalk.columns
                 ]
 
-    def extract_target_state(self, stfips, return_df=True, from_base=False):
+    def extract_target_state(self, stfips, endpoint="target", from_base=False):
         """Subset a national crosswalk to state-level (within target year).
         
         Parameters
@@ -673,10 +683,9 @@ class GeoCrossWalk:
             See the ``stfips`` parameter in ``GeoCrossWalk``.
             Set to 'nan' to extract geographies with no associated state.
         
-        return_df : 
-            Return a copy of a state-level (target) crosswalk (``True``).
-            If ``False``, the ``GeoCrossWalk`` is returned with the ``xwalk``
-            attribute as a state-level (target) crosswalk. Default is ``True``.
+        endpoint : str
+            Extract from either the ``source`` or ``target`` geography+year.
+            Default is ``target``.
         
         from_base : bool
             Create a state extraction from the base-level (block) crosswalk
@@ -701,9 +710,9 @@ class GeoCrossWalk:
                 msg += "Try building the object again with the "
                 msg += "'keep_base' parameter set to True."
                 raise RuntimeError(msg)
-            crxwlk, column = self.base, self.base_target_col
+            crxwlk, column = self.base, getattr(self, "base_%s_col" % endpoint.lower())
         else:
-            crxwlk, column = self.xwalk, self.target
+            crxwlk, column = self.xwalk, getattr(self, endpoint.lower())
 
         # set NaN (null) extraction condition
         _nan_ = True if stfips.lower() == "nan" else False
@@ -712,21 +721,20 @@ class GeoCrossWalk:
         condition = crxwlk[column].map(
             lambda x: _nan_ if str(x) == "nan" else _state(x)
         )
+        df = crxwlk[condition].copy()
 
-        if return_df:
-            df = crxwlk[condition].copy()
-            return df
-        else:
-            crxwlk = crxwlk[condition]
+        return df
 
-    def extract_unique_stfips(self) -> set:
+    def extract_unique_stfips(self, endpoint="target") -> set:
         """Return a set of unique state FIPS codes."""
 
         def _state(rec):
             """Slice out a particular state by FIPS code."""
             return "nan" if str(rec) == "nan" else rec[1:3]
 
-        unique_stfips = set(self.xwalk[self.target].map(lambda x: _state(x)))
+        unique_stfips = set(
+            self.xwalk[getattr(self, endpoint.lower())].map(lambda x: _state(x))
+        )
         return unique_stfips
 
     def xwalk_to_csv(self, path="", fext=".zip"):
