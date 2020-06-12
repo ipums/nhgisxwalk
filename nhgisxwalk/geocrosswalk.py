@@ -337,6 +337,7 @@ class GeoCrossWalk:
     ...     base_source_table=subset_data_dir+"/2000_block.csv.zip",
     ...     input_var=input_vars,
     ...     weight_var=input_var_tags,
+    ...     add_geoid=True,
     ...     stfips=subset_state
     ... )
     >>> bgp2000_to_trt2010.xwalk[1020:1031]
