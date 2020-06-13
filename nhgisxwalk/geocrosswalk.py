@@ -832,8 +832,7 @@ def calculate_atoms(
         raise RuntimeError(msg)
 
     # add prefix (if desired)
-    if weight_prefix:
-        weight_col = _weight_columns(weight_prefix, weight_var)
+    weight_col = _weight_columns(weight_prefix if weight_prefix else "", weight_var)
 
     if str(overwrite_attrs) != "None":
         overwrite_attrs.input_var = input_var
