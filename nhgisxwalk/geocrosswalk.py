@@ -496,7 +496,7 @@ class GeoCrossWalk:
         # extract a subset of national resultant crosswalk to target state (if desired)
         if stfips:
             self.stfips = stfips
-            self.xwalk = self.extract_target_state(self.stfips)
+            self.xwalk = self.extract_state(self.stfips)
 
     def _drop_base_cols(self):
         """Retain only ID columns and original weights in the base crosswalk."""
@@ -663,7 +663,7 @@ class GeoCrossWalk:
                     for c in self.xwalk.columns
                 ]
 
-    def extract_target_state(self, stfips, endpoint="target", from_base=False):
+    def extract_state(self, stfips, endpoint="target", from_base=False):
         """Subset a national crosswalk to state-level (within target year).
         
         Parameters
