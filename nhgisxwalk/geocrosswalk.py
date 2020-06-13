@@ -63,6 +63,9 @@ class GeoCrossWalk:
     For a description of the algorithmic workflow
     in the 1990 "no data" scenarios see
     `Handling 1990 No-Data Blocks in Crosswalks <https://github.com/jGaboardi/nhgisxwalk/blob/master/resources/handling-1990-no-data-blocks-in-crosswalks.pdf>`_.
+    For more information of the base crosswalks see their
+    `technical details <https://www.nhgis.org/user-resources/geographic-crosswalks#details>`_
+    here.
     
     For further description see:
       * Schroeder, J. P. 2007. Target-density weighting interpolation
@@ -104,11 +107,6 @@ class GeoCrossWalk:
     
     weight_prefix : str
         Optional prefix to add to the weights columns. Default is "wt_".
-    
-    code_type : str
-        Only ``gj`` for the GISJOIN (NHGIS) code formatting is supported.
-        For more information see the specifics of the
-        `technical details <https://www.nhgis.org/user-resources/geographic-crosswalks#details>`_.
     
     base_weight : str
         Name for the weight column in the base crosswalk. Default is "WEIGHT".
@@ -376,7 +374,6 @@ class GeoCrossWalk:
         weight_var=None,
         stfips=None,
         base_source_geo="blk",
-        code_type="gj",
         base_weight="WEIGHT",
         base_parea="PAREA",
         weight_prefix="wt_",

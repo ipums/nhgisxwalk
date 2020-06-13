@@ -169,7 +169,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
             weight_var=input_var_tags,
         )
         ix1, ix2 = 1025, 1029
-        id_cols = ["bgp2000", "trt2010"]
+        id_cols = ["bgp2000gj", "trt2010gj"]
         obs_str_vals = obs_xwalk.xwalk[id_cols][ix1:ix2].values
         wgt_cols = ["wt_pop", "wt_fam", "wt_hh", "wt_hu"]
         obs_num_vals = obs_xwalk.xwalk[wgt_cols][ix1:ix2].values
@@ -207,29 +207,12 @@ class Test_GeoCrossWalk(unittest.TestCase):
             keep_base=False,
         )
         ix1, ix2 = 1025, 1029
-        id_cols = ["bgp2000", "trt2010"]
+        id_cols = ["bgp2000gj", "trt2010gj"]
         obs_str_vals = obs_xwalk.xwalk[id_cols][ix1:ix2].values
         wgt_cols = ["wt_pop", "wt_fam", "wt_hh", "wt_hu"]
         obs_num_vals = obs_xwalk.xwalk[wgt_cols][ix1:ix2].values
         numpy.testing.assert_equal(knw_str_vals, obs_str_vals)
         numpy.testing.assert_allclose(knw_num_vals, obs_num_vals)
-
-    # currently unsupported functionality --------------------------------------
-    def test_xwalk_code_type_ge(self):
-        # testing for triggered errors
-        with self.assertRaises(RuntimeError):
-            observed_xwalk = nhgisxwalk.GeoCrossWalk(
-                base_xwalk_blk1990_blk2010,
-                source_year=_90,
-                target_year=_10,
-                source_geo=bgp,
-                target_geo=trt,
-                base_source_table=tab_data_path_1990,
-                input_var=input_vars_1990,
-                weight_var=input_var_tags,
-                stfips=stfips,
-                code_type="ge",
-            )
 
     # non-year, geography specific ---------------------------------------------
     def test_xwalk_write_read_csv(self):
@@ -269,22 +252,6 @@ class Test_GeoCrossWalk(unittest.TestCase):
         known_values = write_xwalk.xwalk["wt_pop"].values
         observed_values = read_xwalk.xwalk["wt_pop"].values
         numpy.testing.assert_allclose(known_values, observed_values)
-
-    def test_xwalk_code_type_NAN(self):
-        # testing for triggered errors
-        with self.assertRaises(RuntimeError):
-            observed_xwalk = nhgisxwalk.GeoCrossWalk(
-                base_xwalk_blk2000_blk2010,
-                source_year=_00,
-                target_year=_10,
-                source_geo=bgp,
-                target_geo=trt,
-                base_source_table=tab_data_path_2000,
-                input_var=input_vars_2000_SF1b,
-                weight_var=input_var_tags,
-                stfips=stfips,
-                code_type="NAN",
-            )
 
     def test_xwalk_uneven_input(self):
         # testing for triggered errors
