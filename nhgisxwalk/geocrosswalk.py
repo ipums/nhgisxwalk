@@ -11,19 +11,11 @@ TO DO:
         * ~~add geoids~~
         * ~~account step for 2000 data~~
         * ~~remove stfips option ? -- maybe leave option to subset finished product~~
+        * ~~check / update docstrings~~
+        * ~~check / update doctests~~
+        * ~~create delaware subset based on BGPs FOLLOWING national crosswalk creation~~
         
         To DO
-        * create delaware subset based on BGPs FOLLOWING national crosswalk creation
-            - 1990
-                -- blk
-                -- also need BGP summary file
-            - 2000
-                -- blk
-            
-            --- compare...
-        
-        * check / update docstrings
-        * check / update doctests
         * check / update notebooks
         * update unittests
         * close out issues / project on GH
@@ -267,7 +259,7 @@ class GeoCrossWalk:
     block group parts and the 2010 census tracts with varying population
     and household proportional weights.
     
-    **Ex. 2:** Generate an empirical crosswalk between block group parts from .................................................. redo values for examples/doctests
+    **Ex. 2:** Generate an empirical crosswalk between block group parts from
     the 2000 Decennial Census and tracts from the 2010 Decennial Census.
     
     >>> import nhgisxwalk
