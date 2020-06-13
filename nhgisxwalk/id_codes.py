@@ -314,13 +314,16 @@ def trt_gj(year, _id):
     
     """
 
+    if not _id.startswith("G"):
+        raise ValueError("Check the NHGIS prefix of '%s'." % _id)
+
     if year == "2010":
         indexer = 14
         # slice out tract ID
         tract_id = _id[:indexer]
     else:
         msg = "Census year %s is not currently supported." % year
-        raise RuntimeError(msg)
+        raise ValueError(msg)
 
     return tract_id
 

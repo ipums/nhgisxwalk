@@ -678,7 +678,7 @@ class Test_id_codes_functions(unittest.TestCase):
         observed_value = nhgisxwalk.id_codes.generate_geoid(numpy.nan)
         self.assertEqual(numpy.isnan(known_value), numpy.isnan(observed_value))
 
-    def test_generate_geoid_digit_str(self):
+    def test_generate_geoid_digit_int_str(self):
         with self.assertRaises(TypeError):
             nhgisxwalk.id_codes.generate_geoid("1")
 
@@ -686,13 +686,17 @@ class Test_id_codes_functions(unittest.TestCase):
         with self.assertRaises(TypeError):
             nhgisxwalk.id_codes.generate_geoid(1)
 
-    def test_generate_geoid_digit_str(self):
+    def test_generate_geoid_digit_float_str(self):
         with self.assertRaises(TypeError):
             nhgisxwalk.id_codes.generate_geoid("1.1")
 
     def test_generate_geoid_digit_float(self):
         with self.assertRaises(TypeError):
             nhgisxwalk.id_codes.generate_geoid(1.1)
+
+    def test_generate_geoid_digit_unkown_float_str(self):
+        with self.assertRaises(ValueError):
+            nhgisxwalk.id_codes.generate_geoid("1.1.1")
 
     def test_generate_geoid_bad_char_int(self):
         with self.assertRaises(ValueError):
@@ -701,6 +705,14 @@ class Test_id_codes_functions(unittest.TestCase):
     def test_generate_geoid_bad_char_float(self):
         with self.assertRaises(ValueError):
             nhgisxwalk.id_codes.generate_geoid("X1.1")
+
+    def test_trt_gj_no_G(self):
+        with self.assertRaises(ValueError):
+            nhgisxwalk.id_codes.trt_gj("2010", "X1.1")
+
+    def test_trt_gj_no_G(self):
+        with self.assertRaises(ValueError):
+            nhgisxwalk.id_codes.trt_gj("0000", "G123456789123456789")
 
 
 if __name__ == "__main__":
