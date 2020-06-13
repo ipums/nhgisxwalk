@@ -113,6 +113,12 @@ def generate_geoid(in_id):
 
     if str(in_id) == "nan":
         out_id = in_id
+    elif str(in_id).replace(".", "").isdigit():
+        if not str(in_id).replace(".", "", 1).isdigit():
+            raise ValueError("'in_id' has too many decimals to be a float: %s." % in_id)
+        raise TypeError("Check the data type of '%s'." % in_id)
+    elif not in_id.startswith("G"):
+        raise ValueError("Check the NHGIS prefix of '%s'." % in_id)
     else:
         components = [in_id[1:3], in_id[4:7], in_id[8:12], in_id[12:]]
         out_id = "".join(components)

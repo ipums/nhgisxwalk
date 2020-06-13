@@ -170,7 +170,105 @@ class Test_GeoCrossWalk(unittest.TestCase):
         numpy.testing.assert_equal(knw_str_vals, obs_str_vals)
         numpy.testing.assert_allclose(knw_num_vals, obs_num_vals, atol=6)
 
-    ######################################################################################################################
+    def test_xwalk_extract_state_bgp1990_trt2010(self):
+        known_target_nan_xwalk = numpy.empty((0, 7))
+        known_source_nan_xwalk = numpy.array(
+            [[numpy.nan, "G1000050990000", "10005990000", 0.0, 0.0, 0.0, 0.0]],
+            dtype=object,
+        )
+        known_target_nan_base = numpy.empty((0, 6))
+        known_source_nan_base_shape = (149, 6)
+        obs_xwalk = nhgisxwalk.GeoCrossWalk(
+            base_xwalk_blk1990_blk2010,
+            source_year=_90,
+            target_year=_10,
+            source_geo=bgp,
+            target_geo=trt,
+            base_source_table=tab_data_path_1990,
+            supp_source_table=supplement_data_path_90,
+            input_var=input_vars_1990,
+            weight_var=input_var_tags,
+            keep_base=True,
+            stfips=stfips,
+        )
+        obs_target_nan_xwalk = obs_xwalk.extract_state("nan", endpoint="target").values
+        numpy.testing.assert_array_equal(known_target_nan_xwalk, obs_target_nan_xwalk)
+        obs_source_nan_xwalk = obs_xwalk.extract_state("nan", endpoint="source").values
+        numpy.testing.assert_array_equal(
+            known_source_nan_xwalk[0, 0], obs_source_nan_xwalk[0, 0]
+        )
+        numpy.testing.assert_array_equal(
+            known_source_nan_xwalk[0, 1:3], obs_source_nan_xwalk[0, 1:3]
+        )
+        obs_target_nan_base = obs_xwalk.extract_state(
+            "nan", endpoint="target", from_base=True
+        ).values
+        numpy.testing.assert_array_equal(known_target_nan_base, obs_target_nan_base)
+        obs_source_nan_base = obs_xwalk.extract_state(
+            "nan", endpoint="source", from_base=True
+        ).values
+        self.assertEqual(known_source_nan_base_shape, obs_source_nan_base.shape)
+
+    def test_xwalk_extract_state_failure_bgp1990_trt2010(self):
+        with self.assertRaises(RuntimeError):
+            known_target_nan_base = numpy.empty((0, 6))
+            obs_xwalk = nhgisxwalk.GeoCrossWalk(
+                base_xwalk_blk1990_blk2010,
+                source_year=_90,
+                target_year=_10,
+                source_geo=bgp,
+                target_geo=trt,
+                base_source_table=tab_data_path_1990,
+                supp_source_table=supplement_data_path_90,
+                input_var=input_vars_1990,
+                weight_var=input_var_tags,
+                keep_base=False,
+                stfips=stfips,
+            )
+            obs_target_nan_base = obs_xwalk.extract_state(
+                "nan", endpoint="target", from_base=True
+            ).values
+            numpy.testing.assert_array_equal(known_target_nan_base, obs_target_nan_base)
+        with self.assertRaises(RuntimeError):
+            known_source_nan_base = numpy.empty((0, 6))
+            obs_xwalk = nhgisxwalk.GeoCrossWalk(
+                base_xwalk_blk1990_blk2010,
+                source_year=_90,
+                target_year=_10,
+                source_geo=bgp,
+                target_geo=trt,
+                base_source_table=tab_data_path_1990,
+                supp_source_table=supplement_data_path_90,
+                input_var=input_vars_1990,
+                weight_var=input_var_tags,
+                keep_base=False,
+                stfips=stfips,
+            )
+            obs_source_nan_base = obs_xwalk.extract_state(
+                "nan", endpoint="source", from_base=True
+            ).values
+            numpy.testing.assert_array_equal(known_source_nan_base, obs_source_nan_base)
+
+    def test_xwalk_extract_unique_stfips_bgp1990_trt2010(self):
+        known_target_fips = set(["10"])
+        known_source_fips = set(["10", "34", "nan"])
+        obs_xwalk = nhgisxwalk.GeoCrossWalk(
+            base_xwalk_blk1990_blk2010,
+            source_year=_90,
+            target_year=_10,
+            source_geo=bgp,
+            target_geo=trt,
+            base_source_table=tab_data_path_1990,
+            supp_source_table=supplement_data_path_90,
+            input_var=input_vars_1990,
+            weight_var=input_var_tags,
+            keep_base=False,
+            stfips=stfips,
+        )
+        obs_target_fips = obs_xwalk.extract_unique_stfips(endpoint="target")
+        self.assertEqual(known_target_fips, obs_target_fips)
+        obs_source_fips = obs_xwalk.extract_unique_stfips(endpoint="source")
+        self.assertEqual(known_source_fips, obs_source_fips)
 
     # 2000 bgp to 2010 trt through 2000 blk to 2010 blk
     def test_xwalk_full_bgp2000_trt2010(self):
@@ -569,6 +667,40 @@ class Test_upper_level_functions(unittest.TestCase):
         }
         observed_ns = nhgisxwalk.valid_geo_shorthand(shorthand_name=False)
         self.assertEqual(known_ns, observed_ns)
+
+
+class Test_id_codes_functions(unittest.TestCase):
+    def setUp(self):
+        pass
+
+    def test_generate_geoid_nan(self):
+        known_value = numpy.nan
+        observed_value = nhgisxwalk.id_codes.generate_geoid(numpy.nan)
+        self.assertEqual(numpy.isnan(known_value), numpy.isnan(observed_value))
+
+    def test_generate_geoid_digit_str(self):
+        with self.assertRaises(TypeError):
+            nhgisxwalk.id_codes.generate_geoid("1")
+
+    def test_generate_geoid_digit_int(self):
+        with self.assertRaises(TypeError):
+            nhgisxwalk.id_codes.generate_geoid(1)
+
+    def test_generate_geoid_digit_str(self):
+        with self.assertRaises(TypeError):
+            nhgisxwalk.id_codes.generate_geoid("1.1")
+
+    def test_generate_geoid_digit_float(self):
+        with self.assertRaises(TypeError):
+            nhgisxwalk.id_codes.generate_geoid(1.1)
+
+    def test_generate_geoid_bad_char_int(self):
+        with self.assertRaises(ValueError):
+            nhgisxwalk.id_codes.generate_geoid("X1")
+
+    def test_generate_geoid_bad_char_float(self):
+        with self.assertRaises(ValueError):
+            nhgisxwalk.id_codes.generate_geoid("X1.1")
 
 
 if __name__ == "__main__":
