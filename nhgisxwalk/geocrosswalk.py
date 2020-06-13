@@ -739,13 +739,13 @@ class GeoCrossWalk:
         """Write the produced crosswalk to .csv.zip."""
         if self.stfips:
             self.xwalk_name += "_" + self.stfips
-        self.xwalk.to_csv(loc + self.xwalk_name + ".csv" + fext)
+        self.xwalk.to_csv(path + self.xwalk_name + ".csv" + fext)
 
     def xwalk_to_pickle(self, path="", fext=".pkl"):
         """Write the produced ``GeoCrossWalk`` object."""
         if self.stfips:
             self.xwalk_name += "_" + self.stfips
-        with open(self.xwalk_name + fext, "wb") as pkl_xwalk:
+        with open(path + self.xwalk_name + fext, "wb") as pkl_xwalk:
             pickle.dump(self, pkl_xwalk, protocol=2)
 
     @staticmethod

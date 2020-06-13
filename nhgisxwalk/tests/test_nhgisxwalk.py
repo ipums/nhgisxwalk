@@ -270,7 +270,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
 
     def test_xwalk_source_code_blk(self):
         # testing for triggered errors
-        with self.assertRaises(AttributeError):
+        with self.assertRaises(RuntimeError):
             observed_xwalk = nhgisxwalk.GeoCrossWalk(
                 base_xwalk_blk1990_blk2010,
                 source_year=_90,
