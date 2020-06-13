@@ -320,10 +320,10 @@ def trt_gj(year, _id):
 
 
 def cty_id():
-    """
+    """         **** NOT CURRENTLY FUNCTIONAL ****
     """
 
-    pass  ######################################################################################
+    pass
 
 
 def id_from(target_func, target_year, source, vectorized):

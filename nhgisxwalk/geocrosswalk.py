@@ -1,26 +1,4 @@
 """IPUMS/NHGIS Census Crosswalk and Atom Generator
-
-
-TO DO:
-
-    * v0.0.2
-        
-        COMPLETE
-        * ~~1990 BGP SF1 file for **ALL** BGP IDS...~~
-        * ~~ID generator: -- blk_id, bkg_id~~
-        * ~~add geoids~~
-        * ~~account step for 2000 data~~
-        * ~~remove stfips option ? -- maybe leave option to subset finished product~~
-        * ~~check / update docstrings~~
-        * ~~check / update doctests~~
-        * ~~create delaware subset based on BGPs FOLLOWING national crosswalk creation~~
-        
-        To DO
-        * check / update notebooks
-        * update unittests
-        * close out issues / project on GH
-        * v0.0.2 release
-        
 """
 
 from .id_codes import code_cols, generate_atom_id, generate_geoid, id_from
@@ -44,7 +22,7 @@ id_generators = {f.__name__: f for f in id_generator_funcs}
 
 
 class GeoCrossWalk:
-    """ Generate a temporal crosswalk for census geography data and 
+    """Generate a temporal crosswalk for census geography data and 
     built from the smallest intersecting units (atoms). Each row in
     a crosswalk represents a single atom, and comprised of a source
     ID (geo+year), and target ID (geo+year), and at least one column
@@ -783,7 +761,7 @@ def calculate_atoms(
     groupby_cols=None,
     overwrite_attrs=None,
 ):
-    """ Calculate the atoms (intersecting parts) of census geographies
+    """Calculate the atoms (intersecting parts) of census geographies
     and interpolate a proportional weight of the source attribute that
     lies within the target geography.
     
