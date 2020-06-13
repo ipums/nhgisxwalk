@@ -8,8 +8,9 @@ import pandas
 import nhgisxwalk
 
 # use sample data for all empirical tests
-data_dir = "./testing_data_subsets/"
+data_dir = "./testing_data_subsets"
 tabular_data_path = data_dir + "/%s_block.csv.zip"
+supplement_data_path_90 = data_dir + "/%s_blck_grp_598_103.csv.zip"
 
 # shorthand for geographies
 blk, bgp, bkg, trt, cty = "blk", "bgp", "bkg", "trt", "cty"
@@ -43,6 +44,8 @@ input_vars_1990 = [
 ]
 # empirical tabular data path
 tab_data_path_1990 = tabular_data_path % _90
+# supplementary empirical tabular data path (only for 1990)
+supplement_data_path_90 = supplement_data_path_90 % _90
 
 # 2000 blocks to 2010 blocks ---------------------------------------------------
 base_xwalk_blk2000_blk2010 = fetch_base_xwalk(blk, blk, _00, _10)
@@ -59,22 +62,37 @@ tab_data_path_2000 = tabular_data_path % _00
 
 class Test_GeoCrossWalk(unittest.TestCase):
 
-    """
-    # 1990 bgp to 2010 trt through 1990 blk to 2010 blk ------------------------ ############################### will need to redo following NO DATA --Delaware
-    def test_xwalk_full_blk1990_blk2010(self):
+    # 1990 bgp to 2010 trt through 1990 blk to 2010 blk
+    def test_xwalk_full_bgp1990_trt2010(self):
         knw_str_vals = numpy.array(
             [
-                ["G11000105000050000009806989999999884011", "G1100010009811"],
-                ["G11000105000050000009806989999999884012", "G1100010009810"],
-                ["G11000105000050000009806989999999884012", "G1100010009811"],
-                ["G11000105000050000009807989999999884011", "G1100010009807"],
+                [
+                    "G100001090444999990421009999999219012",
+                    "G1000010042100",
+                    "10001042100",
+                ],
+                [
+                    "G100001090444999990421009999999999921",
+                    "G1000010042100",
+                    "10001042100",
+                ],
+                [
+                    "G100001090444999990421009999999999921",
+                    "G1000010042201",
+                    "10001042201",
+                ],
+                [
+                    "G100001090444999990421009999999999922",
+                    "G1000010042100",
+                    "10001042100",
+                ],
             ]
         )
         knw_num_vals = numpy.array(
             [
                 [1.0, 1.0, 1.0, 1.0],
-                [0.41477113, 0.41545353, 0.39687267, 0.39506995],
-                [0.58522887, 0.58454647, 0.60312733, 0.60493005],
+                [0.99766436, 0.99716625, 0.99714829, 0.99727768],
+                [0.00233564, 0.00283375, 0.00285171, 0.00272232],
                 [1.0, 1.0, 1.0, 1.0],
             ]
         )
@@ -85,33 +103,48 @@ class Test_GeoCrossWalk(unittest.TestCase):
             source_geo=bgp,
             target_geo=trt,
             base_source_table=tab_data_path_1990,
+            supp_source_table=supplement_data_path_90,
             input_var=input_vars_1990,
             weight_var=input_var_tags,
         )
-        ix1, ix2 = 688, 692
-        id_cols = ["bgp1990", "trt2010"]
+        ix1, ix2 = 13, 17
+        id_cols = ["bgp1990gj", "trt2010gj", "trt2010ge"]
         obs_str_vals = obs_xwalk.xwalk[id_cols][ix1:ix2].values
         wgt_cols = ["wt_pop", "wt_fam", "wt_hh", "wt_hu"]
         obs_num_vals = obs_xwalk.xwalk[wgt_cols][ix1:ix2].values
         numpy.testing.assert_equal(knw_str_vals, obs_str_vals)
-        numpy.testing.assert_allclose(knw_num_vals, obs_num_vals)
-    """
+        numpy.testing.assert_allclose(knw_num_vals, obs_num_vals, atol=6)
 
-    """
-    def test_xwalk_state_blk1990_blk2010(self): # ------------------------ ############################### will need to redo following NO DATA --Delaware
+    def test_xwalk_state_bgp1990_trt2010(self,):
         knw_str_vals = numpy.array(
             [
-                ["G11000105000050000009806989999999884011", "G1100010009811"],
-                ["G11000105000050000009806989999999884012", "G1100010009810"],
-                ["G11000105000050000009806989999999884012", "G1100010009811"],
-                ["G11000105000050000009807989999999884011", "G1100010009807"],
+                [
+                    "G100001090444999990421009999999219012",
+                    "G1000010042100",
+                    "10001042100",
+                ],
+                [
+                    "G100001090444999990421009999999999921",
+                    "G1000010042100",
+                    "10001042100",
+                ],
+                [
+                    "G100001090444999990421009999999999921",
+                    "G1000010042201",
+                    "10001042201",
+                ],
+                [
+                    "G100001090444999990421009999999999922",
+                    "G1000010042100",
+                    "10001042100",
+                ],
             ]
         )
         knw_num_vals = numpy.array(
             [
                 [1.0, 1.0, 1.0, 1.0],
-                [0.41477113, 0.41545353, 0.39687267, 0.39506995],
-                [0.58522887, 0.58454647, 0.60312733, 0.60493005],
+                [0.99766436, 0.99716625, 0.99714829, 0.99727768],
+                [0.00233564, 0.00283375, 0.00285171, 0.00272232],
                 [1.0, 1.0, 1.0, 1.0],
             ]
         )
@@ -122,37 +155,39 @@ class Test_GeoCrossWalk(unittest.TestCase):
             source_geo=bgp,
             target_geo=trt,
             base_source_table=tab_data_path_1990,
+            supp_source_table=supplement_data_path_90,
             input_var=input_vars_1990,
             weight_var=input_var_tags,
             stfips=stfips,
             vectorized=False,
             keep_base=False,
         )
-        ix1, ix2 = 688, 692
-        id_cols = ["bgp1990", "trt2010"]
+        ix1, ix2 = 13, 17
+        id_cols = ["bgp1990gj", "trt2010gj", "trt2010ge"]
         obs_str_vals = obs_xwalk.xwalk[id_cols][ix1:ix2].values
         wgt_cols = ["wt_pop", "wt_fam", "wt_hh", "wt_hu"]
         obs_num_vals = obs_xwalk.xwalk[wgt_cols][ix1:ix2].values
         numpy.testing.assert_equal(knw_str_vals, obs_str_vals)
-        numpy.testing.assert_allclose(knw_num_vals, obs_num_vals)
-    """
+        numpy.testing.assert_allclose(knw_num_vals, obs_num_vals, atol=6)
+
+    ######################################################################################################################
 
     # 2000 bgp to 2010 trt through 2000 blk to 2010 blk
-    def test_xwalk_full_blk2000_blk2010(self):
+    def test_xwalk_full_bgp2000_trt2010(self):
         knw_str_vals = numpy.array(
             [
-                ["G10000509355299999051303U1", "G1000050051303"],
-                ["G10000509355299999051304R1", "G1000050051305"],
-                ["G10000509355299999051304R1", "G1000050051306"],
-                ["G10000509355299999051304R1", "G1000050051400"],
+                ["G10000509355299999051304R1", "G1000050051305", "10005051305"],
+                ["G10000509355299999051304R1", "G1000050051306", "10005051306"],
+                ["G10000509355299999051304R1", "G1000050051400", "10005051400"],
+                ["G10000509355299999051304R2", "G1000050051305", "10005051305"],
             ]
         )
         knw_num_vals = numpy.array(
             [
-                [1.00000000e00, 1.00000000e00, 1.00000000e00, 1.00000000e00],
                 [6.80605382e-01, 6.33909150e-01, 6.57366450e-01, 6.59501671e-01],
                 [3.19167389e-01, 3.65781711e-01, 3.42281879e-01, 3.40110906e-01],
                 [2.27229039e-04, 3.09138740e-04, 3.51671251e-04, 3.87423412e-04],
+                [8.02660754e-01, 8.17567568e-01, 8.20895522e-01, 8.36236934e-01],
             ]
         )
         obs_xwalk = nhgisxwalk.GeoCrossWalk(
@@ -166,28 +201,28 @@ class Test_GeoCrossWalk(unittest.TestCase):
             weight_var=input_var_tags,
         )
         ix1, ix2 = 1025, 1029
-        id_cols = ["bgp2000", "trt2010"]
+        id_cols = ["bgp2000gj", "trt2010gj", "trt2010ge"]
         obs_str_vals = obs_xwalk.xwalk[id_cols][ix1:ix2].values
         wgt_cols = ["wt_pop", "wt_fam", "wt_hh", "wt_hu"]
         obs_num_vals = obs_xwalk.xwalk[wgt_cols][ix1:ix2].values
         numpy.testing.assert_equal(knw_str_vals, obs_str_vals)
         numpy.testing.assert_allclose(knw_num_vals, obs_num_vals)
 
-    def test_xwalk_state_blk2000_blk2010(self):
+    def test_xwalk_state_bgp2000_trt2010(self):
         knw_str_vals = numpy.array(
             [
-                ["G10000509355299999051303U1", "G1000050051303"],
-                ["G10000509355299999051304R1", "G1000050051305"],
-                ["G10000509355299999051304R1", "G1000050051306"],
-                ["G10000509355299999051304R1", "G1000050051400"],
+                ["G10000509355299999051304R1", "G1000050051305", "10005051305"],
+                ["G10000509355299999051304R1", "G1000050051306", "10005051306"],
+                ["G10000509355299999051304R1", "G1000050051400", "10005051400"],
+                ["G10000509355299999051304R2", "G1000050051305", "10005051305"],
             ]
         )
         knw_num_vals = numpy.array(
             [
-                [1.00000000e00, 1.00000000e00, 1.00000000e00, 1.00000000e00],
                 [6.80605382e-01, 6.33909150e-01, 6.57366450e-01, 6.59501671e-01],
                 [3.19167389e-01, 3.65781711e-01, 3.42281879e-01, 3.40110906e-01],
                 [2.27229039e-04, 3.09138740e-04, 3.51671251e-04, 3.87423412e-04],
+                [8.02660754e-01, 8.17567568e-01, 8.20895522e-01, 8.36236934e-01],
             ]
         )
         obs_xwalk = nhgisxwalk.GeoCrossWalk(
@@ -204,29 +239,100 @@ class Test_GeoCrossWalk(unittest.TestCase):
             keep_base=False,
         )
         ix1, ix2 = 1025, 1029
-        id_cols = ["bgp2000", "trt2010"]
+        id_cols = ["bgp2000gj", "trt2010gj", "trt2010ge"]
         obs_str_vals = obs_xwalk.xwalk[id_cols][ix1:ix2].values
         wgt_cols = ["wt_pop", "wt_fam", "wt_hh", "wt_hu"]
         obs_num_vals = obs_xwalk.xwalk[wgt_cols][ix1:ix2].values
         numpy.testing.assert_equal(knw_str_vals, obs_str_vals)
         numpy.testing.assert_allclose(knw_num_vals, obs_num_vals)
 
-    # currently unsupported functionality --------------------------------------
-    def test_xwalk_code_type_ge(self):
-        # testing for triggered errors
+    def test_xwalk_extract_state_bgp2000_trt2010(self):
+        known_target_nan_xwalk = numpy.empty((0, 7))
+        known_source_nan_xwalk = numpy.empty((0, 7))
+        known_target_nan_base = numpy.empty((0, 6))
+        known_source_nan_base = numpy.empty((0, 6))
+        obs_xwalk = nhgisxwalk.GeoCrossWalk(
+            base_xwalk_blk2000_blk2010,
+            source_year=_00,
+            target_year=_10,
+            source_geo=bgp,
+            target_geo=trt,
+            base_source_table=tab_data_path_2000,
+            input_var=input_vars_2000_SF1b,
+            weight_var=input_var_tags,
+            keep_base=True,
+            stfips=stfips,
+        )
+        obs_target_nan_xwalk = obs_xwalk.extract_state("nan", endpoint="target").values
+        numpy.testing.assert_array_equal(known_target_nan_xwalk, obs_target_nan_xwalk)
+        obs_source_nan_xwalk = obs_xwalk.extract_state("nan", endpoint="source").values
+        numpy.testing.assert_array_equal(known_source_nan_xwalk, obs_source_nan_xwalk)
+        obs_target_nan_base = obs_xwalk.extract_state(
+            "nan", endpoint="target", from_base=True
+        ).values
+        numpy.testing.assert_array_equal(known_target_nan_base, obs_target_nan_base)
+        obs_source_nan_base = obs_xwalk.extract_state(
+            "nan", endpoint="source", from_base=True
+        ).values
+        numpy.testing.assert_array_equal(known_source_nan_base, obs_source_nan_base)
+
+    def test_xwalk_extract_state_failure_bgp2000_trt2010(self):
         with self.assertRaises(RuntimeError):
-            observed_xwalk = nhgisxwalk.GeoCrossWalk(
-                base_xwalk_blk1990_blk2010,
-                source_year=_90,
+            known_target_nan_base = numpy.empty((0, 6))
+            obs_xwalk = nhgisxwalk.GeoCrossWalk(
+                base_xwalk_blk2000_blk2010,
+                source_year=_00,
                 target_year=_10,
                 source_geo=bgp,
                 target_geo=trt,
-                base_source_table=tab_data_path_1990,
-                input_var=input_vars_1990,
+                base_source_table=tab_data_path_2000,
+                input_var=input_vars_2000_SF1b,
                 weight_var=input_var_tags,
+                keep_base=False,
                 stfips=stfips,
-                code_type="ge",
             )
+            obs_target_nan_base = obs_xwalk.extract_state(
+                "nan", endpoint="target", from_base=True
+            ).values
+            numpy.testing.assert_array_equal(known_target_nan_base, obs_target_nan_base)
+        with self.assertRaises(RuntimeError):
+            known_source_nan_base = numpy.empty((0, 6))
+            obs_xwalk = nhgisxwalk.GeoCrossWalk(
+                base_xwalk_blk2000_blk2010,
+                source_year=_00,
+                target_year=_10,
+                source_geo=bgp,
+                target_geo=trt,
+                base_source_table=tab_data_path_2000,
+                input_var=input_vars_2000_SF1b,
+                weight_var=input_var_tags,
+                keep_base=False,
+                stfips=stfips,
+            )
+            obs_source_nan_base = obs_xwalk.extract_state(
+                "nan", endpoint="source", from_base=True
+            ).values
+            numpy.testing.assert_array_equal(known_source_nan_base, obs_source_nan_base)
+
+    def test_xwalk_extract_unique_stfips_bgp2000_trt2010(self):
+        known_target_fips = set(["10"])
+        known_source_fips = set(["10", "34"])
+        obs_xwalk = nhgisxwalk.GeoCrossWalk(
+            base_xwalk_blk2000_blk2010,
+            source_year=_00,
+            target_year=_10,
+            source_geo=bgp,
+            target_geo=trt,
+            base_source_table=tab_data_path_2000,
+            input_var=input_vars_2000_SF1b,
+            weight_var=input_var_tags,
+            keep_base=False,
+            stfips=stfips,
+        )
+        obs_target_fips = obs_xwalk.extract_unique_stfips(endpoint="target")
+        self.assertEqual(known_target_fips, obs_target_fips)
+        obs_source_fips = obs_xwalk.extract_unique_stfips(endpoint="source")
+        self.assertEqual(known_source_fips, obs_source_fips)
 
     # non-year, geography specific ---------------------------------------------
     def test_xwalk_write_read_csv(self):
@@ -267,22 +373,6 @@ class Test_GeoCrossWalk(unittest.TestCase):
         observed_values = read_xwalk.xwalk["wt_pop"].values
         numpy.testing.assert_allclose(known_values, observed_values)
 
-    def test_xwalk_code_type_NAN(self):
-        # testing for triggered errors
-        with self.assertRaises(RuntimeError):
-            observed_xwalk = nhgisxwalk.GeoCrossWalk(
-                base_xwalk_blk2000_blk2010,
-                source_year=_00,
-                target_year=_10,
-                source_geo=bgp,
-                target_geo=trt,
-                base_source_table=tab_data_path_2000,
-                input_var=input_vars_2000_SF1b,
-                weight_var=input_var_tags,
-                stfips=stfips,
-                code_type="NAN",
-            )
-
     def test_xwalk_uneven_input(self):
         # testing for triggered errors
         with self.assertRaises(RuntimeError):
@@ -300,7 +390,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
 
     def test_xwalk_source_code_blk(self):
         # testing for triggered errors
-        with self.assertRaises(AttributeError):
+        with self.assertRaises(RuntimeError):
             observed_xwalk = nhgisxwalk.GeoCrossWalk(
                 base_xwalk_blk1990_blk2010,
                 source_year=_90,

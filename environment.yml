@@ -4,6 +4,7 @@
  dependencies:
    - python=3.7
    - geopandas
+   - descartes
    - ipython
    - jupyter
    - matplotlib

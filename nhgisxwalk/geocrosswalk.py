@@ -1,16 +1,8 @@
 """IPUMS/NHGIS Census Crosswalk and Atom Generator
-
-
-TO DO:
-
-    * v0.0.2
-        * 1990 BGP SF1 file for **ALL** BGP IDS...
-        * ID generator: -- blk_id, bkg_id, cty_id...
-
 """
 
-
-from .id_codes import code_cols, bgp_id, trt_id, id_from, id_code_components
+from .id_codes import code_cols, generate_atom_id, generate_geoid, id_from
+from .id_codes import blk_gj, bgp_gj, bkg_gj, trt_gj, gj_code_components
 
 import numpy
 import pandas
@@ -20,22 +12,30 @@ import pickle
 
 # used to fetch/vectorize ID generation functions
 id_generator_funcs = [
-    # blk_id,
-    bgp_id,
-    # bkg_id,
-    trt_id,
-    # cty_id
+    blk_gj,
+    bgp_gj,
+    bkg_gj,
+    trt_gj,
+    # cty_gj
 ]
 id_generators = {f.__name__: f for f in id_generator_funcs}
 
 
 class GeoCrossWalk:
-    """ Generate a temporal crosswalk for census geography data and 
+    """Generate a temporal crosswalk for census geography data and 
     built from the smallest intersecting units (atoms). Each row in
     a crosswalk represents a single atom, and comprised of a source
     ID (geo+year), and target ID (geo+year), and at least one column
     of weights. The weights are the interpolated proportions of source
     attributes that are are calculated as being within the target units.
+    For a description of the algorithmic workflow see the
+    `General Crosswalk Construction Framework <https://github.com/jGaboardi/nhgisxwalk/blob/master/resources/general-crosswalk-construction-framework.pdf>`_.
+    For a description of the algorithmic workflow
+    in the 1990 "no data" scenarios see
+    `Handling 1990 No-Data Blocks in Crosswalks <https://github.com/jGaboardi/nhgisxwalk/blob/master/resources/handling-1990-no-data-blocks-in-crosswalks.pdf>`_.
+    For more information of the base crosswalks see their
+    `technical details <https://www.nhgis.org/user-resources/geographic-crosswalks#details>`_
+    here.
     
     For further description see:
       * Schroeder, J. P. 2007. Target-density weighting interpolation
@@ -69,28 +69,47 @@ class GeoCrossWalk:
     
     input_var : str or iterable
         Demographic or housing census variables. For currently available
-        variables call ``nhgisxwalk.desc_code_YYYY()`` where YYYY is the 
+        variables call ``nhgisxwalk.desc_code_YYYY()`` where YYYY is the
         census year.
     
-    code_type : str
-        Either ``gj`` for the GISJOIN (NHGIS) code formatting or ``ge`` for
-        the original census GEOID code formatting. Default is ``gj``. For more
-        information see the specifics of the
-        `technical details <https://www.nhgis.org/user-resources/geographic-crosswalks#details>`_.
+    weight_var : str or iterable
+        The column tags to use for the atomic interpolated variables.
+    
+    weight_prefix : str
+        Optional prefix to add to the weights columns. Default is "wt_".
+    
+    base_weight : str
+        Name for the weight column in the base crosswalk. Default is "WEIGHT".
+    
+    base_parea : str
+        Name for the area column in the base crosswalk. Default is "PAREA".
+        Note: 1990 is "PAREA_VIA_BLK00".
     
     stfips : str
         If a state-level subset is desired, set the state FIPS code.
     
-    weight : str
-        The column tags to use for the atomic interpolated variables.
+    add_geoid : bool
+        Add in the corresponding Census GEOID (``True``). Default is ``True``.
+        This options is not available for "bgp" (block group parts).
+        The associated method is ``generate_geoids()``.
     
     keep_base : bool
         Keep the base crosswalk when building of the atomic crosswalk
         is complete (``True``). Default is ``False``.
     
+    drop_base_cols : bool
+        Flag to remove unnecessary columns from the base crosswalk. Default is ``True``.
+    
     vectorized : bool
         Vectorize the ``id_codes.id_from()`` function for (potential)
         speedups (``True``). Default is ``True``.
+    
+    supp_source_table : str
+        The path to the source year's base supplementary tabular data. Default is ``None``.
+        
+    drop_supp_col : bool
+        Drop the supplementary containing ID generated with the 1990 "no data" process.
+        Default is ``True``.
     
     Attributes
     ----------
@@ -110,14 +129,59 @@ class GeoCrossWalk:
     wt : str
         See ``weight`` parameter.
     
-    nhgis : bool
-        See the ``code_type`` parameter.
-    
     source_id_components : pandas.DataFrame
-        The ``source`` result from ``id_codes.id_code_components()``.
+        The ``source`` result from ``id_codes.gj_code_components()``.
     
     target_id_components : pandas.DataFrame
-        The ``target`` result from ``id_codes.id_code_components()``.
+        The ``target`` result from ``id_codes.gj_code_components()``.
+    
+    base_tab_df : pandas.DataFrame
+        Summary file tabular for associated base crosswalk.
+    
+    all_base_ids : numpy.array
+        All source IDs from the base crosswalk. Declared in ``handle_1990_no_data``.
+
+    pop_base_ids : numpy.array
+        Source IDs associated with some population/housing value
+        from the base crosswalk. Declared in ``handle_1990_no_data``.
+        
+    nopop_base_ids : numpy.array
+        Source IDs associated with no population/housing value
+        from the base crosswalk. Declared in ``handle_1990_no_data``.
+        
+    nopop_base : pandas.DataFrame
+        The base-level crosswalk associated with no population/housing value containing
+        composite atoms of smallest units to build larger crosswalk atoms of larger
+        source and target units. Declared in ``handle_1990_no_data``.
+        
+    nod_xwalk : pandas.DataFrame
+        The actual crosswalk associated with no population/housing value 
+        generated between ``source`` and ``target``. Declared in ``handle_1990_no_data``.
+        
+    weight_var : list
+        See ``weight_var`` parameter.
+        
+    weight_col : str or iterable
+        Full weight column names (including prefixes).
+        Declared in ``handle_1990_no_data``.
+    
+    supp_geo : str
+        Type of geographic unit needed to determine unpopulated units. Currently
+        this can only be 1990 block groups ('bkg') for determining unpopulated
+        1990 NHGIS block group parts ('bgp').
+    
+    supp_source : str or None
+        The source supplementary unit.
+    
+    supp_target : str or None
+        The target supplementary unit.
+    
+    src_unacc : numpy.array
+        Unaccounted for / potential source IDs.
+        Declared in ``handle_1990_no_data`` or ``accounting``.
+        
+    trg_unacc : numpy.array
+        Unaccounted for / potential target IDs. Declared in ``accounting``.
     
     Notes
     -----
@@ -241,21 +305,22 @@ class GeoCrossWalk:
     ...     base_source_table=subset_data_dir+"/2000_block.csv.zip",
     ...     input_var=input_vars,
     ...     weight_var=input_var_tags,
+    ...     add_geoid=True,
     ...     stfips=subset_state
     ... )
-    >>> bgp2000_to_trt2010.xwalk[1020:1031]
-                             bgp2000         trt2010    wt_pop    wt_fam
-    1020  G10000509355299999051301U2  G1000050051301  1.000000  1.000000
-    1021  G10000509355299999051302R1  G1000050051302  1.000000  1.000000
-    1022  G10000509355299999051302R2  G1000050051302  1.000000  1.000000
-    1023  G10000509355299999051302U1  G1000050051302  1.000000  1.000000
-    1024  G10000509355299999051303R1  G1000050051303  1.000000  1.000000
-    1025  G10000509355299999051303U1  G1000050051303  1.000000  1.000000
-    1026  G10000509355299999051304R1  G1000050051305  0.680605  0.633909
-    1027  G10000509355299999051304R1  G1000050051306  0.319167  0.365782
-    1028  G10000509355299999051304R1  G1000050051400  0.000227  0.000309
-    1029  G10000509355299999051304R2  G1000050051305  0.802661  0.817568
-    1030  G10000509355299999051304R2  G1000050051306  0.197339  0.182432
+    >>> bgp2000_to_trt2010.xwalk[1020:1031][["bgp2000gj", "trt2010gj", "wt_pop", "wt_fam"]]
+                           bgp2000gj       trt2010gj    wt_pop    wt_fam
+    1020  G10000509355299999051302R1  G1000050051302  1.000000  1.000000
+    1021  G10000509355299999051302R2  G1000050051302  1.000000  1.000000
+    1022  G10000509355299999051302U1  G1000050051302  1.000000  1.000000
+    1023  G10000509355299999051303R1  G1000050051303  1.000000  1.000000
+    1024  G10000509355299999051303U1  G1000050051303  1.000000  1.000000
+    1025  G10000509355299999051304R1  G1000050051305  0.680605  0.633909
+    1026  G10000509355299999051304R1  G1000050051306  0.319167  0.365782
+    1027  G10000509355299999051304R1  G1000050051400  0.000227  0.000309
+    1028  G10000509355299999051304R2  G1000050051305  0.802661  0.817568
+    1029  G10000509355299999051304R2  G1000050051306  0.197339  0.182432
+    1030  G10000509355299999051304U2  G1000050051305  0.530658  0.557464
     
     The above slice of the generated crosswalk provides two key insights.
     First, the initial 6 atoms show that the corresponding 2000 block group
@@ -264,6 +329,25 @@ class GeoCrossWalk:
     the proportional weight for each variable will likely differ based on
     the counts used for interpolation. This is the reason why a single
     weighted portion can't be used for all variables.
+    
+    The corresponding census-assigned GEOIDs are also available within the crosswalk.
+    The block group parts have no corresponding GEOIDs because they are a direct product
+    of the NHHGIS.
+    
+    >>> bgp2000_to_trt2010.xwalk[1020:1031][["bgp2000gj", "trt2010gj", "trt2010ge"]]
+                           bgp2000gj       trt2010gj    trt2010ge
+    1020  G10000509355299999051302R1  G1000050051302  10005051302
+    1021  G10000509355299999051302R2  G1000050051302  10005051302
+    1022  G10000509355299999051302U1  G1000050051302  10005051302
+    1023  G10000509355299999051303R1  G1000050051303  10005051303
+    1024  G10000509355299999051303U1  G1000050051303  10005051303
+    1025  G10000509355299999051304R1  G1000050051305  10005051305
+    1026  G10000509355299999051304R1  G1000050051306  10005051306
+    1027  G10000509355299999051304R1  G1000050051400  10005051400
+    1028  G10000509355299999051304R2  G1000050051305  10005051305
+    1029  G10000509355299999051304R2  G1000050051306  10005051306
+    1030  G10000509355299999051304U2  G1000050051305  10005051305
+    
     
     """
 
@@ -279,69 +363,71 @@ class GeoCrossWalk:
         weight_var=None,
         stfips=None,
         base_source_geo="blk",
-        code_type="gj",
         base_weight="WEIGHT",
+        base_parea="PAREA",
         weight_prefix="wt_",
+        add_geoid=True,
         keep_base=False,
+        drop_base_cols=True,
         vectorized=True,
+        supp_source_table=None,
+        drop_supp_col=True,
     ):
 
         # Set class attributes -------------------------------------------------
         # source and target class attributes
         self.source_year, self.target_year = source_year, target_year
         self.source_geo, self.target_geo = source_geo, target_geo
+
+        # check that supplemental table is declared if 1990 block group parts
+        if self.source_year == "1990" and self.source_geo == "bgp":
+            if not supp_source_table:
+                msg = "The 'supp_source_table' parameter must be declared (and valid) "
+                msg += "when creating a crosswalk sourced from 1990 blocks/block group "
+                msg += "parts. The current value is '%s'." % supp_source_table
+                raise RuntimeError(msg)
+
+        # set for gj (nhgis ID)
+        self.code_type, self.code_label = "gj", "GJOIN"
+        self.tabular_code_label = "GISJOIN"
+
         # source and target names
-        self.source = self.source_geo + self.source_year
-        self.target = self.target_geo + self.target_year
+        self.source = self.source_geo + self.source_year + self.code_type
+        self.target = self.target_geo + self.target_year + self.code_type
         self.xwalk_name = "%s_to_%s" % (self.source, self.target)
+
         # input, summed, and weight variable names
         self.input_var, self.weight_var = input_var, weight_var
         self.base_weight = base_weight
+        self.base_parea = base_parea
         self.wt = weight_prefix
-        # set for gj (nhgis ID) vs. ge (census ID)
-        self.code_type = code_type
-        self.nhgis = True if self.code_type == "gj" else False
-        if self.code_type == "gj":
-            self.code_label = "GJOIN"
-            self.tabular_code_label = "GISJOIN"
-        elif self.code_type == "ge":
-            self.code_label = "GEOID"
-            self.tabular_code_label = self.code_label
-            msg = "%s functionality is not currently supported." % self.code_label
-            raise RuntimeError(msg)
-        else:
-            msg = "%s is not a recognized `code_type`." % self.code_type
-            raise RuntimeError(msg)
+
         # source geographies within the base crosswalk
         self.base_source_geo = base_source_geo
+
         # columns within the base crosswalk
         self.base_source_col = self.code_label + self.source_year
         self.base_target_col = self.code_label + self.target_year
+
         # path to the tabular data for the base source units
         self.base_source_table = base_source_table
 
-        # if creating a single state subset
-        self.stfips = stfips
-
         # Prepare base for output crosswalk ------------------------------------
         self.base = base
-        # initial subset of national base crosswalk to target state (if desired)
-        if self.stfips:
-            self.subset_target_to_state()
 
-        # fetch all components of that constitute various geographic IDs
-        self.fetch_id_code_components()
+        # fetch all components of that constitute various geographic IDs -------
+        self.fetch_gj_code_components()
 
-        # join the (base) source tabular data to the base crosswalk
+        # join the (base) source tabular data to the base crosswalk ------------
         self.join_source_base_tabular()
 
-        # add source geographic unit ID to the base crosswalk
+        # add source geographic unit ID to the base crosswalk ------------------
         self.generate_ids("source", vectorized)
 
-        # add target geographic unit ID to the base crosswalk
+        # add target geographic unit ID to the base crosswalk ------------------
         self.generate_ids("target", vectorized)
 
-        # Create atomic crosswalk
+        # Create atomic crosswalk ----------------------------------------------
         # calculate the source to target atom values
         self.xwalk = calculate_atoms(
             self.base,
@@ -351,39 +437,94 @@ class GeoCrossWalk:
             weight_prefix=self.wt,
             source_id=self.source,
             groupby_cols=[self.source, self.target],
+            overwrite_attrs=self,
         )
 
-        # discard building base if not needed
+        # Special case for handling 1990 data, where blocks --------------------
+        # without population/housing where excluded from the
+        # publicly-released summary files
+        if self.source_year == "1990" or self.target_year == "1990":
+
+            if self.source_geo == "bgp" or self.target_geo == "bgp":
+                # block group IDs are needed to determine
+                # populated blocks in 1990
+                self.supp_geo = "bkg"
+
+                if self.source_geo == "bgp":
+                    self.supp_source = self.supp_geo + self.source_year + self.code_type
+                    self.supp_target = None
+                else:
+                    self.supp_source = None
+                    self.supp_target = self.supp_geo + self.target_year + self.code_type
+
+                # call special function
+                handle_1990_no_data(self, vectorized, supp_source_table, drop_supp_col)
+
+            else:
+                raise RuntimeError("Only 'bgp' as is functional.")
+
+        # keep only the necessary base columns ---------------------------------
+        if drop_base_cols:
+            self._drop_base_cols()
+
+        # Step 9 from the General Workflow -------------------------------------
+        self.accounting()
+
+        # discard building base if not needed ----------------------------------
         if not keep_base:
             del self.base
 
-    def subset_target_to_state(self):
-        """Subset a national crosswalk to state-level (within target year)."""
+        # add column(s) for the original Census GEOID --------------------------
+        # -- this options is not available for "bgp" (block group parts)
+        if add_geoid:
+            for xdir in [self.source, self.target]:
+                if xdir.startswith("bgp"):
+                    continue
+                else:
+                    col = "trt%s" % target_year
+                    self.xwalk[xdir[:-2] + "ge"] = self.xwalk[xdir].map(
+                        lambda x: generate_geoid(x)
+                    )
 
-        def _state(rec):
-            """Slice out a particular state by FIPS code."""
-            return rec[1:3] == self.stfips
+            # reorder columns
+            _id_cols = [c for c in self.xwalk.columns if c not in self.weight_col]
+            self.xwalk = self.xwalk[_id_cols + self.weight_col]
 
-        self.base = self.base[self.base[self.base_target_col].map(lambda x: _state(x))]
+        # extract a subset of national resultant crosswalk to target state (if desired)
+        if stfips:
+            self.stfips = stfips
+            self.xwalk = self.extract_state(self.stfips)
 
-    def fetch_id_code_components(self):
+    def _drop_base_cols(self):
+        """Retain only ID columns and original weights in the base crosswalk."""
+        retain = [
+            self.source,
+            self.base_source_col,
+            self.base_target_col,
+            self.target,
+            self.base_weight,
+            self.base_parea,
+        ]
+        order = [c for r in retain for c in self.base.columns if c.startswith(r)]
+        self.base = self.base[order]
+
+    def fetch_gj_code_components(self):
         """Fetch dataframe that describes each component of a geographic unit ID."""
-        self.base_source_id_components = id_code_components(
+        self.base_source_gj_components = gj_code_components(
             self.source_year, self.base_source_geo
         )
-        self.source_id_components = id_code_components(
+        self.source_gj_components = gj_code_components(
             self.source_year, self.source_geo
         )
-        self.target_id_components = id_code_components(
+        self.target_gj_components = gj_code_components(
             self.target_year, self.target_geo
         )
 
     def join_source_base_tabular(self):
         """Join tabular attributes to base crosswalk."""
-
         # read in national tabular data
-        data_types = str_types(self.base_source_id_components["Variable"])
-        tab_df = pandas.read_csv(self.base_source_table, dtype=data_types)
+        data_types = str_types(self.base_source_gj_components["Variable"])
+        self.base_tab_df = pandas.read_csv(self.base_source_table, dtype=data_types)
 
         # Special case for 2000 blocks (of 2000 bgp)-- needs Urban/Rural code
         # For more details see:
@@ -394,46 +535,206 @@ class GeoCrossWalk:
         # do left merge
         self.base = pandas.merge(
             left=self.base,
-            right=tab_df,
+            right=self.base_tab_df,
             how="left",
             left_on=self.base_source_col,
             right_on=self.tabular_code_label,
             validate="many_to_many",
         )
 
-    def generate_ids(self, id_type, vect):
-        """Add source or target geographic unit ID to the base crosswalk."""
+    def generate_ids(self, id_type, vect, supp=False, supp_base=None, return_df=False):
+        """Add source or target geographic unit ID to the base crosswalk.
+        
+        Parameters
+        ----------
+        
+        id_type : str
+            Either ``source`` or ``target``.
+        
+        vect : bool
+            See the ``vectorized`` parameter in ``GeoCrossWalk``.
+        
+        supp : bool
+            Use the supplementary (unpopulated) base crosswalk. Default is ``False``.
+        
+        supp_base : pandas.DataFrame
+            The supplementary (unpopulated) base crosswalk. See ``self.nopop_base``.
+            Default is ``None``.
+        
+        return_df : bool
+            Set to ``True`` to return ``df`` instead of updating ``self.base``.
+        
+        Returns
+        -------
+        
+        df : pandas.DataFrame
+            The updated crosswalk dataframe.
+        
+        """
+        # set the crosswalk to be used
+        df = supp_base if return_df else self.base
 
         # declare id type-specific variables
         if id_type == "source":
-            cname, year = self.source, self.source_year
-            geog, base_col = self.source_geo, self.base_source_col
+            cname = self.source if not supp else self.supp_source
+            year, geog, base_col = (
+                self.source_year,
+                self.source_geo,
+                self.base_source_col,
+            )
         else:
-            cname, year = self.target, self.target_year
-            geog, base_col = self.target_geo, self.base_target_col
+            cname = self.target if not supp else self.supp_target
+            year, geog, base_col = (
+                self.target_year,
+                self.target_geo,
+                self.base_target_col,
+            )
+
+        # flag supplemental block group parts scenario
+        supp_bgp = supp and geog == "bgp"
+
         # generate IDS
-        if geog == "bgp":
-            cols, func = code_cols(geog, year), bgp_id
-            args = self.base, cols
-            self.base = func(*args, cname=cname, nhgis=self.nhgis)
-        else:
+        if not supp and geog == "bgp":
+            cols, func = code_cols(geog, year), bgp_gj
+            args = df, cols
+            df = func(*args, cname=cname)
+        elif id_type == "target" or supp_bgp:
             if id_type == "source" and geog == "blk":
                 raise AttributeError()
-            func = id_generators["%s_id" % geog]
-            args = func, year, self.base[base_col], self.nhgis, vect
-            self.base[cname] = id_from(*args)
+            func = id_generators[
+                "%s_gj" % geog if not supp else "%s_gj" % self.supp_geo
+            ]
+            df[cname] = id_from(func, year, df[base_col], vect)
+        else:
+            msg = "(id_type: %s, supp: %s, cname: %s, year: %s, geog: %s)"
+            msg = msg % (id_type, supp, cname, year, geog)
+            msg = "Error in generate_ids params: " + msg
+            raise RuntimeError(msg)
 
-    def xwalk_to_csv(self, loc="", fext=".zip"):
+        # return the dataframe for supplementary scenarios
+        if return_df:
+            return df
+
+    def accounting(self):
+        """Step 9 in the General Workflow."""
+
+        # Isolate unaccounted for source geographies
+        if not hasattr(self, "src_unacc"):
+            self.src_unacc = numpy.setdiff1d(
+                self.base[self.source].tolist(), self.xwalk[self.source].tolist(),
+            )
+
+        # Isolate unaccounted for target geographies
+        self.trg_unacc = numpy.setdiff1d(
+            self.base[self.target].tolist(), self.xwalk[self.target].tolist(),
+        )
+
+        # Append unaccounted source and target atoms
+        # start with the last index of the resultant crosswalk
+        endex = self.xwalk.index[-1]
+        # dict for source and target 'unaccounted for' ids
+        unaccounted = {self.source_geo: self.src_unacc, self.target_geo: self.trg_unacc}
+
+        # confirm variable data types
+        if not hasattr(self, "weight_col"):
+            self.weight_var = _check_vars(self.weight_var)
+            self.weight_col = _weight_columns(
+                self.wt if self.wt else "", self.weight_var
+            )
+
+        # iterate over {geography_type: unaccounted_for_ids}
+        for geo, unaccs in unaccounted.items():
+            # move to the geography type if there are no missing IDs
+            if unaccs.size == 0:
+                continue
+            # iterate over each unaccounted for id}
+            for idx, unacc in enumerate(unaccs, 1):
+                endex += idx
+                # append one record to the dataframe
+                self.xwalk.loc[endex] = [
+                    unacc
+                    if c.split("_")[0][:3] == geo
+                    else 0.0
+                    if c in self.weight_col
+                    else numpy.nan
+                    for c in self.xwalk.columns
+                ]
+
+    def extract_state(self, stfips, endpoint="target", from_base=False):
+        """Subset a national crosswalk to state-level (within target year).
+        
+        Parameters
+        ----------
+        
+        stfips : str
+            See the ``stfips`` parameter in ``GeoCrossWalk``.
+            Set to 'nan' to extract geographies with no associated state.
+        
+        endpoint : str
+            Extract from either the ``source`` or ``target`` geography+year.
+            Default is ``target``.
+        
+        from_base : bool
+            Create a state extraction from the base-level (block) crosswalk
+            (``True``). When ``False`` the resultant crosswalk is subset.
+            Default is ``False``.
+        
+        Returns
+        -------
+        
+        df : pandas.DataFrame
+            A state-level (target) crosswalk.
+        
+        """
+
+        def _state(rec):
+            """Slice out a particular state by FIPS code."""
+            return rec[1:3] == stfips
+
+        if from_base:
+            if not hasattr(self, "base"):
+                msg = "This GeoCrossWalk has no base-level crosswalk. "
+                msg += "Try building the object again with the "
+                msg += "'keep_base' parameter set to True."
+                raise RuntimeError(msg)
+            crxwlk, column = self.base, getattr(self, "base_%s_col" % endpoint.lower())
+        else:
+            crxwlk, column = self.xwalk, getattr(self, endpoint.lower())
+
+        # set NaN (null) extraction condition
+        _nan_ = True if stfips.lower() == "nan" else False
+
+        # set extraction condition
+        condition = crxwlk[column].map(
+            lambda x: _nan_ if str(x) == "nan" else _state(x)
+        )
+        df = crxwlk[condition].copy()
+
+        return df
+
+    def extract_unique_stfips(self, endpoint="target") -> set:
+        """Return a set of unique state FIPS codes."""
+
+        def _state(rec):
+            """Slice out a particular state by FIPS code."""
+            return "nan" if str(rec) == "nan" else rec[1:3]
+
+        unique_stfips = set(
+            self.xwalk[getattr(self, endpoint.lower())].map(lambda x: _state(x))
+        )
+        return unique_stfips
+
+    def xwalk_to_csv(self, path="", fext=".zip"):
         """Write the produced crosswalk to .csv.zip."""
         if self.stfips:
             self.xwalk_name += "_" + self.stfips
-        self.xwalk.to_csv(loc + self.xwalk_name + ".csv" + fext)
+        self.xwalk.to_csv(path + self.xwalk_name + ".csv" + fext)
 
-    def xwalk_to_pickle(self, loc="", fext=".pkl"):
+    def xwalk_to_pickle(self, path="", fext=".pkl"):
         """Write the produced ``GeoCrossWalk`` object."""
         if self.stfips:
             self.xwalk_name += "_" + self.stfips
-        with open(self.xwalk_name + fext, "wb") as pkl_xwalk:
+        with open(path + self.xwalk_name + fext, "wb") as pkl_xwalk:
             pickle.dump(self, pkl_xwalk, protocol=2)
 
     @staticmethod
@@ -458,8 +759,9 @@ def calculate_atoms(
     weight_prefix=None,
     source_id=None,
     groupby_cols=None,
+    overwrite_attrs=None,
 ):
-    """ Calculate the atoms (intersecting parts) of census geographies
+    """Calculate the atoms (intersecting parts) of census geographies
     and interpolate a proportional weight of the source attribute that
     lies within the target geography.
     
@@ -487,6 +789,10 @@ def calculate_atoms(
     groupby_cols : list
         The dataframe columns on which to perform groupby.
     
+    overwrite_attrs : None or GeoCrossWalk
+        Setting this parameter to a ``GeoCrossWalk`` object overwrites the
+        ``input_var`` and ``weight_var`` attributes. Default is ``None``.
+    
     Returns
     -------
     
@@ -502,23 +808,27 @@ def calculate_atoms(
     
     """
 
-    if type(input_var) == str:
-        input_var = [input_var]
-    if type(weight_var) == str:
-        weight_var = [weight_var]
+    # confirm variable data types
+    input_var, weight_var = _check_vars(input_var), _check_vars(weight_var)
 
+    # determine length of variable lists
     n_input_var, n_weight_var = len(input_var), len(weight_var)
 
+    # check variable lists are equal length
     if n_input_var != n_weight_var:
         msg = "The 'input_var' and 'weight_var' should be the same length. "
         msg += "%s != %s" % (n_input_var, n_weight_var)
         raise RuntimeError(msg)
 
-    if weight_prefix:
-        weight_var = [weight_prefix + wvar for wvar in weight_var]
+    # add prefix (if desired)
+    weight_col = _weight_columns(weight_prefix if weight_prefix else "", weight_var)
+
+    if str(overwrite_attrs) != "None":
+        overwrite_attrs.input_var = input_var
+        overwrite_attrs.weight_col = weight_col
 
     # iterate over each pair of input/interpolation variables
-    for ix, (ivar, wvar) in enumerate(zip(input_var, weight_var)):
+    for ix, (ivar, wvar) in enumerate(zip(input_var, weight_col)):
 
         # calculate numerators
         df[wvar] = df[weight] * df[ivar]
@@ -540,6 +850,219 @@ def calculate_atoms(
         atoms[wvar].fillna(0.0, inplace=True)
 
     return atoms
+
+
+def handle_1990_no_data(geoxwalk, vect, supp_src_tab, drop_supp_col):
+    """Step 1 in this workflow is handled as a normal case. See the algorithmic workflow in
+    `Handling 1990 No-Data Blocks in Crosswalks <https://github.com/jGaboardi/nhgisxwalk/blob/master/resources/handling-1990-no
+    
+    Parameters
+    ----------
+    
+    geoxwalk : nhgisxwalk.GeoCrossWalk
+        A full crosswalk object.
+    
+    vect : bool
+        See ``vectorized`` parameter in ``GeoCrossWalk.__init__``.
+    
+    supp_src_tab: str
+        See ``supp_source_table`` parameter in ``GeoCrossWalk.__init__``.
+    
+    drop_supp_col : bool
+        See ``drop_supp_col`` parameter in ``GeoCrossWalk.__init__``.
+    
+    Returns
+    -------
+    
+    geoxwalk : nhgisxwalk.GeoCrossWalk
+        The updated full crosswalk object.
+    
+    """
+
+    # Step 2(a) ----------------------------------------------------------------------
+    # isolate all unique source block IDs in the base crosswalk
+    all_base_ids = geoxwalk.base[~geoxwalk.base[geoxwalk.base_source_col].isna()][
+        geoxwalk.base_source_col
+    ].copy()
+    geoxwalk.all_base_ids = all_base_ids.unique()
+
+    # isolate all unique **populated** base IDs from the base summary data
+    geoxwalk.pop_base_ids = (
+        geoxwalk.base_tab_df[geoxwalk.tabular_code_label].copy().to_numpy()
+    )
+
+    # isolate all unique **unpopulated** base IDs
+    geoxwalk.nopop_base_ids = numpy.setdiff1d(
+        geoxwalk.all_base_ids.tolist(), geoxwalk.pop_base_ids.tolist()
+    )
+
+    # create a "no-data" slice of the base crosswalk
+    geoxwalk.nopop_base = geoxwalk.base[
+        geoxwalk.base[geoxwalk.base_source_col].isin(geoxwalk.nopop_base_ids)
+    ].copy()
+    geoxwalk.nopop_base = geoxwalk.nopop_base[
+        [geoxwalk.base_source_col, geoxwalk.base_target_col]
+    ].copy()
+
+    # Step 2(b) ----------------------------------------------------------------------
+    # Generate the (supplement) IDs for source and target
+    geoxwalk.nopop_base = geoxwalk.generate_ids(
+        "source", vect, supp=True, supp_base=geoxwalk.nopop_base, return_df=True
+    )
+
+    # drop unneeded weight/area columns (these should all be zero anyway)
+    _id_cols_ = [
+        geoxwalk.supp_source,
+        geoxwalk.base_source_col,
+        geoxwalk.base_target_col,
+    ]
+    geoxwalk.nopop_base = geoxwalk.nopop_base[_id_cols_]
+
+    # add target geographic unit ID to the base crosswalk
+    geoxwalk.nopop_base = geoxwalk.generate_ids(
+        "target", vect, supp=False, supp_base=geoxwalk.nopop_base, return_df=True
+    )
+
+    # Step 2(c) ----------------------------------------------------------------------
+    # Drop records with a null value for GJOIN1990 block IDs (if present)
+    geoxwalk.nopop_base = geoxwalk.nopop_base[
+        ~geoxwalk.nopop_base[geoxwalk.base_source_col].isna()
+    ]
+
+    # groupby the source and target
+    src_trg_cols = [geoxwalk.supp_source, geoxwalk.target]
+    nod_xwalk = geoxwalk.nopop_base.groupby(src_trg_cols).size().reset_index()
+    geoxwalk.nod_xwalk = nod_xwalk[src_trg_cols]
+
+    # Step 2(d/e) -------------------------------------------------------------------
+    # Assign a weight of 0. for all records in the "no-data" crosswalk
+    if not hasattr(geoxwalk, "weight_col"):
+        geoxwalk.weight_var = _check_vars(geoxwalk.weight_var)
+        geoxwalk.weight_col = _weight_columns(
+            geoxwalk.wt if geoxwalk.wt else "", geoxwalk.weight_var
+        )
+    for wcol in geoxwalk.weight_col:
+        geoxwalk.nod_xwalk[wcol] = 0.0
+
+    # Step 3 — Combine the result of Step 1 & Step 2
+    ## 3(a) --------------------------------------------------------------------------
+    ### 1990 Block Group Part Summary Data (National)
+    # confirm variable data types
+    if not hasattr(geoxwalk, "input_var"):
+        geoxwalk.input_var = _check_vars(geoxwalk.input_var)
+    supp_src_tab_sf = pandas.read_csv(supp_src_tab, dtype=str)
+    for iv in geoxwalk.input_var:
+        supp_src_tab_sf[iv] = supp_src_tab_sf[iv].astype(float)
+
+    # GISJOIN ID Correction
+    # *** this will be deprecated following the update of NHGIS GBP data ***
+    src_idcols = code_cols(geoxwalk.source_geo, geoxwalk.source_year)
+    supp_src_tab_sf = id_generators["%s_gj" % geoxwalk.source_geo](
+        supp_src_tab_sf, src_idcols, cname=geoxwalk.tabular_code_label
+    )
+
+    # 3(b) ---------------------------------------------------------------------------
+    # Identify containing geography IDs in Summary File (block groups)
+    supp_idcols = code_cols(geoxwalk.supp_geo, geoxwalk.source_year)
+    supp_src_tab_sf = id_generators["%s_gj" % geoxwalk.supp_geo](
+        geoxwalk.source_year,
+        None,
+        df=supp_src_tab_sf,
+        order=supp_idcols,
+        cname=geoxwalk.supp_source,
+    )
+    # subset columns
+    susbet_cols = [geoxwalk.tabular_code_label] + supp_idcols + [geoxwalk.supp_source]
+    supp_src_tab_sf = supp_src_tab_sf[susbet_cols]
+
+    # 3(c) ---------------------------------------------------------------------------
+    # Identify containing block group IDs in Populated src1990trg-year crosswalk
+    _map = dict(
+        supp_src_tab_sf[[geoxwalk.tabular_code_label, geoxwalk.supp_source]].values
+    )
+    geoxwalk.xwalk[geoxwalk.supp_source] = geoxwalk.xwalk[geoxwalk.source].map(_map)
+    reorder_cols = [
+        geoxwalk.source,
+        geoxwalk.supp_source,
+        geoxwalk.target,
+    ] + geoxwalk.weight_col
+    geoxwalk.xwalk = geoxwalk.xwalk[reorder_cols]
+
+    # 3(d) ---------------------------------------------------------------------------
+    # "Expand" the no-data supplement_src1990target-year crosswalk
+    nod_xwalk_exp = pandas.merge(
+        left=supp_src_tab_sf,
+        right=geoxwalk.nod_xwalk,
+        how="left",
+        left_on=geoxwalk.supp_source,
+        right_on=geoxwalk.supp_source,
+        validate="many_to_many",
+    )
+    keep_cols = [geoxwalk.tabular_code_label, geoxwalk.supp_source, geoxwalk.target]
+    keep_cols += geoxwalk.weight_col
+    nod_xwalk_exp = nod_xwalk_exp[keep_cols].copy()
+    nod_xwalk_exp.rename(
+        columns={geoxwalk.tabular_code_label: geoxwalk.source}, inplace=True
+    )
+
+    # 3(e) ---------------------------------------------------------------------------
+    # Remove records from the expanded xwalk that are already in the populated xwalk
+    # Generate a single atom IDs to perform a set difference
+    atom_id = "atom_id"
+    # Atom ID for populated crosswalk
+    geoxwalk.xwalk = generate_atom_id(
+        geoxwalk.xwalk, geoxwalk.source, geoxwalk.target, atom_id
+    )
+
+    # Atom ID for "no-data" crosswalk
+    nod_xwalk_exp = generate_atom_id(
+        nod_xwalk_exp, geoxwalk.source, geoxwalk.target, atom_id
+    )
+
+    # Keep these atoms from the expanded "no-data" crosswalk
+    nod_atoms = nod_xwalk_exp[atom_id].tolist()
+    pop_atoms = geoxwalk.xwalk[atom_id].tolist()
+    keep_nod_atoms = numpy.setdiff1d(nod_atoms, pop_atoms)
+
+    # Remove the duplicated atoms
+    nod_xwalk_exp = nod_xwalk_exp[nod_xwalk_exp[atom_id].isin(keep_nod_atoms)]
+    nod_xwalk_exp.reset_index(inplace=True, drop=True)
+    geoxwalk.xwalk.drop(columns=atom_id, inplace=True)
+    nod_xwalk_exp.drop(columns=atom_id, inplace=True)
+
+    # 3(f) ---------------------------------------------------------------------------
+    # Append the "no-data" crosswalk to the populated crosswalk
+    geoxwalk.xwalk = geoxwalk.xwalk.append(nod_xwalk_exp, ignore_index=True)
+    geoxwalk.xwalk.sort_values(
+        by=[geoxwalk.source, geoxwalk.target],
+        na_position="last",
+        ignore_index=True,
+        inplace=True,
+    )
+
+    # pre-step 9 - # Isolate unaccounted for source geographies ----------------------
+    geoxwalk.src_unacc = numpy.setdiff1d(
+        supp_src_tab_sf[geoxwalk.tabular_code_label].unique().tolist(),
+        geoxwalk.xwalk[geoxwalk.source].unique().tolist(),
+    )
+
+    if drop_supp_col:
+        geoxwalk.xwalk.drop(columns=geoxwalk.supp_source, inplace=True)
+
+    return geoxwalk
+
+
+def _check_vars(_vars):
+    """If the input is a single, named variable (str), insert it into a list."""
+    if type(_vars) == str:
+        _vars = [_vars]
+    return _vars
+
+
+def _weight_columns(weight_prefix, weight_var):
+    """Return the weight column headers."""
+    weight_vars = [weight_prefix + wvar for wvar in weight_var]
+    return weight_vars
 
 
 def str_types(var_names):
