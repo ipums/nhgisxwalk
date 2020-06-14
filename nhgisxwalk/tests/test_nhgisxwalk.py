@@ -710,7 +710,7 @@ class Test_id_codes_functions(unittest.TestCase):
         with self.assertRaises(ValueError):
             nhgisxwalk.id_codes.trt_gj("2010", "X1.1")
 
-    def test_trt_gj_no_G(self):
+    def test_trt_gj_bad_year(self):
         with self.assertRaises(ValueError):
             nhgisxwalk.id_codes.trt_gj("0000", "G123456789123456789")
 
