@@ -283,6 +283,9 @@ def bkg_gj(
                 indexer = 3
             else:
                 indexer = 2
+        if year == "2010":
+            indexer = 3
+
         block_group_id = _id[:-indexer]
 
         return block_group_id
@@ -432,8 +435,7 @@ def gj_code_components(year, geo):
             raise AttributeError()
             # components
         if geo == "bkg":
-            raise AttributeError()
-            # components
+            components = bkg2010
         if geo == "trt":
             components = trt2010
         if geo == "cty":
