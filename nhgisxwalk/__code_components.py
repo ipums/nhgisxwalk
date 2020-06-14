@@ -64,14 +64,17 @@ URB_AREAA,   Urban Area Code
 CD103A,      Congressional District (103rd) Code
 ANPSADPI,    Area Name/PSAD Term/Part Indicator"""
 
-bkg1990 = None
+bkg1990 = r"""
+"""
 
-trt1990 = None
+trt1990 = r"""
+"""
 
-cty1990 = None
+cty1990 = r"""
+"""
 
 # ------------------------------------------------------------------------- 2000
-# *** NOTE *** The URBRURALA code is added. For more details see: https://gist.github.com/jGaboardi/36c7640af1f228cdc8a691505262e543
+# *** NOTE *** The URBRURALA code is added. For more details see, https,//gist.github.com/jGaboardi/36c7640af1f228cdc8a691505262e543
 blk2000 = r"""
 GISJOIN,     GIS Join Match Code
 YEAR,        Data File Year
@@ -105,19 +108,60 @@ AIANHHA,     American Indian Area/Alaska Native Area/Hawaiian Home Land Code
 URBRURALA,   Urban/Rural Code
 NAME,        Area Name-Legal/Statistical Area Description (LSAD) Term-Part Indicator"""
 
-bkg2000 = None
+bkg2000 = r"""
+"""
 
-trt2000 = None
+trt2000 = r"""
+"""
 
-cty2000 = None
+cty2000 = r"""
+"""
 
 
 # ------------------------------------------------------------------------- 2010
-blk2010 = None
+blk2010 = r"""
+"""
 
-bgp2010 = None
+bgp2010 = r"""
+"""
 
-bkg2010 = None
+bkg2010 = r"""
+GISJOIN,     GIS Join Match Code
+YEAR,        Data File Year
+REGIONA,     Region Code
+DIVISIONA,   Division Code
+STATE,       State Name
+STATEA,      State Code
+COUNTY,      County Name
+COUNTYA,     County Code
+COUSUBA,     County Subdivision Code
+PLACEA,      Place Code
+TRACTA,      Census Tract Code
+BLKGRPA,     Block Group Code
+CONCITA,     Consolidated City Code
+AIANHHA,     American Indian Area/Alaska Native Area/Hawaiian Home Land Code
+RES_ONLYA,   American Indian Area/Alaska Native Area (Reservation or Statistical Entity Only) Code
+TRUSTA,      American Indian Reservation with Trust Lands; trust lands only Code
+AITSCEA,     Tribal Subdivision/Remainder Code
+ANRCA,       Alaska Native Regional Corporation Code
+CBSAA,       Metropolitan Statistical Area/Micropolitan Statistical Area Code
+CSAA,        Combined Statistical Area Code
+METDIVA,     Metropolitan Division Code
+NECTAA,      New England City and Town Area Code
+CNECTAA,     Combined New England City and Town Area Code
+NECTADIVA,   New England City and Town Area Division Code
+UAA,         Urban Area Code
+CDCURRA,     Congressional District (111th Congress) Code
+SLDUA,       State Legislative District (Upper Chamber) Code
+SLDLA,       State Legislative District (Lower Chamber) Code
+SUBMCDA,     Subminor Civil Division Code
+SDELMA,      School District (Elementary)/Remainder Code
+SDSECA,      School District (Secondary)/Remainder Code
+SDUNIA,      School District (Unified)/Remainder Code
+PUMA5A,      Public Use Microdata Sample Area (PUMA) Code
+BTTRA,       Tribal Census Tract Code
+BTBGA,       Tribal Block Group Code
+"""
 
 trt2010 = r"""
 GISJOIN,     GIS Join Match Code
@@ -156,4 +200,5 @@ PUMA5A,      Public Use Microdata Sample Area (PUMA) Code
 BTTRA,       Tribal Census Tract Code
 BTBGA,       Tribal Block Group Code"""
 
-cty2000 = None
+cty2010 = r"""
+"""

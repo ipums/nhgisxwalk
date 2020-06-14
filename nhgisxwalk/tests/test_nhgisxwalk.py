@@ -449,6 +449,112 @@ class Test_GeoCrossWalk(unittest.TestCase):
         obs_source_fips = obs_xwalk.extract_unique_stfips(endpoint="source")
         self.assertEqual(known_source_fips, obs_source_fips)
 
+    # 1990 bgp to 2010 bkg through 2000 blk to 2010 blk
+    def test_xwalk_full_bgp2000_bkg2010(self):
+        knw_str_vals = numpy.array(
+            [
+                [
+                    "G100001090444999990421009999999219012",
+                    "G10000100421002",
+                    "100010421002",
+                ],
+                [
+                    "G100001090444999990421009999999999921",
+                    "G10000100421001",
+                    "100010421001",
+                ],
+                [
+                    "G100001090444999990421009999999999921",
+                    "G10000100422013",
+                    "100010422013",
+                ],
+                [
+                    "G100001090444999990421009999999999922",
+                    "G10000100421002",
+                    "100010421002",
+                ],
+            ]
+        )
+        knw_num_vals = numpy.array(
+            [
+                [1.0, 1.0, 1.0, 1.0],
+                [0.99766436, 0.99716625, 0.99714829, 0.99727768],
+                [0.00233564, 0.00283375, 0.00285171, 0.00272232],
+                [1.0, 1.0, 1.0, 1.0],
+            ]
+        )
+        obs_xwalk = nhgisxwalk.GeoCrossWalk(
+            base_xwalk_blk1990_blk2010,
+            source_year=_90,
+            target_year=_10,
+            source_geo=bgp,
+            target_geo=bkg,
+            base_source_table=tab_data_path_1990,
+            supp_source_table=supplement_data_path_90,
+            input_var=input_vars_1990,
+            weight_var=input_var_tags,
+        )
+        ix1, ix2 = 13, 17
+        id_cols = ["bgp1990gj", "bkg2010gj", "bkg2010ge"]
+        obs_str_vals = obs_xwalk.xwalk[id_cols][ix1:ix2].values
+        wgt_cols = ["wt_pop", "wt_fam", "wt_hh", "wt_hu"]
+        obs_num_vals = obs_xwalk.xwalk[wgt_cols][ix1:ix2].values
+        numpy.testing.assert_equal(knw_str_vals, obs_str_vals)
+        numpy.testing.assert_allclose(knw_num_vals, obs_num_vals, atol=6)
+
+    def test_xwalk_state_bgp2000_bkg2010(self):
+        knw_str_vals = numpy.array(
+            [
+                [
+                    "G100001090444999990421009999999219012",
+                    "G10000100421002",
+                    "100010421002",
+                ],
+                [
+                    "G100001090444999990421009999999999921",
+                    "G10000100421001",
+                    "100010421001",
+                ],
+                [
+                    "G100001090444999990421009999999999921",
+                    "G10000100422013",
+                    "100010422013",
+                ],
+                [
+                    "G100001090444999990421009999999999922",
+                    "G10000100421002",
+                    "100010421002",
+                ],
+            ]
+        )
+        knw_num_vals = numpy.array(
+            [
+                [1.0, 1.0, 1.0, 1.0],
+                [0.99766436, 0.99716625, 0.99714829, 0.99727768],
+                [0.00233564, 0.00283375, 0.00285171, 0.00272232],
+                [1.0, 1.0, 1.0, 1.0],
+            ]
+        )
+        obs_xwalk = nhgisxwalk.GeoCrossWalk(
+            base_xwalk_blk1990_blk2010,
+            source_year=_90,
+            target_year=_10,
+            source_geo=bgp,
+            target_geo=bkg,
+            base_source_table=tab_data_path_1990,
+            supp_source_table=supplement_data_path_90,
+            input_var=input_vars_1990,
+            weight_var=input_var_tags,
+            stfips=stfips,
+        )
+        ix1, ix2 = 13, 17
+        id_cols = ["bgp1990gj", "bkg2010gj", "bkg2010ge"]
+        obs_str_vals = obs_xwalk.xwalk[id_cols][ix1:ix2].values
+        wgt_cols = ["wt_pop", "wt_fam", "wt_hh", "wt_hu"]
+        obs_num_vals = obs_xwalk.xwalk[wgt_cols][ix1:ix2].values
+        numpy.testing.assert_equal(knw_str_vals, obs_str_vals)
+        numpy.testing.assert_allclose(knw_num_vals, obs_num_vals, atol=6)
+
     # non-year, geography specific ---------------------------------------------
     def test_xwalk_write_read_csv(self):
         write_xwalk = nhgisxwalk.GeoCrossWalk(
