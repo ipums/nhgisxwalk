@@ -16,6 +16,8 @@
 * Sample Workflows:
   * [1990 block group parts to 2010 tracts](https://github.com/jGaboardi/nhgisxwalk/blob/master/notebooks/data-subset-sample-workflow-bgp1990trt2010.ipynb)
   * [2000 block group parts to 2010 tracts](https://github.com/jGaboardi/nhgisxwalk/blob/master/notebooks/data-subset-sample-workflow-bgp2000trt2010.ipynb)
+  * [1990 block group parts to 2010 block groups](https://github.com/jGaboardi/nhgisxwalk/blob/master/notebooks/data-subset-sample-workflow-bgp1990bkg2010.ipynb)
+  * [2000 block group parts to 2010 block groups](https://github.com/jGaboardi/nhgisxwalk/blob/master/notebooks/data-subset-sample-workflow-bgp2000bkg2010.ipynb)
 
 ## Resources
 
