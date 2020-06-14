@@ -170,6 +170,23 @@ class Test_GeoCrossWalk(unittest.TestCase):
         numpy.testing.assert_equal(knw_str_vals, obs_str_vals)
         numpy.testing.assert_allclose(knw_num_vals, obs_num_vals, atol=6)
 
+    def test_xwalk_bgp1990_trt2010_no_supp_error(self):
+        with self.assertRaises(RuntimeError):
+            obs_xwalk = nhgisxwalk.GeoCrossWalk(
+                base_xwalk_blk1990_blk2010,
+                source_year=_90,
+                target_year=_10,
+                source_geo=bgp,
+                target_geo=trt,
+                base_source_table=tab_data_path_1990,
+                supp_source_table=None,
+                input_var=input_vars_1990,
+                weight_var=input_var_tags,
+                stfips=stfips,
+                vectorized=False,
+                keep_base=False,
+            )
+
     def test_xwalk_extract_state_bgp1990_trt2010(self):
         known_target_nan_xwalk = numpy.empty((0, 7))
         known_source_nan_xwalk = numpy.array(
