@@ -2,10 +2,6 @@
 
 Version 0.0.3 (2020-06-14)
 
-# Changes
-
-Version 0.0.3 (2020-06-14)
-
 We closed a total of 17 issues (enhancements and bug fixes) through 5 pull requests, since our last release on 2020-06-13.
 
 ## Issues Closed
