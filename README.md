@@ -18,7 +18,7 @@ This pacakge allows for the generation of temporal crosswalks of census geograph
 |1990 block group parts | 2010 tracts|
 |2000 block group parts | 2010 tracts|
 |1990 block group parts | 2010 block groups|
-|2000 block group parts | 2010 groups|
+|2000 block group parts | 2010 block groups|
 
 #### Planned supported crosswalks include:
 
@@ -27,7 +27,7 @@ This pacakge allows for the generation of temporal crosswalks of census geograph
 |1990 block group parts | 2012 tracts|
 |2000 block group parts | 2012 tracts|
 |1990 block group parts | 2012 block groups|
-|2000 block group parts | 2012 groups|
+|2000 block group parts | 2012 block groups|
 
 * **Schroeder, J. P**. 2007. *Target-density weighting interpolation and uncertainty evaluation for temporal analysis of census data*. Geographical Analysis 39 (3):311–335.
 
