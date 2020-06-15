@@ -288,7 +288,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
         self.assertEqual(known_source_fips, obs_source_fips)
 
     # 2000 bgp to 2010 trt through 2000 blk to 2010 blk
-    def test_xwalk_full_bgp2000_trt2010(self):
+    def test_xwalk_full_bgp2000_trt2010_unrounded(self):
         knw_str_vals = numpy.array(
             [
                 ["G10000509355299999051304R1", "G1000050051305", "10005051305"],
@@ -314,6 +314,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
             base_source_table=tab_data_path_2000,
             input_var=input_vars_2000_SF1b,
             weight_var=input_var_tags,
+            weights_precision=None,
         )
         ix1, ix2 = 1025, 1029
         id_cols = ["bgp2000gj", "trt2010gj", "trt2010ge"]
@@ -323,7 +324,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
         numpy.testing.assert_equal(knw_str_vals, obs_str_vals)
         numpy.testing.assert_allclose(knw_num_vals, obs_num_vals)
 
-    def test_xwalk_state_bgp2000_trt2010(self):
+    def test_xwalk_state_bgp2000_trt2010_unrounded(self):
         knw_str_vals = numpy.array(
             [
                 ["G10000509355299999051304R1", "G1000050051305", "10005051305"],
@@ -352,6 +353,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
             stfips=stfips,
             vectorized=False,
             keep_base=False,
+            weights_precision=None,
         )
         ix1, ix2 = 1025, 1029
         id_cols = ["bgp2000gj", "trt2010gj", "trt2010ge"]
