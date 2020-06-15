@@ -788,6 +788,29 @@ class Test_upper_level_functions(unittest.TestCase):
         k2, o2 = known[:, 2:].astype(float), observed.values[:, 2:].astype(float)
         numpy.testing.assert_allclose(k2, o2, atol=4)
 
+    def test_round_weights(self):
+        known = numpy.array(
+            [
+                ["A", "X", 0.56, 0.57],
+                ["A", "Y", 0.44, 0.43],
+                ["B", "X", 0.38, 0.4],
+                ["B", "Y", 0.62, 0.6],
+            ]
+        )
+        observed = nhgisxwalk.calculate_atoms(
+            self.example_df,
+            weight="wt",
+            input_var=["pop_1990", "hh_1990"],
+            weight_var=["pop", "hh"],
+            source_id="bgp1990",
+            groupby_cols=["bgp1990", "trt2010"],
+        )
+        observed = nhgisxwalk.round_weights(observed, decimals=2)
+        k1, o1 = known[:, :2], observed.values[:, :2]
+        numpy.testing.assert_array_equal(k1, o1)
+        k2, o2 = known[:, 2:].astype(float), observed.values[:, 2:].astype(float)
+        numpy.testing.assert_allclose(k2, o2, atol=4)
+
     def test_str_types(self):
         known = {"test_name_1": str, "test_name_2": str}
         observed = nhgisxwalk.str_types(["test_name_1", "test_name_2"])
