@@ -2,7 +2,7 @@
 <img src="figs/nhgis_logo_black.png" height="100" href=https://www.nhgis.org />
 </p>
 
-# nhgisxwalk
+# NHGISXWALK
 ## Spatio-temporal [NHGIS Crosswalks](https://www.nhgis.org/user-resources/geographic-crosswalks)
 
 [![DOI](https://zenodo.org/badge/259962549.svg)](https://zenodo.org/badge/latestdoi/259962549) [![GitHub release](https://img.shields.io/github/v/tag/jGaboardi/nhgisxwalk?include_prereleases&logo=GitHub)](https://img.shields.io/github/v/tag/jGaboardi/nhgisxwalk?include_prereleases&logo=GitHub) [![unittests](https://github.com/jGaboardi/nhgisxwalk/workflows/.github/workflows/unittests.yml/badge.svg)](https://github.com/jGaboardi/nhgisxwalk/actions?query=workflow%3A.github%2Fworkflows%2Funittests.yml) [![codecov](https://codecov.io/gh/jGaboardi/nhgisxwalk/branch/master/graph/badge.svg)](https://codecov.io/gh/jGaboardi/nhgisxwalk) [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/jGaboardi/nhgisxwalk/master)
@@ -30,6 +30,14 @@ Currently `nhgisxwalk` officially supports Python [3.6](https://docs.python.org/
 ```
 $ pip install git+https://github.com/jGaboardi/nhgisxwalk
 ```
+
+##  Contribute
+
+NHGISXWALK is under active development and contributors are welcome. If you have any suggestions, feature requests, or bug reports, please open new [issues](https://github.com/jGaboardi/nhgisxwalk/issues) on GitHub. To submit patches, please review the `nhgisxwalk` [contributing guidelines](https://github.com/jGaboardi/nhgisxwalk/blob/master/.github/CONTRIBUTING.md) before opening a [pull request](https://github.com/jGaboardi/nhgisxwalk/pulls).
+
+## Support
+
+If you are having issues, please [create an issue](https://github.com/jGaboardi/nhgisxwalk/issues).
 
 ## Citations
 If you use `nhgisxwalk` in a scientific publication, we would appreciate using the following citations:
