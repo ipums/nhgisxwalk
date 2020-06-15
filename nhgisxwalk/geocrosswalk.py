@@ -724,11 +724,20 @@ class GeoCrossWalk:
         )
         return unique_stfips
 
-    def xwalk_to_csv(self, path="", fext=".zip"):
-        """Write the produced crosswalk to .csv.zip."""
+    def xwalk_to_csv(self, path="", fext="zip"):
+        """Write the produced crosswalk to .csv or .csv.zip."""
+        csv = "csv"
         if self.stfips:
             self.xwalk_name += "_" + self.stfips
-        self.xwalk.to_csv(path + self.xwalk_name + ".csv" + fext, index=False)
+        if fext:
+            compression_opts = dict(
+                method=fext, archive_name="%s.%s" % (self.xwalk_name, csv)
+            )
+            file_name = "%s%s.%s" % (path, self.xwalk_name, fext)
+        else:
+            compression_opts = None
+            file_name = "%s%s.%s" % (path, self.xwalk_name, csv)
+        self.xwalk.to_csv(file_name, compression=compression_opts, index=False)
 
     def xwalk_to_pickle(self, path="", fext=".pkl"):
         """Write the produced ``GeoCrossWalk`` object."""
@@ -738,9 +747,14 @@ class GeoCrossWalk:
             pickle.dump(self, pkl_xwalk, protocol=2)
 
     @staticmethod
-    def xwalk_from_csv(fname, fext=".zip"):
-        """Read in a produced crosswalk from .csv.zip."""
-        xwalk = pandas.read_csv(fname + ".csv" + fext)
+    def xwalk_from_csv(fname, fext="zip"):
+        """Read in a produced crosswalk from .csv or .csv.zip."""
+        csv = "csv"
+        if fext:
+            file_path = "%s.%s.%s" % (fname, csv, fext)
+        else:
+            file_path = "%s.%s" % (fname, csv)
+        xwalk = pandas.read_csv(file_path)
         return xwalk
 
     @staticmethod
