@@ -22,10 +22,10 @@ id_generators = {f.__name__: f for f in id_generator_funcs}
 
 
 class GeoCrossWalk:
-    """Generate a temporal crosswalk for census geography data and 
+    """Generate a temporal crosswalk for census geography data 
     built from the smallest intersecting units (atoms). Each row in
-    a crosswalk represents a single atom, and comprised of a source
-    ID (geo+year), and target ID (geo+year), and at least one column
+    a crosswalk represents a single atom and is comprised of a source
+    ID (geo+year), a target ID (geo+year), and at least one column
     of weights. The weights are the interpolated proportions of source
     attributes that are are calculated as being within the target units.
     For a description of the algorithmic workflow see the

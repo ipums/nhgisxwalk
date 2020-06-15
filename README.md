@@ -9,6 +9,28 @@
 
 ***This project will eventually be transferred to [`IPUMS`](https://github.com/ipums).***
 
+This pacakge allows for the generation of temporal crosswalks of census geographic data built from the smallest intersecting units (atoms). Each row in a crosswalk represents a single atom and is comprised of a source ID (`geo+year+gj`), a target ID (`geo+year+gj`), and at least one column of weights. An example of a source ID is `bgp1990gj` (block group parts from 1990) and an example of a target ID is `trt1990gj` (tracts from 2010) — see []() for the `nhgis_bgp1990gj_to_trt1990gj` crosswalk extract of Delaware. The weights are the interpolated proportions of source attributes that are are calculated as being within the target units. For a description of the algorithmic workflow see the [General Crosswalk Construction Framework](https://github.com/jGaboardi/nhgisxwalk/blob/master/resources/general-crosswalk-construction-framework.pdf). Data from 1990 poses specific problem due to the US Census Bureau not explicitly including blocks with no population/housing units in the summary files (SF1). For a description of the algorithmic workflow in the 1990 "no data" scenarios see [Handling 1990 No-Data Blocks in Crosswalks](https://github.com/jGaboardi/nhgisxwalk/blob/master/resources/handling-1990-no-data-blocks-in-crosswalks.pdf). For more information of the base crosswalks see their [technical details](https://www.nhgis.org/user-resources/geographic-crosswalks#details). For further description see Schroeder (2007).
+
+#### Currently supported crosswalks include:
+
+| source | target |
+|--------|-------|
+|1990 block group parts | 2010 tracts|
+|2000 block group parts | 2010 tracts|
+|1990 block group parts | 2010 block groups|
+|2000 block group parts | 2010 groups|
+
+#### Planned supported crosswalks include:
+
+| source | target |
+|--------|-------|
+|1990 block group parts | 2012 tracts|
+|2000 block group parts | 2012 tracts|
+|1990 block group parts | 2012 block groups|
+|2000 block group parts | 2012 groups|
+
+* **Schroeder, J. P**. 2007. *Target-density weighting interpolation and uncertainty evaluation for temporal analysis of census data*. Geographical Analysis 39 (3):311–335.
+
 ## Examples
 
 * [Proportionally-weighted Synthetic Atoms](https://github.com/jGaboardi/nhgisxwalk/blob/master/notebooks/weighted-portion-synthetic-atoms.ipynb)
