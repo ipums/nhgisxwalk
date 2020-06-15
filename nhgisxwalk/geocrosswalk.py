@@ -111,6 +111,9 @@ class GeoCrossWalk:
         Drop the supplementary containing ID generated with the 1990 "no data" process.
         Default is ``True``.
     
+    weights_precision : int
+        Round the resultant crosswalk weights to this many decimals. Default is 10.
+    
     Attributes
     ----------
     
@@ -372,6 +375,7 @@ class GeoCrossWalk:
         vectorized=True,
         supp_source_table=None,
         drop_supp_col=True,
+        weights_precision=10,
     ):
 
         # Set class attributes -------------------------------------------------
@@ -494,6 +498,10 @@ class GeoCrossWalk:
         if stfips:
             self.stfips = stfips
             self.xwalk = self.extract_state(self.stfips)
+
+        # round the weights in the resultant crosswalk (if desired)
+        if weights_precision:
+            self.xwalk = round_weights(self.xwalk, decimals=weights_precision)
 
     def _drop_base_cols(self):
         """Retain only ID columns and original weights in the base crosswalk."""
@@ -1064,6 +1072,12 @@ def handle_1990_no_data(geoxwalk, vect, supp_src_tab, drop_supp_col):
         geoxwalk.xwalk.drop(columns=geoxwalk.supp_source, inplace=True)
 
     return geoxwalk
+
+
+def round_weights(df, decimals):
+    """Round the weights in a crosswalk."""
+    df = df.round(decimals)
+    return df
 
 
 def _check_vars(_vars):

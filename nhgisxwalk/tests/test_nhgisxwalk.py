@@ -288,7 +288,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
         self.assertEqual(known_source_fips, obs_source_fips)
 
     # 2000 bgp to 2010 trt through 2000 blk to 2010 blk
-    def test_xwalk_full_bgp2000_trt2010(self):
+    def test_xwalk_full_bgp2000_trt2010_unrounded(self):
         knw_str_vals = numpy.array(
             [
                 ["G10000509355299999051304R1", "G1000050051305", "10005051305"],
@@ -314,6 +314,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
             base_source_table=tab_data_path_2000,
             input_var=input_vars_2000_SF1b,
             weight_var=input_var_tags,
+            weights_precision=None,
         )
         ix1, ix2 = 1025, 1029
         id_cols = ["bgp2000gj", "trt2010gj", "trt2010ge"]
@@ -323,7 +324,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
         numpy.testing.assert_equal(knw_str_vals, obs_str_vals)
         numpy.testing.assert_allclose(knw_num_vals, obs_num_vals)
 
-    def test_xwalk_state_bgp2000_trt2010(self):
+    def test_xwalk_state_bgp2000_trt2010_unrounded(self):
         knw_str_vals = numpy.array(
             [
                 ["G10000509355299999051304R1", "G1000050051305", "10005051305"],
@@ -352,6 +353,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
             stfips=stfips,
             vectorized=False,
             keep_base=False,
+            weights_precision=None,
         )
         ix1, ix2 = 1025, 1029
         id_cols = ["bgp2000gj", "trt2010gj", "trt2010ge"]
@@ -781,6 +783,29 @@ class Test_upper_level_functions(unittest.TestCase):
             source_id="bgp1990",
             groupby_cols=["bgp1990", "trt2010"],
         )
+        k1, o1 = known[:, :2], observed.values[:, :2]
+        numpy.testing.assert_array_equal(k1, o1)
+        k2, o2 = known[:, 2:].astype(float), observed.values[:, 2:].astype(float)
+        numpy.testing.assert_allclose(k2, o2, atol=4)
+
+    def test_round_weights(self):
+        known = numpy.array(
+            [
+                ["A", "X", 0.56, 0.57],
+                ["A", "Y", 0.44, 0.43],
+                ["B", "X", 0.38, 0.4],
+                ["B", "Y", 0.62, 0.6],
+            ]
+        )
+        observed = nhgisxwalk.calculate_atoms(
+            self.example_df,
+            weight="wt",
+            input_var=["pop_1990", "hh_1990"],
+            weight_var=["pop", "hh"],
+            source_id="bgp1990",
+            groupby_cols=["bgp1990", "trt2010"],
+        )
+        observed = nhgisxwalk.round_weights(observed, decimals=2)
         k1, o1 = known[:, :2], observed.values[:, :2]
         numpy.testing.assert_array_equal(k1, o1)
         k2, o2 = known[:, 2:].astype(float), observed.values[:, 2:].astype(float)
