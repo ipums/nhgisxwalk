@@ -751,7 +751,7 @@ class GeoCrossWalk:
         """Read in a produced crosswalk from .csv or .csv.zip."""
         csv = "csv"
         if fext:
-            file_path = "%s.%s.%s" % (fname, csv, fext)
+            file_path = "%s.%s" % (fname, fext)
         else:
             file_path = "%s.%s" % (fname, csv)
         xwalk = pandas.read_csv(file_path)
