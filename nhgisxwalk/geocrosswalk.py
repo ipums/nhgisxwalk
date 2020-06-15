@@ -728,7 +728,7 @@ class GeoCrossWalk:
         """Write the produced crosswalk to .csv.zip."""
         if self.stfips:
             self.xwalk_name += "_" + self.stfips
-        self.xwalk.to_csv(path + self.xwalk_name + ".csv" + fext)
+        self.xwalk.to_csv(path + self.xwalk_name + ".csv" + fext, index=False)
 
     def xwalk_to_pickle(self, path="", fext=".pkl"):
         """Write the produced ``GeoCrossWalk`` object."""
@@ -740,7 +740,7 @@ class GeoCrossWalk:
     @staticmethod
     def xwalk_from_csv(fname, fext=".zip"):
         """Read in a produced crosswalk from .csv.zip."""
-        xwalk = pandas.read_csv(fname + ".csv" + fext, index_col=0)
+        xwalk = pandas.read_csv(fname + ".csv" + fext)
         return xwalk
 
     @staticmethod
