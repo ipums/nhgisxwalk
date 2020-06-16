@@ -394,7 +394,7 @@ class GeoCrossWalk:
         # source and target names
         self.source = self.source_geo + self.source_year + self.code_type
         self.target = self.target_geo + self.target_year + self.code_type
-        self.xwalk_name = "%s_to_%s" % (self.source, self.target)
+        self.xwalk_name = "nhgis_%s_%s" % (self.source, self.target)
 
         # input, summed, and weight variable names
         self.input_var, self.weight_var = input_var, weight_var
