@@ -22,10 +22,10 @@ id_generators = {f.__name__: f for f in id_generator_funcs}
 
 
 class GeoCrossWalk:
-    """Generate a temporal crosswalk for census geography data and 
+    """Generate a temporal crosswalk for census geography data 
     built from the smallest intersecting units (atoms). Each row in
-    a crosswalk represents a single atom, and comprised of a source
-    ID (geo+year), and target ID (geo+year), and at least one column
+    a crosswalk represents a single atom and is comprised of a source
+    ID (geo+year), a target ID (geo+year), and at least one column
     of weights. The weights are the interpolated proportions of source
     attributes that are are calculated as being within the target units.
     For a description of the algorithmic workflow see the
@@ -110,6 +110,9 @@ class GeoCrossWalk:
     drop_supp_col : bool
         Drop the supplementary containing ID generated with the 1990 "no data" process.
         Default is ``True``.
+    
+    weights_precision : int
+        Round the resultant crosswalk weights to this many decimals. Default is 10.
     
     Attributes
     ----------
@@ -372,6 +375,7 @@ class GeoCrossWalk:
         vectorized=True,
         supp_source_table=None,
         drop_supp_col=True,
+        weights_precision=10,
     ):
 
         # Set class attributes -------------------------------------------------
@@ -495,6 +499,10 @@ class GeoCrossWalk:
             self.stfips = stfips
             self.xwalk_name += "_" + self.stfips
             self.xwalk = self.extract_state(self.stfips)
+
+        # round the weights in the resultant crosswalk (if desired)
+        if weights_precision:
+            self.xwalk = round_weights(self.xwalk, decimals=weights_precision)
 
     def _drop_base_cols(self):
         """Retain only ID columns and original weights in the base crosswalk."""
@@ -725,9 +733,20 @@ class GeoCrossWalk:
         )
         return unique_stfips
 
-    def xwalk_to_csv(self, path="", fext=".zip"):
-        """Write the produced crosswalk to .csv.zip."""
-        self.xwalk.to_csv(path + self.xwalk_name + ".csv" + fext)
+    def xwalk_to_csv(self, path="", fext="zip"):
+        """Write the produced crosswalk to .csv or .csv.zip."""
+        csv = "csv"
+        if self.stfips:
+            self.xwalk_name += "_" + self.stfips
+        if fext:
+            compression_opts = dict(
+                method=fext, archive_name="%s.%s" % (self.xwalk_name, csv)
+            )
+            file_name = "%s%s.%s" % (path, self.xwalk_name, fext)
+        else:
+            compression_opts = None
+            file_name = "%s%s.%s" % (path, self.xwalk_name, csv)
+        self.xwalk.to_csv(file_name, compression=compression_opts, index=False)
 
     def xwalk_to_pickle(self, path="", fext=".pkl"):
         """Write the produced ``GeoCrossWalk`` object."""
@@ -735,9 +754,14 @@ class GeoCrossWalk:
             pickle.dump(self, pkl_xwalk, protocol=2)
 
     @staticmethod
-    def xwalk_from_csv(fname, fext=".zip"):
-        """Read in a produced crosswalk from .csv.zip."""
-        xwalk = pandas.read_csv(fname + ".csv" + fext, index_col=0)
+    def xwalk_from_csv(fname, fext="zip"):
+        """Read in a produced crosswalk from .csv or .csv.zip."""
+        csv = "csv"
+        if fext:
+            file_path = "%s.%s" % (fname, fext)
+        else:
+            file_path = "%s.%s" % (fname, csv)
+        xwalk = pandas.read_csv(file_path)
         return xwalk
 
     @staticmethod
@@ -1047,6 +1071,12 @@ def handle_1990_no_data(geoxwalk, vect, supp_src_tab, drop_supp_col):
         geoxwalk.xwalk.drop(columns=geoxwalk.supp_source, inplace=True)
 
     return geoxwalk
+
+
+def round_weights(df, decimals):
+    """Round the weights in a crosswalk."""
+    df = df.round(decimals)
+    return df
 
 
 def _check_vars(_vars):
