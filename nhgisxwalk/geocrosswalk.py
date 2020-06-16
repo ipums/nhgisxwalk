@@ -493,6 +493,7 @@ class GeoCrossWalk:
         # extract a subset of national resultant crosswalk to target state (if desired)
         if stfips:
             self.stfips = stfips
+            self.xwalk_name += "_" + self.stfips
             self.xwalk = self.extract_state(self.stfips)
 
     def _drop_base_cols(self):
@@ -726,14 +727,10 @@ class GeoCrossWalk:
 
     def xwalk_to_csv(self, path="", fext=".zip"):
         """Write the produced crosswalk to .csv.zip."""
-        if self.stfips:
-            self.xwalk_name += "_" + self.stfips
         self.xwalk.to_csv(path + self.xwalk_name + ".csv" + fext)
 
     def xwalk_to_pickle(self, path="", fext=".pkl"):
         """Write the produced ``GeoCrossWalk`` object."""
-        if self.stfips:
-            self.xwalk_name += "_" + self.stfips
         with open(path + self.xwalk_name + fext, "wb") as pkl_xwalk:
             pickle.dump(self, pkl_xwalk, protocol=2)
 
