@@ -1161,10 +1161,3 @@ def example_crosswalk_data():
     for cn, cd in zip(cols, col_data):
         example_data[cn] = cd
     return example_data
-
-
-def split_blk_blk_xwalks():
-    """
-    """
-
-    pass
