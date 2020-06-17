@@ -7,8 +7,9 @@ from .id_codes import blk_gj, bgp_gj, bkg_gj, trt_gj, gj_code_components
 import numpy
 import pandas
 
+import copy
 import pickle
-
+import warnings
 
 # used to fetch/vectorize ID generation functions
 id_generator_funcs = [
@@ -399,6 +400,7 @@ class GeoCrossWalk:
         self.source = self.source_geo + self.source_year + self.code_type
         self.target = self.target_geo + self.target_year + self.code_type
         self.xwalk_name = "nhgis_%s_%s" % (self.source[:-2], self.target[:-2])
+        self.stfips = stfips
 
         # input, summed, and weight variable names
         self.input_var, self.weight_var = input_var, weight_var
@@ -495,9 +497,7 @@ class GeoCrossWalk:
             self.xwalk = self.xwalk[_id_cols + self.weight_col]
 
         # extract a subset of national resultant crosswalk to target state (if desired)
-        if stfips:
-            self.stfips = stfips
-            self.xwalk_name += "_" + self.stfips
+        if self.stfips:
             self.xwalk = self.extract_state(self.stfips)
 
         # round the weights in the resultant crosswalk (if desired)
@@ -669,7 +669,9 @@ class GeoCrossWalk:
                     for c in self.xwalk.columns
                 ]
 
-    def extract_state(self, stfips, endpoint="target", from_base=False):
+    def extract_state(
+        self, stfips, endpoint="target", from_base=False, return_class=False
+    ):
         """Subset a national crosswalk to state-level (within target year).
         
         Parameters
@@ -688,45 +690,67 @@ class GeoCrossWalk:
             (``True``). When ``False`` the resultant crosswalk is subset.
             Default is ``False``.
         
+        return_class : bool
+            If ``True``, return a copied version of the ``GeoCrosswalk`` object.
+            Default is ``False``.
+        
         Returns
         -------
+        
+        xwalk_cls : nhgisxwalk.GeoCrossWalk
+            The copied and pruned version of the original ``GeoCrosswalk`` object.
         
         df : pandas.DataFrame
             A state-level (target) crosswalk.
         
         """
 
-        def _state(rec):
-            """Slice out a particular state by FIPS code."""
-            return rec[1:3] == stfips
+        # make sure the crosswalk isn't already an extracted state or overwritten
+        if len(self.xwalk_name.split("_")) > 3 or self.stfips:
+            msg = "This crosswalk may already be a state subset. "
+            msg += "Check the name/attributes.\n"
+            name_fips = (self.xwalk_name, self.stfips)
+            msg += "\tself.xwalk_name: '%s', self.stfips: %s'" % name_fips
+            warnings.warn(msg)
+
+        if return_class:
+            xwalk_cls = copy.deepcopy(self)
+        else:
+            xwalk_cls = self
 
         if from_base:
-            if not hasattr(self, "base"):
+            if not hasattr(xwalk_cls, "base"):
                 msg = "This GeoCrossWalk has no base-level crosswalk. "
                 msg += "Try building the object again with the "
                 msg += "'keep_base' parameter set to True."
                 raise RuntimeError(msg)
-            crxwlk, column = self.base, getattr(self, "base_%s_col" % endpoint.lower())
+            crxwlk, column = (
+                xwalk_cls.base,
+                getattr(xwalk_cls, "base_%s_col" % endpoint.lower()),
+            )
         else:
-            crxwlk, column = self.xwalk, getattr(self, endpoint.lower())
+            crxwlk, column = xwalk_cls.xwalk, getattr(xwalk_cls, endpoint.lower())
 
         # set NaN (null) extraction condition
         _nan_ = True if stfips.lower() == "nan" else False
 
         # set extraction condition
         condition = crxwlk[column].map(
-            lambda x: _nan_ if str(x) == "nan" else _state(x)
+            lambda x: _nan_ if str(x) == "nan" else _state(x, stfips=stfips)
         )
         df = crxwlk[condition].copy()
 
-        return df
+        if return_class:
+            # reset crosswalk name
+            xwalk_cls.xwalk_name += "_" + stfips
+            # reset dataframe of crosswalk
+            xwalk_cls.xwalk = df
+            return xwalk_cls
+        else:
+            return df
 
     def extract_unique_stfips(self, endpoint="target") -> set:
         """Return a set of unique state FIPS codes."""
-
-        def _state(rec):
-            """Slice out a particular state by FIPS code."""
-            return "nan" if str(rec) == "nan" else rec[1:3]
 
         unique_stfips = set(
             self.xwalk[getattr(self, endpoint.lower())].map(lambda x: _state(x))
@@ -1079,6 +1103,16 @@ def round_weights(df, decimals):
     return df
 
 
+def _state(rec, stfips=None):
+    """Slice out a particular state by FIPS code."""
+    if stfips:
+        # extract_state()
+        return rec[1:3] == stfips
+    else:
+        # extract_unique_stfips()
+        return "nan" if str(rec) == "nan" else rec[1:3]
+
+
 def _check_vars(_vars):
     """If the input is a single, named variable (str), insert it into a list."""
     if type(_vars) == str:
@@ -1127,3 +1161,10 @@ def example_crosswalk_data():
     for cn, cd in zip(cols, col_data):
         example_data[cn] = cd
     return example_data
+
+
+def split_blk_blk_xwalks():
+    """
+    """
+
+    pass
