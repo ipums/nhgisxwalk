@@ -777,17 +777,6 @@ class GeoCrossWalk:
         with open(path + self.xwalk_name + fext, "wb") as pkl_xwalk:
             pickle.dump(self, pkl_xwalk, protocol=2)
 
-    # @staticmethod
-    # def xwalk_from_csv(fname, fext="zip", **kwargs):
-    #    """Read in a produced crosswalk from .csv or .csv.zip."""
-    #    csv = "csv"
-    #    if fext:
-    #        file_path = "%s.%s" % (fname, fext)
-    #    else:
-    #        file_path = "%s.%s" % (fname, csv)
-    #    xwalk = pandas.read_csv(file_path, **kwargs)
-    #    return xwalk
-
     @staticmethod
     def xwalk_from_pickle(fname, fext=".pkl"):
         """Read in a produced crosswalk from a pickled ``GeoCrossWalk``."""
