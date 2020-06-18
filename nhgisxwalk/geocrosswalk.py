@@ -806,7 +806,7 @@ def xwalk_df_to_csv(cls=None, dfkwds=dict(), path="", fext="zip"):
         xwalk_name = dfkwds["xwalk_name"]
         xwalk = dfkwds["df"]
 
-    if stfips:
+    if stfips and xwalk_name.split("_")[-1] != stfips:
         xwalk_name += "_" + stfips
     if fext:
         compression_opts = dict(method=fext, archive_name="%s.%s" % (xwalk_name, csv))
