@@ -499,6 +499,7 @@ class GeoCrossWalk:
         # extract a subset of national resultant crosswalk to target state (if desired)
         if self.stfips:
             self.xwalk = self.extract_state(self.stfips)
+            self.xwalk_name += "_" + self.stfips
 
         # round the weights in the resultant crosswalk (if desired)
         if weights_precision:
@@ -757,21 +758,6 @@ class GeoCrossWalk:
         )
         return unique_stfips
 
-    def xwalk_to_csv(self, path="", fext="zip"):
-        """Write the produced crosswalk to .csv or .csv.zip."""
-        csv = "csv"
-        if self.stfips:
-            self.xwalk_name += "_" + self.stfips
-        if fext:
-            compression_opts = dict(
-                method=fext, archive_name="%s.%s" % (self.xwalk_name, csv)
-            )
-            file_name = "%s%s.%s" % (path, self.xwalk_name, fext)
-        else:
-            compression_opts = None
-            file_name = "%s%s.%s" % (path, self.xwalk_name, csv)
-        self.xwalk.to_csv(file_name, compression=compression_opts, index=False)
-
     def xwalk_to_pickle(self, path="", fext=".pkl"):
         """Write the produced ``GeoCrossWalk`` object."""
         with open(path + self.xwalk_name + fext, "wb") as pkl_xwalk:
@@ -783,6 +769,52 @@ class GeoCrossWalk:
         with open(fname + fext, "rb") as pkl_xwalk:
             self = pickle.load(pkl_xwalk)
         return self
+
+
+def xwalk_df_to_csv(cls=None, dfkwds=dict(), path="", fext="zip"):
+    """Write the produced crosswalk to .csv or .csv.zip.
+    
+    Parameters
+    ----------
+    
+    cls : nhgisxwalk.GeoCrossWalk
+        Instance of a crosswalk object. When this parameter is used, the 
+        ``dfkwds`` parameter should not be used. Default is ``None``.
+    
+    dfkwds=dict()
+        When the ``cls`` parameter is not used, this parameter should be used.
+        It should contain three keys in the form:
+        ``{"df":<pandas.DataFrame>, "stfips": <str>, "xwalk_name": <str>}``.
+        Default is ``dict()``.
+    
+    path : str
+        Directory path without the file name.  Default is ``''``.
+    
+    fext : str
+        Compression file extension. Default is ``'zip'``.
+    
+    """
+
+    csv = "csv"
+
+    if cls:
+        stfips = cls.stfips
+        xwalk_name = cls.xwalk_name
+        xwalk = cls.xwalk
+    else:
+        stfips = dfkwds["stfips"]
+        xwalk_name = dfkwds["xwalk_name"]
+        xwalk = dfkwds["df"]
+
+    if stfips:
+        xwalk_name += "_" + stfips
+    if fext:
+        compression_opts = dict(method=fext, archive_name="%s.%s" % (xwalk_name, csv))
+        file_name = "%s%s.%s" % (path, xwalk_name, fext)
+    else:
+        compression_opts = None
+        file_name = "%s%s.%s" % (path, xwalk_name, csv)
+    xwalk.to_csv(file_name, compression=compression_opts, index=False)
 
 
 def xwalk_df_from_csv(fname, fext="zip", **kwargs):
