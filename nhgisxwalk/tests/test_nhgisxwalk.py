@@ -621,6 +621,27 @@ class Test_GeoCrossWalk(unittest.TestCase):
         observed_values = read_xwalk["wt_pop"].values
         numpy.testing.assert_allclose(known_values, observed_values)
 
+    def test_xwalk_write_read_csv_from_df_compressed_no_stfips(self):
+        write_xwalk = nhgisxwalk.GeoCrossWalk(
+            base_xwalk_blk2000_blk2010,
+            source_year=_00,
+            target_year=_10,
+            source_geo=bgp,
+            target_geo=trt,
+            base_source_table=tab_data_path_2000,
+            input_var=input_vars_2000_SF1b,
+            weight_var=input_var_tags,
+            keep_base=False,
+            stfips=stfips,
+        )
+        nhgisxwalk.xwalk_df_to_csv(
+            dfkwds={"df": write_xwalk.xwalk, "xwalk_name": write_xwalk.xwalk_name}
+        )
+        read_xwalk = nhgisxwalk.xwalk_df_from_csv(write_xwalk.xwalk_name)
+        known_values = write_xwalk.xwalk["wt_pop"].values
+        observed_values = read_xwalk["wt_pop"].values
+        numpy.testing.assert_allclose(known_values, observed_values)
+
     def test_xwalk_write_read_csv_from_df_uncompressed(self):
         write_xwalk = nhgisxwalk.GeoCrossWalk(
             base_xwalk_blk2000_blk2010,
