@@ -266,7 +266,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
             ).values
             numpy.testing.assert_array_equal(known_source_nan_base, obs_source_nan_base)
 
-    def test_xwalk_extract_unique_stfips_bgp1990_trt2010(self):
+    def test_xwalk_extract_unique_stfips_cls_bgp1990_trt2010(self):
         known_target_fips = set(["10"])
         known_source_fips = set(["10", "34", "nan"])
         obs_xwalk = nhgisxwalk.GeoCrossWalk(
@@ -282,9 +282,38 @@ class Test_GeoCrossWalk(unittest.TestCase):
             keep_base=False,
             stfips=stfips,
         )
-        obs_target_fips = obs_xwalk.extract_unique_stfips(endpoint="target")
+        obs_target_fips = nhgisxwalk.extract_unique_stfips(
+            cls=obs_xwalk, endpoint="target"
+        )
         self.assertEqual(known_target_fips, obs_target_fips)
-        obs_source_fips = obs_xwalk.extract_unique_stfips(endpoint="source")
+        obs_source_fips = nhgisxwalk.extract_unique_stfips(
+            cls=obs_xwalk, endpoint="source"
+        )
+        self.assertEqual(known_source_fips, obs_source_fips)
+
+    def test_xwalk_extract_unique_stfips_df_bgp1990_trt2010(self):
+        known_target_fips = set(["10"])
+        known_source_fips = set(["10", "34", "nan"])
+        obs_xwalk = nhgisxwalk.GeoCrossWalk(
+            base_xwalk_blk1990_blk2010,
+            source_year=_90,
+            target_year=_10,
+            source_geo=bgp,
+            target_geo=trt,
+            base_source_table=tab_data_path_1990,
+            supp_source_table=supplement_data_path_90,
+            input_var=input_vars_1990,
+            weight_var=input_var_tags,
+            keep_base=False,
+            stfips=stfips,
+        )
+        obs_target_fips = nhgisxwalk.extract_unique_stfips(
+            df=obs_xwalk.xwalk, endpoint="trt2010gj"
+        )
+        self.assertEqual(known_target_fips, obs_target_fips)
+        obs_source_fips = nhgisxwalk.extract_unique_stfips(
+            df=obs_xwalk.xwalk, endpoint="bgp1990gj"
+        )
         self.assertEqual(known_source_fips, obs_source_fips)
 
     # 2000 bgp to 2010 trt through 2000 blk to 2010 blk
@@ -431,7 +460,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
             ).values
             numpy.testing.assert_array_equal(known_source_nan_base, obs_source_nan_base)
 
-    def test_xwalk_extract_unique_stfips_bgp2000_trt2010(self):
+    def test_xwalk_extract_unique_stfips_cls_bgp2000_trt2010(self):
         known_target_fips = set(["10"])
         known_source_fips = set(["10", "34"])
         obs_xwalk = nhgisxwalk.GeoCrossWalk(
@@ -446,9 +475,37 @@ class Test_GeoCrossWalk(unittest.TestCase):
             keep_base=False,
             stfips=stfips,
         )
-        obs_target_fips = obs_xwalk.extract_unique_stfips(endpoint="target")
+        obs_target_fips = nhgisxwalk.extract_unique_stfips(
+            cls=obs_xwalk, endpoint="target"
+        )
         self.assertEqual(known_target_fips, obs_target_fips)
-        obs_source_fips = obs_xwalk.extract_unique_stfips(endpoint="source")
+        obs_source_fips = nhgisxwalk.extract_unique_stfips(
+            cls=obs_xwalk, endpoint="source"
+        )
+        self.assertEqual(known_source_fips, obs_source_fips)
+
+    def test_xwalk_extract_unique_stfips_df_bgp2000_trt2010(self):
+        known_target_fips = set(["10"])
+        known_source_fips = set(["10", "34"])
+        obs_xwalk = nhgisxwalk.GeoCrossWalk(
+            base_xwalk_blk2000_blk2010,
+            source_year=_00,
+            target_year=_10,
+            source_geo=bgp,
+            target_geo=trt,
+            base_source_table=tab_data_path_2000,
+            input_var=input_vars_2000_SF1b,
+            weight_var=input_var_tags,
+            keep_base=False,
+            stfips=stfips,
+        )
+        obs_target_fips = nhgisxwalk.extract_unique_stfips(
+            df=obs_xwalk.xwalk, endpoint="trt2010gj"
+        )
+        self.assertEqual(known_target_fips, obs_target_fips)
+        obs_source_fips = nhgisxwalk.extract_unique_stfips(
+            df=obs_xwalk.xwalk, endpoint="bgp2000gj"
+        )
         self.assertEqual(known_source_fips, obs_source_fips)
 
     # 1990 bgp to 2010 bkg through 2000 blk to 2010 blk
