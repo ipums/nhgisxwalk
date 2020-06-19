@@ -802,10 +802,12 @@ def xwalk_df_to_csv(cls=None, dfkwds=dict(), path="", fext="zip"):
         xwalk_name = cls.xwalk_name
         xwalk = cls.xwalk
     else:
-        stfips = dfkwds["stfips"]
+        try:
+            stfips = dfkwds["stfips"]
+        except KeyError:
+            stfips = None
         xwalk_name = dfkwds["xwalk_name"]
         xwalk = dfkwds["df"]
-
     if stfips and xwalk_name.split("_")[-1] != stfips:
         xwalk_name += "_" + stfips
     if fext:
