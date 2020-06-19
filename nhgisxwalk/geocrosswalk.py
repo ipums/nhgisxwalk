@@ -750,14 +750,6 @@ class GeoCrossWalk:
         else:
             return df
 
-    def extract_unique_stfips(self, endpoint="target") -> set:
-        """Return a set of unique state FIPS codes."""
-
-        unique_stfips = set(
-            self.xwalk[getattr(self, endpoint.lower())].map(lambda x: _state(x))
-        )
-        return unique_stfips
-
     def xwalk_to_pickle(self, path="", fext=".pkl"):
         """Write the produced ``GeoCrossWalk`` object."""
         with open(path + self.xwalk_name + fext, "wb") as pkl_xwalk:
@@ -771,6 +763,41 @@ class GeoCrossWalk:
         return self
 
 
+def extract_unique_stfips(cls=None, df=None, endpoint="target"):
+    """Return a set of unique state FIPS codes.
+    
+    Parameters
+    ----------
+    
+    cls : nhgisxwalk.GeoCrossWalk
+        Instance of a crosswalk object. When this parameter is used, the 
+        ``df`` parameter should not be used. Default is ``None``.
+    
+    df : pandas.DataFrame
+        A crosswalk of spatio-temporal census geographies. Default is ``None``.
+        When the ``cls`` parameter is not used, this parameter should be used.
+    
+    endpoint : str
+        The column from which unique states should extracted. Default is ``'target'``,
+        which represents the ``target`` attribute of an ``nhgisxwalk.GeoCrossWalk``.
+    
+    Returns
+    -------
+    
+    unique_stfips : 
+        All unique states from the specified column.
+    
+    """
+
+    if cls:
+        endpoint = getattr(cls, endpoint.lower())
+        df = cls.xwalk
+
+    unique_stfips = set(df[endpoint].map(lambda x: _state(x)))
+
+    return unique_stfips
+
+
 def xwalk_df_to_csv(cls=None, dfkwds=dict(), path="", fext="zip"):
     """Write the produced crosswalk to .csv or .csv.zip.
     
@@ -781,7 +808,7 @@ def xwalk_df_to_csv(cls=None, dfkwds=dict(), path="", fext="zip"):
         Instance of a crosswalk object. When this parameter is used, the 
         ``dfkwds`` parameter should not be used. Default is ``None``.
     
-    dfkwds=dict()
+    dfkwds : dict()
         When the ``cls`` parameter is not used, this parameter should be used.
         It should contain three keys in the form:
         ``{"df":<pandas.DataFrame>, "stfips": <str>, "xwalk_name": <str>}``.
