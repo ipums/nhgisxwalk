@@ -206,65 +206,59 @@ class Test_GeoCrossWalk(unittest.TestCase):
             input_var=input_vars_1990,
             weight_var=input_var_tags,
             keep_base=True,
-            stfips=stfips,
         )
-        obs_target_nan_xwalk = obs_xwalk.extract_state("nan", endpoint="target").values
+        obs_target_nan_xwalk = nhgisxwalk.extract_state(
+            obs_xwalk.xwalk, "nan", obs_xwalk.xwalk_name, obs_xwalk.target
+        ).values
         numpy.testing.assert_array_equal(known_target_nan_xwalk, obs_target_nan_xwalk)
-        obs_source_nan_xwalk = obs_xwalk.extract_state("nan", endpoint="source").values
+        obs_source_nan_xwalk = nhgisxwalk.extract_state(
+            obs_xwalk.xwalk, "nan", obs_xwalk.xwalk_name, obs_xwalk.source
+        ).values
         numpy.testing.assert_array_equal(
             known_source_nan_xwalk[0, 0], obs_source_nan_xwalk[0, 0]
         )
         numpy.testing.assert_array_equal(
             known_source_nan_xwalk[0, 1:3], obs_source_nan_xwalk[0, 1:3]
         )
-        obs_target_nan_base = obs_xwalk.extract_state(
-            "nan", endpoint="target", from_base=True
+        obs_target_nan_base = nhgisxwalk.extract_state(
+            obs_xwalk.base, "nan", obs_xwalk.xwalk_name, obs_xwalk.base_target_col
         ).values
         numpy.testing.assert_array_equal(known_target_nan_base, obs_target_nan_base)
-        obs_source_nan_base = obs_xwalk.extract_state(
-            "nan", endpoint="source", from_base=True
+        obs_source_nan_base = nhgisxwalk.extract_state(
+            obs_xwalk.base, "nan", obs_xwalk.xwalk_name, obs_xwalk.base_source_col
         ).values
         self.assertEqual(known_source_nan_base_shape, obs_source_nan_base.shape)
 
     def test_xwalk_extract_state_failure_bgp1990_trt2010(self):
+        obs_xwalk = nhgisxwalk.GeoCrossWalk(
+            base_xwalk_blk1990_blk2010,
+            source_year=_90,
+            target_year=_10,
+            source_geo=bgp,
+            target_geo=trt,
+            base_source_table=tab_data_path_1990,
+            supp_source_table=supplement_data_path_90,
+            input_var=input_vars_1990,
+            weight_var=input_var_tags,
+            keep_base=True,
+            stfips=stfips,
+        )
         with self.assertRaises(RuntimeError):
-            known_target_nan_base = numpy.empty((0, 6))
-            obs_xwalk = nhgisxwalk.GeoCrossWalk(
-                base_xwalk_blk1990_blk2010,
-                source_year=_90,
-                target_year=_10,
-                source_geo=bgp,
-                target_geo=trt,
-                base_source_table=tab_data_path_1990,
-                supp_source_table=supplement_data_path_90,
-                input_var=input_vars_1990,
-                weight_var=input_var_tags,
-                keep_base=False,
-                stfips=stfips,
+            obs_target_nan_xwalk = nhgisxwalk.extract_state(
+                obs_xwalk.xwalk, "nan", obs_xwalk.xwalk_name, obs_xwalk.target
             )
-            obs_target_nan_base = obs_xwalk.extract_state(
-                "nan", endpoint="target", from_base=True
-            ).values
-            numpy.testing.assert_array_equal(known_target_nan_base, obs_target_nan_base)
         with self.assertRaises(RuntimeError):
-            known_source_nan_base = numpy.empty((0, 6))
-            obs_xwalk = nhgisxwalk.GeoCrossWalk(
-                base_xwalk_blk1990_blk2010,
-                source_year=_90,
-                target_year=_10,
-                source_geo=bgp,
-                target_geo=trt,
-                base_source_table=tab_data_path_1990,
-                supp_source_table=supplement_data_path_90,
-                input_var=input_vars_1990,
-                weight_var=input_var_tags,
-                keep_base=False,
-                stfips=stfips,
+            obs_source_nan_xwalk = nhgisxwalk.extract_state(
+                obs_xwalk.xwalk, "nan", obs_xwalk.xwalk_name, obs_xwalk.source
             )
-            obs_source_nan_base = obs_xwalk.extract_state(
-                "nan", endpoint="source", from_base=True
-            ).values
-            numpy.testing.assert_array_equal(known_source_nan_base, obs_source_nan_base)
+        with self.assertRaises(RuntimeError):
+            obs_target_nan_base = nhgisxwalk.extract_state(
+                obs_xwalk.base, "nan", obs_xwalk.xwalk_name, obs_xwalk.base_target_col
+            )
+        with self.assertRaises(RuntimeError):
+            obs_source_nan_base = nhgisxwalk.extract_state(
+                obs_xwalk.base, "nan", obs_xwalk.xwalk_name, obs_xwalk.base_source_col
+            )
 
     def test_xwalk_extract_unique_stfips_cls_bgp1990_trt2010(self):
         known_target_fips = set(["10"])
@@ -407,58 +401,53 @@ class Test_GeoCrossWalk(unittest.TestCase):
             input_var=input_vars_2000_SF1b,
             weight_var=input_var_tags,
             keep_base=True,
-            stfips=stfips,
         )
-        obs_target_nan_xwalk = obs_xwalk.extract_state("nan", endpoint="target").values
+        obs_target_nan_xwalk = nhgisxwalk.extract_state(
+            obs_xwalk.xwalk, "nan", obs_xwalk.xwalk_name, obs_xwalk.target
+        ).values
         numpy.testing.assert_array_equal(known_target_nan_xwalk, obs_target_nan_xwalk)
-        obs_source_nan_xwalk = obs_xwalk.extract_state("nan", endpoint="source").values
+        obs_source_nan_xwalk = nhgisxwalk.extract_state(
+            obs_xwalk.xwalk, "nan", obs_xwalk.xwalk_name, obs_xwalk.source
+        ).values
         numpy.testing.assert_array_equal(known_source_nan_xwalk, obs_source_nan_xwalk)
-        obs_target_nan_base = obs_xwalk.extract_state(
-            "nan", endpoint="target", from_base=True
+        obs_target_nan_base = nhgisxwalk.extract_state(
+            obs_xwalk.base, "nan", obs_xwalk.xwalk_name, obs_xwalk.base_target_col
         ).values
         numpy.testing.assert_array_equal(known_target_nan_base, obs_target_nan_base)
-        obs_source_nan_base = obs_xwalk.extract_state(
-            "nan", endpoint="source", from_base=True
+        obs_source_nan_base = nhgisxwalk.extract_state(
+            obs_xwalk.base, "nan", obs_xwalk.xwalk_name, obs_xwalk.base_source_col
         ).values
         numpy.testing.assert_array_equal(known_source_nan_base, obs_source_nan_base)
 
     def test_xwalk_extract_state_failure_bgp2000_trt2010(self):
+        obs_xwalk = nhgisxwalk.GeoCrossWalk(
+            base_xwalk_blk2000_blk2010,
+            source_year=_00,
+            target_year=_10,
+            source_geo=bgp,
+            target_geo=trt,
+            base_source_table=tab_data_path_2000,
+            input_var=input_vars_2000_SF1b,
+            weight_var=input_var_tags,
+            keep_base=True,
+            stfips=stfips,
+        )
         with self.assertRaises(RuntimeError):
-            known_target_nan_base = numpy.empty((0, 6))
-            obs_xwalk = nhgisxwalk.GeoCrossWalk(
-                base_xwalk_blk2000_blk2010,
-                source_year=_00,
-                target_year=_10,
-                source_geo=bgp,
-                target_geo=trt,
-                base_source_table=tab_data_path_2000,
-                input_var=input_vars_2000_SF1b,
-                weight_var=input_var_tags,
-                keep_base=False,
-                stfips=stfips,
+            obs_target_nan_xwalk = nhgisxwalk.extract_state(
+                obs_xwalk.xwalk, "nan", obs_xwalk.xwalk_name, obs_xwalk.target
             )
-            obs_target_nan_base = obs_xwalk.extract_state(
-                "nan", endpoint="target", from_base=True
-            ).values
-            numpy.testing.assert_array_equal(known_target_nan_base, obs_target_nan_base)
         with self.assertRaises(RuntimeError):
-            known_source_nan_base = numpy.empty((0, 6))
-            obs_xwalk = nhgisxwalk.GeoCrossWalk(
-                base_xwalk_blk2000_blk2010,
-                source_year=_00,
-                target_year=_10,
-                source_geo=bgp,
-                target_geo=trt,
-                base_source_table=tab_data_path_2000,
-                input_var=input_vars_2000_SF1b,
-                weight_var=input_var_tags,
-                keep_base=False,
-                stfips=stfips,
+            obs_source_nan_xwalk = nhgisxwalk.extract_state(
+                obs_xwalk.xwalk, "nan", obs_xwalk.xwalk_name, obs_xwalk.source
             )
-            obs_source_nan_base = obs_xwalk.extract_state(
-                "nan", endpoint="source", from_base=True
-            ).values
-            numpy.testing.assert_array_equal(known_source_nan_base, obs_source_nan_base)
+        with self.assertRaises(RuntimeError):
+            obs_target_nan_base = nhgisxwalk.extract_state(
+                obs_xwalk.base, "nan", obs_xwalk.xwalk_name, obs_xwalk.base_target_col
+            )
+        with self.assertRaises(RuntimeError):
+            obs_source_nan_base = nhgisxwalk.extract_state(
+                obs_xwalk.base, "nan", obs_xwalk.xwalk_name, obs_xwalk.base_source_col
+            )
 
     def test_xwalk_extract_unique_stfips_cls_bgp2000_trt2010(self):
         known_target_fips = set(["10"])
