@@ -500,8 +500,6 @@ class GeoCrossWalk:
 
         # extract a subset of national resultant crosswalk to target state (if desired)
         if self.stfips:
-            # self.xwalk = self.extract_state(self.stfips)###########################################################
-
             self.xwalk = extract_state(
                 self.xwalk, self.stfips, self.xwalk_name, self.target
             )
@@ -676,88 +674,6 @@ class GeoCrossWalk:
                     for c in self.xwalk.columns
                 ]
 
-    '''
-    def extract_state(
-        self, stfips, endpoint="target", from_base=False, return_class=False
-    ):
-        """Subset a national crosswalk to state-level (within target year).
-
-        Parameters
-        ----------
-
-        stfips : str
-            See the ``stfips`` parameter in ``GeoCrossWalk``.
-            Set to 'nan' to extract geographies with no associated state.
-
-        endpoint : str
-            Extract from either the ``source`` or ``target`` geography+year.
-            Default is ``target``.
-
-        from_base : bool
-            Create a state extraction from the base-level (block) crosswalk
-            (``True``). When ``False`` the resultant crosswalk is subset.
-            Default is ``False``.
-
-        return_class : bool
-            If ``True``, return a copied version of the ``GeoCrosswalk`` object.
-            Default is ``False``.
-
-        Returns
-        -------
-
-        xwalk_cls : nhgisxwalk.GeoCrossWalk
-            The copied and pruned version of the original ``GeoCrosswalk`` object.
-
-        df : pandas.DataFrame
-           A state-level (target) crosswalk.
-
-        """
-
-        # make sure the crosswalk isn't already an extracted state or overwritten
-        if len(self.xwalk_name.split("_")) > 3 or self.stfips:
-            msg = "This crosswalk may already be a state subset. "
-            msg += "Check the name/attributes.\n"
-            name_fips = (self.xwalk_name, self.stfips)
-            msg += "\tself.xwalk_name: '%s', self.stfips: %s'" % name_fips
-            warnings.warn(msg)
-
-        if return_class:
-            xwalk_cls = copy.deepcopy(self)
-        else:
-            xwalk_cls = self
-
-        if from_base:
-            if not hasattr(xwalk_cls, "base"):
-               msg = "This GeoCrossWalk has no base-level crosswalk. "
-               msg += "Try building the object again with the "
-               msg += "'keep_base' parameter set to True."
-               raise RuntimeError(msg)
-            crxwlk, column = (
-               xwalk_cls.base,
-               getattr(xwalk_cls, "base_%s_col" % endpoint.lower()),
-            )
-        else:
-            crxwlk, column = xwalk_cls.xwalk, getattr(xwalk_cls, endpoint.lower())
-
-        # set NaN (null) extraction condition
-        _nan_ = True if stfips.lower() == "nan" else False
-
-        # set extraction condition
-        condition = crxwlk[column].map(
-            lambda x: _nan_ if str(x) == "nan" else _state(x, stfips=stfips)
-        )
-        df = crxwlk[condition].copy()
-
-        if return_class:
-            # reset crosswalk name
-            xwalk_cls.xwalk_name += "_" + stfips
-            # reset dataframe of crosswalk
-            xwalk_cls.xwalk = df
-            return xwalk_cls
-        else:
-            return df
-    '''
-
     def xwalk_to_pickle(self, path="", fext=".pkl"):
         """Write the produced ``GeoCrossWalk`` object."""
         with open(path + self.xwalk_name + fext, "wb") as pkl_xwalk:
@@ -805,7 +721,6 @@ def extract_state(in_xwalk, stfips, xwalk_name, endpoint):
         msg += "Check the name/attributes.\n"
         msg += "\txwalk_name: '%s', stfips: %s'" % (xwalk_name, stfips)
         raise RuntimeError(msg)
-        # warnings.warn(msg)#####################################################################################
 
     # set NaN (null) extraction condition
     nan = True if stfips.lower() == "nan" else False
