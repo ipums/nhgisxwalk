@@ -30,11 +30,13 @@ def fetch_base_xwalk(sg, tg, sy, ty):
     base_xwalk_file = data_dir + base_xwalk_name
     data_types = nhgisxwalk.str_types(["GJOIN%s" % sy, "GJOIN%s" % ty])
     base_xwalk = pandas.read_csv(base_xwalk_file, index_col=0, dtype=data_types)
-    return base_xwalk
+    return base_xwalk, base_xwalk_file
 
 
 # 1990 blocks to 2010 blocks ---------------------------------------------------
-base_xwalk_blk1990_blk2010 = fetch_base_xwalk(blk, blk, _90, _10)
+base_xwalk_blk1990_blk2010, base_xwalk_blk1990_blk2010_fname = fetch_base_xwalk(
+    blk, blk, _90, _10
+)
 # input variables
 input_vars_1990 = [
     nhgisxwalk.desc_code_1990["Persons"]["Total"],
@@ -48,7 +50,9 @@ tab_data_path_1990 = tabular_data_path % _90
 supplement_data_path_90 = supplement_data_path_90 % _90
 
 # 2000 blocks to 2010 blocks ---------------------------------------------------
-base_xwalk_blk2000_blk2010 = fetch_base_xwalk(blk, blk, _00, _10)
+base_xwalk_blk2000_blk2010, base_xwalk_blk2000_blk2010_fname = fetch_base_xwalk(
+    blk, blk, _00, _10,
+)
 # input variables
 input_vars_2000_SF1b = [
     nhgisxwalk.desc_code_2000_SF1b["Persons"]["Total"],
@@ -808,6 +812,24 @@ class Test_GeoCrossWalk(unittest.TestCase):
 class Test_upper_level_functions(unittest.TestCase):
     def setUp(self):
         self.example_df = nhgisxwalk.example_crosswalk_data()
+
+    def test_split_blk_blk_xwalk(self):
+        known_ids = numpy.array(
+            [
+                "G10000100432021078",
+                "G10000100432023014",
+                "G10000100432023015",
+                "G10000109900000011",
+                "G10000109900000012",
+            ]
+        )
+        xwalk_name = base_xwalk_blk1990_blk2010_fname.split("/")[-1].split(".")[0]
+        nhgisxwalk.split_blk_blk_xwalk(
+            base_xwalk_blk1990_blk2010, "GJOIN2010", xwalk_name
+        )
+        read_xwalk = nhgisxwalk.xwalk_df_from_csv(xwalk_name + "_" + stfips)
+        observed_ids = read_xwalk["GJOIN2010"].head().values
+        numpy.testing.assert_array_equal(known_ids, observed_ids)
 
     def test_example_crosswalk_data(self):
         known_type = "dataframe"
