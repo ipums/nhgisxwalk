@@ -716,7 +716,8 @@ def extract_state(in_xwalk, stfips, xwalk_name, endpoint):
     """
 
     # make sure the crosswalk isn't already an extracted state or overwritten
-    if len(xwalk_name.split("_")) > 3:
+    check_state_label = xwalk_name.split("_")[-1]
+    if check_state_label.isnumeric() or check_state_label == "nan":
         msg = "This crosswalk may already be a state subset. "
         msg += "Check the name/attributes.\n"
         msg += "\txwalk_name: '%s', stfips: %s'" % (xwalk_name, stfips)
@@ -1190,3 +1191,38 @@ def example_crosswalk_data():
     for cn, cd in zip(cols, col_data):
         example_data[cn] = cd
     return example_data
+
+
+def split_blk_blk_xwalk(df, endpoint, fname, fpath=""):
+    """Split and write out an original NHGIS base-level (block) crosswalk.
+    
+    Parameters
+    ----------
+    
+    df : pandas.DataFrame
+        An original NHGIS base-level (block) crosswalk
+    
+    endpoint : str
+        The column from which unique states should extracted.
+    
+    fname : str
+        Crosswalk (file) name.
+    
+    fpath : str
+        Crosswalk (file) path. Default is ``''``.
+    
+    """
+
+    # extract and sort all unique state FIPS codes
+    unique_stfips = extract_unique_stfips(df=df, endpoint=endpoint)
+    unique_stfips = list(unique_stfips)
+    unique_stfips.sort()
+
+    # iterate over each unique state FIPS code
+    for stfips in unique_stfips:
+        # create a subset for each endpoint (source/target) state
+        stdf = extract_state(df, stfips, fname, endpoint)
+        xwalk_name = fname + "_" + stfips
+        # write the subset to a zipped .csv
+        dfkwds = {"df": stdf, "stfips": stfips, "xwalk_name": xwalk_name}
+        xwalk_df_to_csv(dfkwds=dfkwds, path=fpath)
