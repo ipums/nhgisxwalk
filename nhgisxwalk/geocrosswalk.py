@@ -1144,8 +1144,10 @@ def round_weights(df, decimals):
 def _state(rec, stfips=None, code="gj"):
     """Slice out a particular state by FIPS code."""
     if code == "gj":
+        # for GISJOIN IDs
         idx1, idx2 = 1, 3
     else:
+        # for GEOIDs
         idx1, idx2 = 0, 2
     if stfips:
         # extract_state()
