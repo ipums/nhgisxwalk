@@ -331,11 +331,39 @@ def trt_gj(year, _id):
     return tract_id
 
 
-def cty_id():
-    """         **** NOT CURRENTLY FUNCTIONAL ****
+def cty_id(year, _id):
+    """Extract the county ID from the block ID.
+    See `GISJOIN identifiers <https://www.nhgis.org/user-resources/geographic-crosswalks>`_.
+    
+    Parameters
+    ----------
+    
+    year : str
+        The census collection year.
+    
+    _id : str
+        The block GISJOIN.
+    
+    Returns
+    -------
+    
+    county_id : str
+        The county GISJOIN.
+    
     """
 
-    pass
+    if not _id.startswith("G"):
+        raise ValueError("Check the NHGIS prefix of '%s'." % _id)
+
+    if year == "2010":
+        indexer = 8
+        # slice out county ID
+        county_id = _id[:indexer]
+    else:
+        msg = "Census year %s is not currently supported." % year
+        raise ValueError(msg)
+
+    return county_id
 
 
 def id_from(target_func, target_year, source, vectorized):
@@ -439,7 +467,7 @@ def gj_code_components(year, geo):
         if geo == "trt":
             components = trt2010
         if geo == "cty":
-            raise AttributeError()
+            components = cty2010
             # components
 
     # create ID components dataframe
