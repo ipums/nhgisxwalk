@@ -331,7 +331,7 @@ def trt_gj(year, _id):
     return tract_id
 
 
-def cty_id(year, _id):
+def cty_gj(year, _id):
     """Extract the county ID from the block ID.
     See `GISJOIN identifiers <https://www.nhgis.org/user-resources/geographic-crosswalks>`_.
     
