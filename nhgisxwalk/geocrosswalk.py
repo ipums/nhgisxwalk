@@ -7,9 +7,7 @@ from .id_codes import blk_gj, bgp_gj, bkg_gj, trt_gj, gj_code_components
 import numpy
 import pandas
 
-import copy
 import pickle
-import warnings
 
 # used to fetch/vectorize ID generation functions
 id_generator_funcs = [
