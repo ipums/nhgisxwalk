@@ -21,6 +21,8 @@ id_generator_funcs = [
 ]
 id_generators = {f.__name__: f for f in id_generator_funcs}
 
+CSV = "csv"
+
 
 class GeoCrossWalk:
     """Generate a temporal crosswalk for census geography data 
@@ -498,7 +500,10 @@ class GeoCrossWalk:
 
         # extract a subset of national resultant crosswalk to target state (if desired)
         if self.stfips:
-            self.xwalk = self.extract_state(self.stfips)
+            self.xwalk = extract_state(
+                self.xwalk, self.stfips, self.xwalk_name, self.target
+            )
+            self.xwalk_name += "_" + self.stfips
 
         # round the weights in the resultant crosswalk (if desired)
         if weights_precision:
@@ -669,124 +674,10 @@ class GeoCrossWalk:
                     for c in self.xwalk.columns
                 ]
 
-    def extract_state(
-        self, stfips, endpoint="target", from_base=False, return_class=False
-    ):
-        """Subset a national crosswalk to state-level (within target year).
-        
-        Parameters
-        ----------
-        
-        stfips : str
-            See the ``stfips`` parameter in ``GeoCrossWalk``.
-            Set to 'nan' to extract geographies with no associated state.
-        
-        endpoint : str
-            Extract from either the ``source`` or ``target`` geography+year.
-            Default is ``target``.
-        
-        from_base : bool
-            Create a state extraction from the base-level (block) crosswalk
-            (``True``). When ``False`` the resultant crosswalk is subset.
-            Default is ``False``.
-        
-        return_class : bool
-            If ``True``, return a copied version of the ``GeoCrosswalk`` object.
-            Default is ``False``.
-        
-        Returns
-        -------
-        
-        xwalk_cls : nhgisxwalk.GeoCrossWalk
-            The copied and pruned version of the original ``GeoCrosswalk`` object.
-        
-        df : pandas.DataFrame
-            A state-level (target) crosswalk.
-        
-        """
-
-        # make sure the crosswalk isn't already an extracted state or overwritten
-        if len(self.xwalk_name.split("_")) > 3 or self.stfips:
-            msg = "This crosswalk may already be a state subset. "
-            msg += "Check the name/attributes.\n"
-            name_fips = (self.xwalk_name, self.stfips)
-            msg += "\tself.xwalk_name: '%s', self.stfips: %s'" % name_fips
-            warnings.warn(msg)
-
-        if return_class:
-            xwalk_cls = copy.deepcopy(self)
-        else:
-            xwalk_cls = self
-
-        if from_base:
-            if not hasattr(xwalk_cls, "base"):
-                msg = "This GeoCrossWalk has no base-level crosswalk. "
-                msg += "Try building the object again with the "
-                msg += "'keep_base' parameter set to True."
-                raise RuntimeError(msg)
-            crxwlk, column = (
-                xwalk_cls.base,
-                getattr(xwalk_cls, "base_%s_col" % endpoint.lower()),
-            )
-        else:
-            crxwlk, column = xwalk_cls.xwalk, getattr(xwalk_cls, endpoint.lower())
-
-        # set NaN (null) extraction condition
-        _nan_ = True if stfips.lower() == "nan" else False
-
-        # set extraction condition
-        condition = crxwlk[column].map(
-            lambda x: _nan_ if str(x) == "nan" else _state(x, stfips=stfips)
-        )
-        df = crxwlk[condition].copy()
-
-        if return_class:
-            # reset crosswalk name
-            xwalk_cls.xwalk_name += "_" + stfips
-            # reset dataframe of crosswalk
-            xwalk_cls.xwalk = df
-            return xwalk_cls
-        else:
-            return df
-
-    def extract_unique_stfips(self, endpoint="target") -> set:
-        """Return a set of unique state FIPS codes."""
-
-        unique_stfips = set(
-            self.xwalk[getattr(self, endpoint.lower())].map(lambda x: _state(x))
-        )
-        return unique_stfips
-
-    def xwalk_to_csv(self, path="", fext="zip"):
-        """Write the produced crosswalk to .csv or .csv.zip."""
-        csv = "csv"
-        if self.stfips:
-            self.xwalk_name += "_" + self.stfips
-        if fext:
-            compression_opts = dict(
-                method=fext, archive_name="%s.%s" % (self.xwalk_name, csv)
-            )
-            file_name = "%s%s.%s" % (path, self.xwalk_name, fext)
-        else:
-            compression_opts = None
-            file_name = "%s%s.%s" % (path, self.xwalk_name, csv)
-        self.xwalk.to_csv(file_name, compression=compression_opts, index=False)
-
     def xwalk_to_pickle(self, path="", fext=".pkl"):
         """Write the produced ``GeoCrossWalk`` object."""
         with open(path + self.xwalk_name + fext, "wb") as pkl_xwalk:
             pickle.dump(self, pkl_xwalk, protocol=2)
-
-    @staticmethod
-    def xwalk_from_csv(fname, fext="zip"):
-        """Read in a produced crosswalk from .csv or .csv.zip."""
-        csv = "csv"
-        if fext:
-            file_path = "%s.%s" % (fname, fext)
-        else:
-            file_path = "%s.%s" % (fname, csv)
-        xwalk = pandas.read_csv(file_path)
-        return xwalk
 
     @staticmethod
     def xwalk_from_pickle(fname, fext=".pkl"):
@@ -794,6 +685,153 @@ class GeoCrossWalk:
         with open(fname + fext, "rb") as pkl_xwalk:
             self = pickle.load(pkl_xwalk)
         return self
+
+
+def extract_state(in_xwalk, stfips, xwalk_name, endpoint, code="gj"):
+    """Subset a national crosswalk to state-level (within target year).
+    
+    Parameters
+    ----------
+    
+    in_xwalk : pandas.DataFrame
+        The original full crosswalk.  See the ``xwalk`` attribute or ``base``
+        parameter in ``GeoCrossWalk``.
+    
+    stfips : str
+        See the ``stfips`` parameter in ``GeoCrossWalk``.
+        Set to 'nan' to extract geographies with no associated state.
+    
+    xwalk_name : str
+        See the ``xwalk_name`` parameter in ``GeoCrossWalk``.
+    
+    endpoint : str
+        Column name to extract from.
+    
+    code : str
+        The code type used in indexing unique states. Default is ``'gj'``.
+    
+    Returns
+    -------
+    
+    out_xwalk : pandas.DataFrame
+        A state-level (target) crosswalk.
+    
+    """
+
+    # make sure the crosswalk isn't already an extracted state or overwritten
+    check_state_label = xwalk_name.split("_")[-1]
+    if check_state_label.isnumeric() or check_state_label == "nan":
+        msg = "This crosswalk may already be a state subset. "
+        msg += "Check the name/attributes.\n"
+        msg += "\txwalk_name: '%s', stfips: %s'" % (xwalk_name, stfips)
+        raise RuntimeError(msg)
+
+    # set NaN (null) extraction condition
+    nan = True if stfips.lower() == "nan" else False
+
+    # set extraction condition
+    extract_lambda = (
+        lambda x: nan if str(x) == "nan" else _state(x, stfips=stfips, code=code)
+    )
+    condition = in_xwalk[endpoint].map(extract_lambda)
+    out_xwalk = in_xwalk[condition].copy()
+
+    return out_xwalk
+
+
+def extract_unique_stfips(cls=None, df=None, endpoint="target", code="gj"):
+    """Return a set of unique state FIPS codes.
+    
+    Parameters
+    ----------
+    
+    cls : nhgisxwalk.GeoCrossWalk
+        Instance of a crosswalk object. When this parameter is used, the 
+        ``df`` parameter should not be used. Default is ``None``.
+    
+    df : pandas.DataFrame
+        A crosswalk of spatio-temporal census geographies. Default is ``None``.
+        When the ``cls`` parameter is not used, this parameter should be used.
+    
+    endpoint : str
+        The column from which unique states should extracted. Default is ``'target'``,
+        which represents the ``target`` attribute of an ``nhgisxwalk.GeoCrossWalk``.
+    
+     code : str
+        The code type used in indexing unique states. Default is ``'gj'``.
+    
+    Returns
+    -------
+    
+    unique_stfips : 
+        All unique states from the specified column.
+    
+    """
+
+    if cls:
+        endpoint = getattr(cls, endpoint.lower())
+        df = cls.xwalk
+
+    unique_stfips = set(df[endpoint].map(lambda x: _state(x, code=code)))
+
+    return unique_stfips
+
+
+def xwalk_df_to_csv(cls=None, dfkwds=dict(), path="", fext="zip"):
+    """Write the produced crosswalk to .csv or .csv.zip.
+    
+    Parameters
+    ----------
+    
+    cls : nhgisxwalk.GeoCrossWalk
+        Instance of a crosswalk object. When this parameter is used, the 
+        ``dfkwds`` parameter should not be used. Default is ``None``.
+    
+    dfkwds : dict()
+        When the ``cls`` parameter is not used, this parameter should be used.
+        It should contain three keys in the form:
+        ``{"df":<pandas.DataFrame>, "stfips": <str>, "xwalk_name": <str>}``.
+        Default is ``dict()``.
+    
+    path : str
+        Directory path without the file name.  Default is ``''``.
+    
+    fext : str
+        Compression file extension. Default is ``'zip'``.
+    
+    """
+
+    if cls:
+        stfips = cls.stfips
+        xwalk_name = cls.xwalk_name
+        xwalk = cls.xwalk
+    else:
+        try:
+            stfips = dfkwds["stfips"]
+        except KeyError:
+            stfips = None
+        xwalk_name = dfkwds["xwalk_name"]
+        xwalk = dfkwds["df"]
+    if stfips and xwalk_name.split("_")[-1] != stfips:
+        xwalk_name += "_" + stfips
+    if fext:
+        compression_opts = dict(method=fext, archive_name="%s.%s" % (xwalk_name, CSV))
+        file_name = "%s%s.%s" % (path, xwalk_name, fext)
+    else:
+        compression_opts = None
+        file_name = "%s%s.%s" % (path, xwalk_name, CSV)
+    xwalk.to_csv(file_name, compression=compression_opts, index=False)
+
+
+def xwalk_df_from_csv(fname, fext="zip", **kwargs):
+    """Read in a produced crosswalk from .csv or .csv.zip."""
+
+    if fext:
+        file_path = "%s.%s" % (fname, fext)
+    else:
+        file_path = "%s.%s" % (fname, CSV)
+    xwalk = pandas.read_csv(file_path, **kwargs)
+    return xwalk
 
 
 def calculate_atoms(
@@ -1103,14 +1141,20 @@ def round_weights(df, decimals):
     return df
 
 
-def _state(rec, stfips=None):
+def _state(rec, stfips=None, code="gj"):
     """Slice out a particular state by FIPS code."""
+    if code == "gj":
+        # for GISJOIN IDs
+        idx1, idx2 = 1, 3
+    else:
+        # for GEOIDs
+        idx1, idx2 = 0, 2
     if stfips:
         # extract_state()
-        return rec[1:3] == stfips
+        return rec[idx1:idx2] == stfips
     else:
         # extract_unique_stfips()
-        return "nan" if str(rec) == "nan" else rec[1:3]
+        return "nan" if str(rec) == "nan" else rec[idx1:idx2]
 
 
 def _check_vars(_vars):
@@ -1161,3 +1205,39 @@ def example_crosswalk_data():
     for cn, cd in zip(cols, col_data):
         example_data[cn] = cd
     return example_data
+
+
+def split_blk_blk_xwalk(df, endpoint, fname, fpath=""):
+    """Split and write out an original NHGIS base-level (block) crosswalk.
+    
+    Parameters
+    ----------
+    
+    df : pandas.DataFrame
+        An original NHGIS base-level (block) crosswalk
+    
+    endpoint : str
+        The column from which unique states should extracted.
+    
+    fname : str
+        Crosswalk (file) name.
+    
+    fpath : str
+        Crosswalk (file) path. Default is ``''``.
+    
+    """
+
+    # extract and sort all unique state FIPS codes
+    code = fname[-2:]
+    unique_stfips = extract_unique_stfips(df=df, endpoint=endpoint, code=code)
+    unique_stfips = list(unique_stfips)
+    unique_stfips.sort()
+
+    # iterate over each unique state FIPS code
+    for stfips in unique_stfips:
+        # create a subset for each endpoint (source/target) state
+        stdf = extract_state(df, stfips, fname, endpoint, code=code)
+        xwalk_name = fname + "_" + stfips
+        # write the subset to a zipped .csv
+        dfkwds = {"df": stdf, "stfips": stfips, "xwalk_name": xwalk_name}
+        xwalk_df_to_csv(dfkwds=dfkwds, path=fpath)
