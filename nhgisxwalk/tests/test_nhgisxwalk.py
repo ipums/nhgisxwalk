@@ -949,6 +949,13 @@ class Test_upper_level_functions(unittest.TestCase):
         k2, o2 = known[:, 2:].astype(float), observed.values[:, 2:].astype(float)
         numpy.testing.assert_allclose(k2, o2, atol=4)
 
+    def test__state(self):
+        from nhgisxwalk.geocrosswalk import _state
+
+        known = "99"
+        observed = _state("99000001", code="ge")
+        self.assertEqual(known, observed)
+
     def test_str_types(self):
         known = {"test_name_1": str, "test_name_2": str}
         observed = nhgisxwalk.str_types(["test_name_1", "test_name_2"])
