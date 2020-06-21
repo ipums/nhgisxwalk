@@ -687,7 +687,7 @@ class GeoCrossWalk:
         return self
 
 
-def extract_state(in_xwalk, stfips, xwalk_name, endpoint):
+def extract_state(in_xwalk, stfips, xwalk_name, endpoint, code="gj"):
     """Subset a national crosswalk to state-level (within target year).
     
     Parameters
@@ -706,6 +706,9 @@ def extract_state(in_xwalk, stfips, xwalk_name, endpoint):
     
     endpoint : str
         Column name to extract from.
+    
+    code : str
+        The code type used in indexing unique states. Default is ``'gj'``.
     
     Returns
     -------
@@ -727,14 +730,16 @@ def extract_state(in_xwalk, stfips, xwalk_name, endpoint):
     nan = True if stfips.lower() == "nan" else False
 
     # set extraction condition
-    extract_lambda = lambda x: nan if str(x) == "nan" else _state(x, stfips=stfips)
+    extract_lambda = (
+        lambda x: nan if str(x) == "nan" else _state(x, stfips=stfips, code=code)
+    )
     condition = in_xwalk[endpoint].map(extract_lambda)
     out_xwalk = in_xwalk[condition].copy()
 
     return out_xwalk
 
 
-def extract_unique_stfips(cls=None, df=None, endpoint="target"):
+def extract_unique_stfips(cls=None, df=None, endpoint="target", code="gj"):
     """Return a set of unique state FIPS codes.
     
     Parameters
@@ -752,6 +757,9 @@ def extract_unique_stfips(cls=None, df=None, endpoint="target"):
         The column from which unique states should extracted. Default is ``'target'``,
         which represents the ``target`` attribute of an ``nhgisxwalk.GeoCrossWalk``.
     
+     code : str
+        The code type used in indexing unique states. Default is ``'gj'``.
+    
     Returns
     -------
     
@@ -764,7 +772,7 @@ def extract_unique_stfips(cls=None, df=None, endpoint="target"):
         endpoint = getattr(cls, endpoint.lower())
         df = cls.xwalk
 
-    unique_stfips = set(df[endpoint].map(lambda x: _state(x)))
+    unique_stfips = set(df[endpoint].map(lambda x: _state(x, code=code)))
 
     return unique_stfips
 
@@ -1133,14 +1141,18 @@ def round_weights(df, decimals):
     return df
 
 
-def _state(rec, stfips=None):
+def _state(rec, stfips=None, code="gj"):
     """Slice out a particular state by FIPS code."""
+    if code == "gj":
+        idx1, idx2 = 1, 3
+    else:
+        idx1, idx2 = 0, 2
     if stfips:
         # extract_state()
-        return rec[1:3] == stfips
+        return rec[idx1:idx2] == stfips
     else:
         # extract_unique_stfips()
-        return "nan" if str(rec) == "nan" else rec[1:3]
+        return "nan" if str(rec) == "nan" else rec[idx1:idx2]
 
 
 def _check_vars(_vars):
@@ -1214,14 +1226,15 @@ def split_blk_blk_xwalk(df, endpoint, fname, fpath=""):
     """
 
     # extract and sort all unique state FIPS codes
-    unique_stfips = extract_unique_stfips(df=df, endpoint=endpoint)
+    code = fname[-2:]
+    unique_stfips = extract_unique_stfips(df=df, endpoint=endpoint, code=code)
     unique_stfips = list(unique_stfips)
     unique_stfips.sort()
 
     # iterate over each unique state FIPS code
     for stfips in unique_stfips:
         # create a subset for each endpoint (source/target) state
-        stdf = extract_state(df, stfips, fname, endpoint)
+        stdf = extract_state(df, stfips, fname, endpoint, code=code)
         xwalk_name = fname + "_" + stfips
         # write the subset to a zipped .csv
         dfkwds = {"df": stdf, "stfips": stfips, "xwalk_name": xwalk_name}
