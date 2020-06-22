@@ -1028,6 +1028,19 @@ class Test_id_codes_functions(unittest.TestCase):
         with self.assertRaises(ValueError):
             nhgisxwalk.id_codes.trt_gj("0000", "G123456789123456789")
 
+    def test_cty_gj(self):
+        known_value = "G1000010"
+        observed_value = nhgisxwalk.id_codes.cty_gj("2010", "G1000010999999999")
+        self.assertEqual(known_value, observed_value)
+
+    def test_cty_gj_no_G(self):
+        with self.assertRaises(ValueError):
+            nhgisxwalk.id_codes.trt_gj("2010", "X1.1")
+
+    def test_cty_gj_bad_year(self):
+        with self.assertRaises(ValueError):
+            nhgisxwalk.id_codes.trt_gj("0000", "G123456789123456789")
+
 
 if __name__ == "__main__":
     unittest.main()

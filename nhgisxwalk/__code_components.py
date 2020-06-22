@@ -201,4 +201,43 @@ BTTRA,       Tribal Census Tract Code
 BTBGA,       Tribal Block Group Code"""
 
 cty2010 = r"""
+GISJOIN,     GIS Join Match Code
+YEAR,        Data File Year
+REGIONA,     Region Code
+DIVISIONA,   Division Code
+STATE,       State Name
+STATEA,      State Code
+COUNTY,      County Name
+COUNTYA,     County Code
+COUSUBA,     County Subdivision Code
+PLACEA,      Place Code
+TRACTA,      Census Tract Code
+BLKGRPA,     Block Group Code
+BLOCKA,      Block Code
+CONCITA,     Consolidated City Code
+AIANHHA,     American Indian Area/Alaska Native Area/Hawaiian Home Land Code
+RES_ONLYA,   American Indian Reservation with Trust Lands; reservation only Code
+TRUSTA,      American Indian Reservation with Trust Lands; trust lands only Code
+AITSCEA,     Tribal Subdivision/Remainder Code
+TTRACTA,     Tribal Census Tract Code
+TBLKGRPA,    Tribal Block Group Code
+ANRCA,       Alaska Native Regional Corporation Code
+CBSAA,       Metropolitan Statistical Area/Micropolitan Statistical Area Code
+METDIVA,     Metropolitan Division Code
+CSAA,        Combined Statistical Area Code
+NECTAA,      New England City and Town Area Code
+NECTADIVA,   NECTA Division Code
+CNECTAA,     Combined New England City and Town Area Code
+UAA,         Urban Area Code
+URBRURALA,   Urban/Rural Code
+CDA,         Congressional District (111th Congress) Code
+SLDUA,       State Legislative District (Upper Chamber) Code
+SLDLA,       State Legislative District (Lower Chamber) Code
+ZCTA5A,      5-Digit Zip Code Tabulation Area Code
+SUBMCDA,     Subminor Civil Division Code
+SDELMA,      School District (Elementary)/Remainder Code
+SDSECA,      School District (Secondary)/Remainder Code
+SDUNIA,      School District (Unified)/Remainder Code
+NAME,        Area Name-Legal/Statistical Area Description (LSAD) Term-Part Indicator
+SABINSA,     School Attendance Area Code
 """

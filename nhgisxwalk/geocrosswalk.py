@@ -2,23 +2,15 @@
 """
 
 from .id_codes import code_cols, generate_atom_id, generate_geoid, id_from
-from .id_codes import blk_gj, bgp_gj, bkg_gj, trt_gj, gj_code_components
+from .id_codes import blk_gj, bgp_gj, bkg_gj, trt_gj, cty_gj, gj_code_components
 
 import numpy
 import pandas
 
-import copy
 import pickle
-import warnings
 
 # used to fetch/vectorize ID generation functions
-id_generator_funcs = [
-    blk_gj,
-    bgp_gj,
-    bkg_gj,
-    trt_gj,
-    # cty_gj
-]
+id_generator_funcs = [blk_gj, bgp_gj, bkg_gj, trt_gj, cty_gj]
 id_generators = {f.__name__: f for f in id_generator_funcs}
 
 CSV = "csv"

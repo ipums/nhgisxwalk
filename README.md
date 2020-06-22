@@ -15,6 +15,8 @@ This pacakge allows for the generation of temporal crosswalks of census geograph
 
 | source | target |
 |--------|-------|
+|1990 block group parts | 2010 counties|
+|2000 block group parts | 2010 counties|
 |1990 block group parts | 2010 tracts|
 |2000 block group parts | 2010 tracts|
 |1990 block group parts | 2010 block groups|
@@ -35,11 +37,8 @@ This pacakge allows for the generation of temporal crosswalks of census geograph
 
 * [Proportionally-weighted Synthetic Atoms](https://github.com/jGaboardi/nhgisxwalk/blob/master/notebooks/weighted-portion-synthetic-atoms.ipynb)
 * [Synthetic Example](https://github.com/jGaboardi/nhgisxwalk/blob/master/notebooks/synthetic-example.ipynb)
-* Sample Workflows:
+* Sample Workflow (see all [here](https://github.com/jGaboardi/nhgisxwalk/blob/master/notebooks)):
   * [1990 block group parts to 2010 tracts](https://github.com/jGaboardi/nhgisxwalk/blob/master/notebooks/data-subset-sample-workflow-bgp1990trt2010.ipynb)
-  * [2000 block group parts to 2010 tracts](https://github.com/jGaboardi/nhgisxwalk/blob/master/notebooks/data-subset-sample-workflow-bgp2000trt2010.ipynb)
-  * [1990 block group parts to 2010 block groups](https://github.com/jGaboardi/nhgisxwalk/blob/master/notebooks/data-subset-sample-workflow-bgp1990bkg2010.ipynb)
-  * [2000 block group parts to 2010 block groups](https://github.com/jGaboardi/nhgisxwalk/blob/master/notebooks/data-subset-sample-workflow-bgp2000bkg2010.ipynb)
 
 ## Resources
 
