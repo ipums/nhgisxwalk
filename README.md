@@ -43,6 +43,7 @@ This pacakge allows for the generation of temporal crosswalks of census geograph
 ## Resources
 
 * [Frequently Asked Questions](https://github.com/jGaboardi/nhgisxwalk/wiki/FAQ-&-Resources)
+    * [What are "block group parts" and how can I download them?](https://github.com/jGaboardi/nhgisxwalk/wiki/FAQ-&-Resources#what-are-block-group-parts-and-how-can-i-download-them) 
 
 ## Installation
 
