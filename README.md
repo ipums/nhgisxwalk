@@ -1,4 +1,4 @@
-<img src="figs/nhgis_logo_black.png" height="100" href=https://www.nhgis.org />
+[<img align="middle" src="figs/nhgis_logo_black.png" height="100">](https://www.nhgis.org)
 
 # NHGISXWALK
 ## Spatio-temporal [NHGIS Crosswalks](https://www.nhgis.org/user-resources/geographic-crosswalks)
