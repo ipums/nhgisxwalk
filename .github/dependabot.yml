@@ -9,10 +9,12 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-
-version: 2
-updates:
+    reviewers:
+      - "jGaboardi"
+  
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
       interval: "daily"
+    reviewers:
+      - "jGaboardi"
