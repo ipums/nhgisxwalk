@@ -8,7 +8,7 @@ __author__ = "James Gaboardi <jgaboardi@gmail.com>"
 __date__ = "2020-04"
 
 
-from .geocrosswalk import GeoCrossWalk
+from .geocrosswalk import GeoCrossWalk, sort_params
 from .geocrosswalk import xwalk_df_to_csv, xwalk_df_from_csv, split_blk_blk_xwalk
 from .geocrosswalk import extract_state, extract_unique_stfips
 from .geocrosswalk import calculate_atoms, round_weights, str_types
