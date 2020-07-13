@@ -14,7 +14,12 @@ id_generator_funcs = [blk_gj, bgp_gj, bkg_gj, trt_gj, cty_gj]
 id_generators = {f.__name__: f for f in id_generator_funcs}
 
 # sorting parameters -- all crosswalks are sorted accordingly
-sort_params = {"na_position": "last", "ignore_index": True, "inplace": True}
+sort_params = {
+    "ascending": True,
+    "na_position": "last",
+    "ignore_index": True,
+    "inplace": True,
+}
 
 CSV = "csv"
 
