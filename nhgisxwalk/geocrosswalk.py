@@ -13,6 +13,9 @@ import pickle
 id_generator_funcs = [blk_gj, bgp_gj, bkg_gj, trt_gj, cty_gj]
 id_generators = {f.__name__: f for f in id_generator_funcs}
 
+# sorting parameters -- all crosswalks are sorted accordingly
+sort_params = {"na_position": "last", "ignore_index": True, "inplace": True}
+
 CSV = "csv"
 
 
@@ -501,6 +504,9 @@ class GeoCrossWalk:
         if weights_precision:
             self.xwalk = round_weights(self.xwalk, decimals=weights_precision)
 
+        # sort the resultant values
+        self.xwalk.sort_values(by=[self.source, self.target], **sort_params)
+
     def _drop_base_cols(self):
         """Retain only ID columns and original weights in the base crosswalk."""
         retain = [
@@ -679,7 +685,7 @@ class GeoCrossWalk:
         return self
 
 
-def extract_state(in_xwalk, stfips, xwalk_name, endpoint, code="gj"):
+def extract_state(in_xwalk, stfips, xwalk_name, endpoint, code="gj", sort_by=None):
     """Subset a national crosswalk to state-level (within target year).
     
     Parameters
@@ -701,6 +707,9 @@ def extract_state(in_xwalk, stfips, xwalk_name, endpoint, code="gj"):
     
     code : str
         The code type used in indexing unique states. Default is ``'gj'``.
+    
+    sort_by : list
+        Columns to sort by. This is used along with ``sort_params``. Default is ``None``.
     
     Returns
     -------
@@ -727,6 +736,9 @@ def extract_state(in_xwalk, stfips, xwalk_name, endpoint, code="gj"):
     )
     condition = in_xwalk[endpoint].map(extract_lambda)
     out_xwalk = in_xwalk[condition].copy()
+
+    if sort_by:
+        out_xwalk.sort_values(by=sort_by, **sort_params)
 
     return out_xwalk
 
@@ -1108,12 +1120,6 @@ def handle_1990_no_data(geoxwalk, vect, supp_src_tab, drop_supp_col):
     # 3(f) ---------------------------------------------------------------------------
     # Append the "no-data" crosswalk to the populated crosswalk
     geoxwalk.xwalk = geoxwalk.xwalk.append(nod_xwalk_exp, ignore_index=True)
-    geoxwalk.xwalk.sort_values(
-        by=[geoxwalk.source, geoxwalk.target],
-        na_position="last",
-        ignore_index=True,
-        inplace=True,
-    )
 
     # pre-step 9 - # Isolate unaccounted for source geographies ----------------------
     geoxwalk.src_unacc = numpy.setdiff1d(
@@ -1199,7 +1205,7 @@ def example_crosswalk_data():
     return example_data
 
 
-def split_blk_blk_xwalk(df, endpoint, fname, fpath=""):
+def split_blk_blk_xwalk(df, endpoint, fname, fpath="", sort_by=None):
     """Split and write out an original NHGIS base-level (block) crosswalk.
     
     Parameters
@@ -1217,6 +1223,9 @@ def split_blk_blk_xwalk(df, endpoint, fname, fpath=""):
     fpath : str
         Crosswalk (file) path. Default is ``''``.
     
+    sort_by : list
+        See ``sort_by`` parameters in ``extract_state``. Default is ``None``.
+    
     """
 
     # extract and sort all unique state FIPS codes
@@ -1228,7 +1237,7 @@ def split_blk_blk_xwalk(df, endpoint, fname, fpath=""):
     # iterate over each unique state FIPS code
     for stfips in unique_stfips:
         # create a subset for each endpoint (source/target) state
-        stdf = extract_state(df, stfips, fname, endpoint, code=code)
+        stdf = extract_state(df, stfips, fname, endpoint, code=code, sort_by=sort_by)
         xwalk_name = fname + "_" + stfips
         # write the subset to a zipped .csv
         dfkwds = {"df": stdf, "stfips": stfips, "xwalk_name": xwalk_name}
