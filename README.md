@@ -3,8 +3,9 @@
 # NHGISXWALK
 ## Spatio-temporal [NHGIS Crosswalks](https://www.nhgis.org/user-resources/geographic-crosswalks)
 
-[![DOI](https://zenodo.org/badge/259962549.svg)](https://zenodo.org/badge/latestdoi/259962549) [![GitHub release](https://img.shields.io/github/v/tag/jGaboardi/nhgisxwalk?include_prereleases&logo=GitHub)](https://img.shields.io/github/v/tag/jGaboardi/nhgisxwalk?include_prereleases&logo=GitHub) [![unittests](https://github.com/jGaboardi/nhgisxwalk/workflows/.github/workflows/unittests.yml/badge.svg)](https://github.com/jGaboardi/nhgisxwalk/actions?query=workflow%3A.github%2Fworkflows%2Funittests.yml) [![codecov](https://codecov.io/gh/jGaboardi/nhgisxwalk/branch/master/graph/badge.svg)](https://codecov.io/gh/jGaboardi/nhgisxwalk) [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/jGaboardi/nhgisxwalk/master)
+[![GitHub release](https://img.shields.io/github/v/tag/jGaboardi/nhgisxwalk?include_prereleases&logo=GitHub)](https://img.shields.io/github/v/tag/jGaboardi/nhgisxwalk?include_prereleases&logo=GitHub) [![unittests](https://github.com/jGaboardi/nhgisxwalk/workflows/.github/workflows/unittests.yml/badge.svg)](https://github.com/jGaboardi/nhgisxwalk/actions?query=workflow%3A.github%2Fworkflows%2Funittests.yml) [![codecov](https://codecov.io/gh/jGaboardi/nhgisxwalk/branch/master/graph/badge.svg)](https://codecov.io/gh/jGaboardi/nhgisxwalk) [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/jGaboardi/nhgisxwalk/master)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
+[![made-with-python](https://img.shields.io/badge/Made%20with-Python-1f425f.svg)](https://www.python.org/)
 
 ***This project will eventually be transferred to the [`IPUMS`](https://github.com/ipums) project space.***
 
@@ -64,7 +65,7 @@ If you are having issues, please [create an issue](https://github.com/jGaboardi/
 ## Citations
 If you use `nhgisxwalk` in a scientific publication, we would appreciate using the following citations:
 * **Steven Manson, Jonathan Schroeder, David Van Riper, and Steven Ruggles**. *IPUMS National Historical Geographic Information System: Version 14.0* [Database]. Minneapolis, MN: IPUMS. 2019. http://doi.org/10.18128/D050.V14.0
-* **James Gaboardi**. *[jGaboardi/nhgisxwalk](https://github.com/jGaboardi/nhgisxwalk)*. Zenodo. 2020. http://doi.org/10.5281/zenodo.3825134
+* **James Gaboardi**. *[jGaboardi/nhgisxwalk](https://github.com/jGaboardi/nhgisxwalk)*. Zenodo. 2020. [![DOI](https://zenodo.org/badge/259962549.svg)](https://zenodo.org/badge/latestdoi/259962549)
 
 
 ## License
