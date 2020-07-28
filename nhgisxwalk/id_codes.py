@@ -16,7 +16,7 @@ def code_cols(geog, year):
     
     geog : str
          The specified census geography. This will support
-         ["blk", "bgp", "bgr", "trt", "cty",...] in the future.
+         ["blk", "bgp", "bg", "tr", "co",...] in the future.
     
     year : str
         The specified census year. This will support
@@ -80,7 +80,7 @@ def code_cols(geog, year):
                 "BLCK_GRPA",
             ]
 
-    if geog == "bkg":
+    if geog == "bg":
         if year == "1990":
             cols = ["STATEA", "COUNTYA", "TRACTA", "BLCK_GRPA"]
 
@@ -233,9 +233,7 @@ def bgp_gj(df, order, cname="_GJOIN", tzero=["STATEA", "COUNTYA"]):
     return df
 
 
-def bkg_gj(
-    year, _id, df=None, order=None, cname="GISJOIN", tzero=["STATEA", "COUNTYA"]
-):
+def bg_gj(year, _id, df=None, order=None, cname="GISJOIN", tzero=["STATEA", "COUNTYA"]):
     """Extract the block group ID from the block ID.
     See `GISJOIN identifiers <https://www.nhgis.org/user-resources/geographic-crosswalks>`_.
     
@@ -296,7 +294,7 @@ def bkg_gj(
         return df
 
 
-def trt_gj(year, _id):
+def tr_gj(year, _id):
     """Extract the tract ID from the block ID.
     See `GISJOIN identifiers <https://www.nhgis.org/user-resources/geographic-crosswalks>`_.
     
@@ -331,7 +329,7 @@ def trt_gj(year, _id):
     return tract_id
 
 
-def cty_gj(year, _id):
+def co_gj(year, _id):
     """Extract the county ID from the block ID.
     See `GISJOIN identifiers <https://www.nhgis.org/user-resources/geographic-crosswalks>`_.
     
@@ -429,13 +427,13 @@ def gj_code_components(year, geo):
             components = blk1990
         if geo == "bgp":
             components = bgp1990
-        if geo == "bkg":
+        if geo == "bg":
             raise AttributeError()
             # components
-        if geo == "trt":
+        if geo == "tr":
             raise AttributeError()
             # components
-        if geo == "cty":
+        if geo == "co":
             raise AttributeError()
             # components
 
@@ -445,13 +443,13 @@ def gj_code_components(year, geo):
         if geo == "bgp":
             components = bgp2000
             # components
-        if geo == "bkg":
+        if geo == "bg":
             raise AttributeError()
             # components
-        if geo == "trt":
+        if geo == "tr":
             raise AttributeError()
             # components
-        if geo == "cty":
+        if geo == "co":
             raise AttributeError()
             # components
 
@@ -462,12 +460,12 @@ def gj_code_components(year, geo):
         if geo == "bgp":
             raise AttributeError()
             # components
-        if geo == "bkg":
-            components = bkg2010
-        if geo == "trt":
-            components = trt2010
-        if geo == "cty":
-            components = cty2010
+        if geo == "bg":
+            components = bg2010
+        if geo == "tr":
+            components = tr2010
+        if geo == "co":
+            components = co2010
             # components
 
     # create ID components dataframe
