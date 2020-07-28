@@ -2,7 +2,7 @@
 """
 
 from .id_codes import code_cols, generate_atom_id, generate_geoid, id_from
-from .id_codes import blk_gj, bgp_gj, bkg_gj, trt_gj, cty_gj, gj_code_components
+from .id_codes import blk_gj, bgp_gj, bg_gj, tr_gj, co_gj, gj_code_components
 
 import numpy
 import pandas
@@ -10,7 +10,7 @@ import pandas
 import pickle
 
 # used to fetch/vectorize ID generation functions
-id_generator_funcs = [blk_gj, bgp_gj, bkg_gj, trt_gj, cty_gj]
+id_generator_funcs = [blk_gj, bgp_gj, bg_gj, tr_gj, co_gj]
 id_generators = {f.__name__: f for f in id_generator_funcs}
 
 # sorting parameters -- all crosswalks are sorted accordingly
@@ -173,7 +173,7 @@ class GeoCrossWalk:
     
     supp_geo : str
         Type of geographic unit needed to determine unpopulated units. Currently
-        this can only be 1990 block groups ('bkg') for determining unpopulated
+        this can only be 1990 block groups ('bg') for determining unpopulated
         1990 NHGIS block group parts ('bgp').
     
     supp_source : str or None
@@ -203,12 +203,12 @@ class GeoCrossWalk:
     >>> import nhgisxwalk
     >>> df = nhgisxwalk.example_crosswalk_data()
     >>> df
-      bgp1990 blk1990 blk2010 trt2010   wt  pop_1990  hh_1990
-    0       A     A.1     X.1       X  1.0      60.0     25.0
-    1       A     A.2     X.2       X  0.3     100.0     40.0
-    2       A     A.2     Y.1       Y  0.7     100.0     40.0
-    3       B     B.1     X.3       X  1.0      50.0     20.0
-    4       B     B.2     Y.2       Y  1.0      80.0     30.0
+      bgp1990 blk1990 blk2010 tr2010   wt  pop_1990  hh_1990
+    0       A     A.1     X.1      X  1.0      60.0     25.0
+    1       A     A.2     X.2      X  0.3     100.0     40.0
+    2       A     A.2     Y.1      Y  0.7     100.0     40.0
+    3       B     B.1     X.3      X  1.0      50.0     20.0
+    4       B     B.2     Y.2      Y  1.0      80.0     30.0
     
     This synthetic data is comprised of 1990 and 2010 census blocks (``blk1990``
     and ``blk2010``, respectively); the base atomic crosswalk. Since the
@@ -219,7 +219,7 @@ class GeoCrossWalk:
     blocks. Further, the population and household counts for the 1990 blocks
     are available through the ``pop_1990`` and ``hh_1990`` columns.
     Finally, the associated 1990 census block group parts and the 2010 census
-    tracts are also represented with ``bgp1990`` and ``trt2010``. With this 
+    tracts are also represented with ``bgp1990`` and ``tr2010``. With this 
     information it is possible to create a (synthetic) 1990 block group part
     to 2010 tract crosswalk.
     
@@ -230,14 +230,14 @@ class GeoCrossWalk:
     ...             weight_var=["pop", "hh"],
     ...             weight_prefix="wt_",
     ...             source_id="bgp1990",
-    ...             groupby_cols=["bgp1990", "trt2010"]
+    ...             groupby_cols=["bgp1990", "tr2010"]
     ...         )
     >>> atoms
-      bgp1990 trt2010    wt_pop     wt_hh
-    0       A       X  0.562500  0.569231
-    1       A       Y  0.437500  0.430769
-    2       B       X  0.384615  0.400000
-    3       B       Y  0.615385  0.600000
+      bgp1990 tr2010    wt_pop     wt_hh
+    0       A      X  0.562500  0.569231
+    1       A      Y  0.437500  0.430769
+    2       B      X  0.384615  0.400000
+    3       B      Y  0.615385  0.600000
     
     The result is four atomic intersections between the synthetic 1990 census
     block group parts and the 2010 census tracts with varying population
@@ -280,11 +280,11 @@ class GeoCrossWalk:
     intersects with 2010 block ``G10000100401001001``, but a minute portion
     intersects with 2010 block ``G10000100401001003``.
     Next, use the shorthand lookup tool for geography abbreviations and set
-    the source and target geographies to ``bgp`` and ``trt``, respectively.
+    the source and target geographies to ``bgp`` and ``tr``, respectively.
     
     >>> nhgisxwalk.valid_geo_shorthand(shorthand_name=False)
-    {'block': 'blk', 'block group part': 'bgp', 'block group': 'bkg', 'tract': 'trt', 'county': 'cty'}
-    >>> source_geog, target_geog = "bgp", "trt"
+    {'block': 'blk', 'block group part': 'bgp', 'block group': 'bg', 'tract': 'tr', 'county': 'co'}
+    >>> source_geog, target_geog = "bgp", "tr"
     
     Select the Persons and Families variables with the lookup tool
     for the 2000 Summary File 1b (``desc_code_2000_SF1b``), and set
@@ -302,7 +302,7 @@ class GeoCrossWalk:
     which will be a state-level crosswalk for Delaware (state FIPS code 10).
     
     >>> subset_state = "10"
-    >>> bgp2000_to_trt2010 = nhgisxwalk.GeoCrossWalk(
+    >>> bgp2000_to_tr2010 = nhgisxwalk.GeoCrossWalk(
     ...     base_xwalk,
     ...     source_year=source_year,
     ...     target_year=target_year,
@@ -314,8 +314,8 @@ class GeoCrossWalk:
     ...     add_geoid=True,
     ...     stfips=subset_state
     ... )
-    >>> bgp2000_to_trt2010.xwalk[1020:1031][["bgp2000gj", "trt2010gj", "wt_pop", "wt_fam"]]
-                           bgp2000gj       trt2010gj    wt_pop    wt_fam
+    >>> bgp2000_to_tr2010.xwalk[1020:1031][["bgp2000gj", "tr2010gj", "wt_pop", "wt_fam"]]
+                           bgp2000gj        tr2010gj    wt_pop    wt_fam
     1020  G10000509355299999051302R1  G1000050051302  1.000000  1.000000
     1021  G10000509355299999051302R2  G1000050051302  1.000000  1.000000
     1022  G10000509355299999051302U1  G1000050051302  1.000000  1.000000
@@ -340,8 +340,8 @@ class GeoCrossWalk:
     The block group parts have no corresponding GEOIDs because they are a direct product
     of the NHHGIS.
     
-    >>> bgp2000_to_trt2010.xwalk[1020:1031][["bgp2000gj", "trt2010gj", "trt2010ge"]]
-                           bgp2000gj       trt2010gj    trt2010ge
+    >>> bgp2000_to_tr2010.xwalk[1020:1031][["bgp2000gj", "tr2010gj", "tr2010ge"]]
+                           bgp2000gj        tr2010gj     tr2010ge
     1020  G10000509355299999051302R1  G1000050051302  10005051302
     1021  G10000509355299999051302R2  G1000050051302  10005051302
     1022  G10000509355299999051302U1  G1000050051302  10005051302
@@ -456,7 +456,7 @@ class GeoCrossWalk:
             if self.source_geo == "bgp" or self.target_geo == "bgp":
                 # block group IDs are needed to determine
                 # populated blocks in 1990
-                self.supp_geo = "bkg"
+                self.supp_geo = "bg"
 
                 if self.source_geo == "bgp":
                     self.supp_source = self.supp_geo + self.source_year + self.code_type
@@ -489,7 +489,7 @@ class GeoCrossWalk:
                 if xdir.startswith("bgp"):
                     continue
                 else:
-                    col = "trt%s" % target_year
+                    col = "tr%s" % target_year
                     self.xwalk[xdir[:-2] + "ge"] = self.xwalk[xdir].map(
                         lambda x: generate_geoid(x)
                     )
@@ -1184,9 +1184,9 @@ def valid_geo_shorthand(shorthand_name=True):
     lookup = {
         "blk": "block",
         "bgp": "block group part",
-        "bkg": "block group",
-        "trt": "tract",
-        "cty": "county",
+        "bg": "block group",
+        "tr": "tract",
+        "co": "county",
     }
     if not shorthand_name:
         lookup = {v: k for k, v in lookup.items()}
@@ -1195,15 +1195,15 @@ def valid_geo_shorthand(shorthand_name=True):
 
 def example_crosswalk_data():
     """Create an example dataframe to demonstrate atom generation."""
-    cols = ["bgp1990", "blk1990", "blk2010", "trt2010", "wt", "pop_1990", "hh_1990"]
+    cols = ["bgp1990", "blk1990", "blk2010", "tr2010", "wt", "pop_1990", "hh_1990"]
     bgp1990 = ["A", "A", "A", "B", "B"]
     blk1990 = ["A.1", "A.2", "A.2", "B.1", "B.2"]
     blk2010 = ["X.1", "X.2", "Y.1", "X.3", "Y.2"]
-    trt2010 = ["X", "X", "Y", "X", "Y"]
+    tr2010 = ["X", "X", "Y", "X", "Y"]
     wt = [1.0, 0.3, 0.7, 1.0, 1.0]
     pop_1990 = [60.0, 100.0, 100.0, 50.0, 80.0]
     hh_1990 = [25.0, 40.0, 40.0, 20.0, 30.0]
-    col_data = [bgp1990, blk1990, blk2010, trt2010, wt, pop_1990, hh_1990]
+    col_data = [bgp1990, blk1990, blk2010, tr2010, wt, pop_1990, hh_1990]
     example_data = pandas.DataFrame(columns=cols)
     for cn, cd in zip(cols, col_data):
         example_data[cn] = cd
