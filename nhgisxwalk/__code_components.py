@@ -64,13 +64,13 @@ URB_AREAA,   Urban Area Code
 CD103A,      Congressional District (103rd) Code
 ANPSADPI,    Area Name/PSAD Term/Part Indicator"""
 
-bkg1990 = r"""
+bg1990 = r"""
 """
 
-trt1990 = r"""
+tr1990 = r"""
 """
 
-cty1990 = r"""
+co1990 = r"""
 """
 
 # ------------------------------------------------------------------------- 2000
@@ -108,13 +108,13 @@ AIANHHA,     American Indian Area/Alaska Native Area/Hawaiian Home Land Code
 URBRURALA,   Urban/Rural Code
 NAME,        Area Name-Legal/Statistical Area Description (LSAD) Term-Part Indicator"""
 
-bkg2000 = r"""
+bg2000 = r"""
 """
 
-trt2000 = r"""
+tr2000 = r"""
 """
 
-cty2000 = r"""
+co2000 = r"""
 """
 
 
@@ -125,7 +125,7 @@ blk2010 = r"""
 bgp2010 = r"""
 """
 
-bkg2010 = r"""
+bg2010 = r"""
 GISJOIN,     GIS Join Match Code
 YEAR,        Data File Year
 REGIONA,     Region Code
@@ -163,7 +163,7 @@ BTTRA,       Tribal Census Tract Code
 BTBGA,       Tribal Block Group Code
 """
 
-trt2010 = r"""
+tr2010 = r"""
 GISJOIN,     GIS Join Match Code
 YEAR,        Data File Year
 REGIONA,     Region Code
@@ -200,7 +200,7 @@ PUMA5A,      Public Use Microdata Sample Area (PUMA) Code
 BTTRA,       Tribal Census Tract Code
 BTBGA,       Tribal Block Group Code"""
 
-cty2010 = r"""
+co2010 = r"""
 GISJOIN,     GIS Join Match Code
 YEAR,        Data File Year
 REGIONA,     Region Code
