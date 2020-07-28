@@ -13,7 +13,7 @@ tabular_data_path = data_dir + "/%s_block.csv.zip"
 supplement_data_path_90 = data_dir + "/%s_blck_grp_598_103.csv.zip"
 
 # shorthand for geographies
-blk, bgp, bkg, trt, cty = "blk", "bgp", "bkg", "trt", "cty"
+blk, bgp, bg, tr, co = "blk", "bgp", "bg", "tr", "co"
 
 # shorthand for years
 _90, _00, _10 = "1990", "2000", "2010"
@@ -66,8 +66,8 @@ tab_data_path_2000 = tabular_data_path % _00
 
 class Test_GeoCrossWalk(unittest.TestCase):
 
-    # 1990 bgp to 2010 trt through 1990 blk to 2010 blk
-    def test_xwalk_full_bgp1990_trt2010(self):
+    # 1990 bgp to 2010 tr through 1990 blk to 2010 blk
+    def test_xwalk_full_bgp1990_tr2010(self):
         knw_str_vals = numpy.array(
             [
                 [
@@ -105,21 +105,21 @@ class Test_GeoCrossWalk(unittest.TestCase):
             source_year=_90,
             target_year=_10,
             source_geo=bgp,
-            target_geo=trt,
+            target_geo=tr,
             base_source_table=tab_data_path_1990,
             supp_source_table=supplement_data_path_90,
             input_var=input_vars_1990,
             weight_var=input_var_tags,
         )
         ix1, ix2 = 13, 17
-        id_cols = ["bgp1990gj", "trt2010gj", "trt2010ge"]
+        id_cols = ["bgp1990gj", "tr2010gj", "tr2010ge"]
         obs_str_vals = obs_xwalk.xwalk[id_cols][ix1:ix2].values
         wgt_cols = ["wt_pop", "wt_fam", "wt_hh", "wt_hu"]
         obs_num_vals = obs_xwalk.xwalk[wgt_cols][ix1:ix2].values
         numpy.testing.assert_equal(knw_str_vals, obs_str_vals)
         numpy.testing.assert_allclose(knw_num_vals, obs_num_vals, atol=6)
 
-    def test_xwalk_state_bgp1990_trt2010(self,):
+    def test_xwalk_state_bgp1990_tr2010(self,):
         knw_str_vals = numpy.array(
             [
                 [
@@ -157,7 +157,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
             source_year=_90,
             target_year=_10,
             source_geo=bgp,
-            target_geo=trt,
+            target_geo=tr,
             base_source_table=tab_data_path_1990,
             supp_source_table=supplement_data_path_90,
             input_var=input_vars_1990,
@@ -167,21 +167,21 @@ class Test_GeoCrossWalk(unittest.TestCase):
             keep_base=False,
         )
         ix1, ix2 = 13, 17
-        id_cols = ["bgp1990gj", "trt2010gj", "trt2010ge"]
+        id_cols = ["bgp1990gj", "tr2010gj", "tr2010ge"]
         obs_str_vals = obs_xwalk.xwalk[id_cols][ix1:ix2].values
         wgt_cols = ["wt_pop", "wt_fam", "wt_hh", "wt_hu"]
         obs_num_vals = obs_xwalk.xwalk[wgt_cols][ix1:ix2].values
         numpy.testing.assert_equal(knw_str_vals, obs_str_vals)
         numpy.testing.assert_allclose(knw_num_vals, obs_num_vals, atol=6)
 
-    def test_xwalk_bgp1990_trt2010_no_supp_error(self):
+    def test_xwalk_bgp1990_tr2010_no_supp_error(self):
         with self.assertRaises(RuntimeError):
             obs_xwalk = nhgisxwalk.GeoCrossWalk(
                 base_xwalk_blk1990_blk2010,
                 source_year=_90,
                 target_year=_10,
                 source_geo=bgp,
-                target_geo=trt,
+                target_geo=tr,
                 base_source_table=tab_data_path_1990,
                 supp_source_table=None,
                 input_var=input_vars_1990,
@@ -191,7 +191,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
                 keep_base=False,
             )
 
-    def test_xwalk_extract_state_bgp1990_trt2010(self):
+    def test_xwalk_extract_state_bgp1990_tr2010(self):
         known_target_nan_xwalk = numpy.empty((0, 7))
         known_source_nan_xwalk = numpy.array(
             [[numpy.nan, "G1000050990000", "10005990000", 0.0, 0.0, 0.0, 0.0]],
@@ -204,7 +204,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
             source_year=_90,
             target_year=_10,
             source_geo=bgp,
-            target_geo=trt,
+            target_geo=tr,
             base_source_table=tab_data_path_1990,
             supp_source_table=supplement_data_path_90,
             input_var=input_vars_1990,
@@ -214,6 +214,10 @@ class Test_GeoCrossWalk(unittest.TestCase):
         obs_target_nan_xwalk = nhgisxwalk.extract_state(
             obs_xwalk.xwalk, "nan", obs_xwalk.xwalk_name, obs_xwalk.target
         ).values
+
+        print(known_target_nan_xwalk)
+        print(obs_target_nan_xwalk)
+
         numpy.testing.assert_array_equal(known_target_nan_xwalk, obs_target_nan_xwalk)
         obs_source_nan_xwalk = nhgisxwalk.extract_state(
             obs_xwalk.xwalk, "nan", obs_xwalk.xwalk_name, obs_xwalk.source
@@ -233,13 +237,13 @@ class Test_GeoCrossWalk(unittest.TestCase):
         ).values
         self.assertEqual(known_source_nan_base_shape, obs_source_nan_base.shape)
 
-    def test_xwalk_extract_state_failure_bgp1990_trt2010(self):
+    def test_xwalk_extract_state_failure_bgp1990_tr2010(self):
         obs_xwalk = nhgisxwalk.GeoCrossWalk(
             base_xwalk_blk1990_blk2010,
             source_year=_90,
             target_year=_10,
             source_geo=bgp,
-            target_geo=trt,
+            target_geo=tr,
             base_source_table=tab_data_path_1990,
             supp_source_table=supplement_data_path_90,
             input_var=input_vars_1990,
@@ -264,7 +268,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
                 obs_xwalk.base, "nan", obs_xwalk.xwalk_name, obs_xwalk.base_source_col
             )
 
-    def test_xwalk_extract_unique_stfips_cls_bgp1990_trt2010(self):
+    def test_xwalk_extract_unique_stfips_cls_bgp1990_tr2010(self):
         known_target_fips = set(["10"])
         known_source_fips = set(["10", "34", "nan"])
         obs_xwalk = nhgisxwalk.GeoCrossWalk(
@@ -272,7 +276,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
             source_year=_90,
             target_year=_10,
             source_geo=bgp,
-            target_geo=trt,
+            target_geo=tr,
             base_source_table=tab_data_path_1990,
             supp_source_table=supplement_data_path_90,
             input_var=input_vars_1990,
@@ -289,7 +293,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
         )
         self.assertEqual(known_source_fips, obs_source_fips)
 
-    def test_xwalk_extract_unique_stfips_df_bgp1990_trt2010(self):
+    def test_xwalk_extract_unique_stfips_df_bgp1990_tr2010(self):
         known_target_fips = set(["10"])
         known_source_fips = set(["10", "34", "nan"])
         obs_xwalk = nhgisxwalk.GeoCrossWalk(
@@ -297,7 +301,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
             source_year=_90,
             target_year=_10,
             source_geo=bgp,
-            target_geo=trt,
+            target_geo=tr,
             base_source_table=tab_data_path_1990,
             supp_source_table=supplement_data_path_90,
             input_var=input_vars_1990,
@@ -306,16 +310,20 @@ class Test_GeoCrossWalk(unittest.TestCase):
             stfips=stfips,
         )
         obs_target_fips = nhgisxwalk.extract_unique_stfips(
-            df=obs_xwalk.xwalk, endpoint="trt2010gj"
+            df=obs_xwalk.xwalk, endpoint="tr2010gj"
         )
         self.assertEqual(known_target_fips, obs_target_fips)
         obs_source_fips = nhgisxwalk.extract_unique_stfips(
             df=obs_xwalk.xwalk, endpoint="bgp1990gj"
         )
+
+        print(known_source_fips)
+        print(obs_source_fips)
+
         self.assertEqual(known_source_fips, obs_source_fips)
 
-    # 2000 bgp to 2010 trt through 2000 blk to 2010 blk
-    def test_xwalk_full_bgp2000_trt2010_unrounded(self):
+    # 2000 bgp to 2010 tr through 2000 blk to 2010 blk
+    def test_xwalk_full_bgp2000_tr2010_unrounded(self):
         knw_str_vals = numpy.array(
             [
                 ["G10000509355299999051304R1", "G1000050051305", "10005051305"],
@@ -337,21 +345,21 @@ class Test_GeoCrossWalk(unittest.TestCase):
             source_year=_00,
             target_year=_10,
             source_geo=bgp,
-            target_geo=trt,
+            target_geo=tr,
             base_source_table=tab_data_path_2000,
             input_var=input_vars_2000_SF1b,
             weight_var=input_var_tags,
             weights_precision=None,
         )
         ix1, ix2 = 1025, 1029
-        id_cols = ["bgp2000gj", "trt2010gj", "trt2010ge"]
+        id_cols = ["bgp2000gj", "tr2010gj", "tr2010ge"]
         obs_str_vals = obs_xwalk.xwalk[id_cols][ix1:ix2].values
         wgt_cols = ["wt_pop", "wt_fam", "wt_hh", "wt_hu"]
         obs_num_vals = obs_xwalk.xwalk[wgt_cols][ix1:ix2].values
         numpy.testing.assert_equal(knw_str_vals, obs_str_vals)
         numpy.testing.assert_allclose(knw_num_vals, obs_num_vals)
 
-    def test_xwalk_state_bgp2000_trt2010_unrounded(self):
+    def test_xwalk_state_bgp2000_tr2010_unrounded(self):
         knw_str_vals = numpy.array(
             [
                 ["G10000509355299999051304R1", "G1000050051305", "10005051305"],
@@ -373,7 +381,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
             source_year=_00,
             target_year=_10,
             source_geo=bgp,
-            target_geo=trt,
+            target_geo=tr,
             base_source_table=tab_data_path_2000,
             input_var=input_vars_2000_SF1b,
             weight_var=input_var_tags,
@@ -383,14 +391,14 @@ class Test_GeoCrossWalk(unittest.TestCase):
             weights_precision=None,
         )
         ix1, ix2 = 1025, 1029
-        id_cols = ["bgp2000gj", "trt2010gj", "trt2010ge"]
+        id_cols = ["bgp2000gj", "tr2010gj", "tr2010ge"]
         obs_str_vals = obs_xwalk.xwalk[id_cols][ix1:ix2].values
         wgt_cols = ["wt_pop", "wt_fam", "wt_hh", "wt_hu"]
         obs_num_vals = obs_xwalk.xwalk[wgt_cols][ix1:ix2].values
         numpy.testing.assert_equal(knw_str_vals, obs_str_vals)
         numpy.testing.assert_allclose(knw_num_vals, obs_num_vals)
 
-    def test_xwalk_extract_state_bgp2000_trt2010(self):
+    def test_xwalk_extract_state_bgp2000_tr2010(self):
         known_target_nan_xwalk = numpy.empty((0, 7))
         known_source_nan_xwalk = numpy.empty((0, 7))
         known_target_nan_base = numpy.empty((0, 6))
@@ -400,7 +408,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
             source_year=_00,
             target_year=_10,
             source_geo=bgp,
-            target_geo=trt,
+            target_geo=tr,
             base_source_table=tab_data_path_2000,
             input_var=input_vars_2000_SF1b,
             weight_var=input_var_tags,
@@ -423,13 +431,13 @@ class Test_GeoCrossWalk(unittest.TestCase):
         ).values
         numpy.testing.assert_array_equal(known_source_nan_base, obs_source_nan_base)
 
-    def test_xwalk_extract_state_failure_bgp2000_trt2010(self):
+    def test_xwalk_extract_state_failure_bgp2000_tr2010(self):
         obs_xwalk = nhgisxwalk.GeoCrossWalk(
             base_xwalk_blk2000_blk2010,
             source_year=_00,
             target_year=_10,
             source_geo=bgp,
-            target_geo=trt,
+            target_geo=tr,
             base_source_table=tab_data_path_2000,
             input_var=input_vars_2000_SF1b,
             weight_var=input_var_tags,
@@ -453,7 +461,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
                 obs_xwalk.base, "nan", obs_xwalk.xwalk_name, obs_xwalk.base_source_col
             )
 
-    def test_xwalk_extract_unique_stfips_cls_bgp2000_trt2010(self):
+    def test_xwalk_extract_unique_stfips_cls_bgp2000_tr2010(self):
         known_target_fips = set(["10"])
         known_source_fips = set(["10", "34"])
         obs_xwalk = nhgisxwalk.GeoCrossWalk(
@@ -461,7 +469,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
             source_year=_00,
             target_year=_10,
             source_geo=bgp,
-            target_geo=trt,
+            target_geo=tr,
             base_source_table=tab_data_path_2000,
             input_var=input_vars_2000_SF1b,
             weight_var=input_var_tags,
@@ -477,7 +485,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
         )
         self.assertEqual(known_source_fips, obs_source_fips)
 
-    def test_xwalk_extract_unique_stfips_df_bgp2000_trt2010(self):
+    def test_xwalk_extract_unique_stfips_df_bgp2000_tr2010(self):
         known_target_fips = set(["10"])
         known_source_fips = set(["10", "34"])
         obs_xwalk = nhgisxwalk.GeoCrossWalk(
@@ -485,7 +493,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
             source_year=_00,
             target_year=_10,
             source_geo=bgp,
-            target_geo=trt,
+            target_geo=tr,
             base_source_table=tab_data_path_2000,
             input_var=input_vars_2000_SF1b,
             weight_var=input_var_tags,
@@ -493,7 +501,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
             stfips=stfips,
         )
         obs_target_fips = nhgisxwalk.extract_unique_stfips(
-            df=obs_xwalk.xwalk, endpoint="trt2010gj"
+            df=obs_xwalk.xwalk, endpoint="tr2010gj"
         )
         self.assertEqual(known_target_fips, obs_target_fips)
         obs_source_fips = nhgisxwalk.extract_unique_stfips(
@@ -501,8 +509,8 @@ class Test_GeoCrossWalk(unittest.TestCase):
         )
         self.assertEqual(known_source_fips, obs_source_fips)
 
-    # 1990 bgp to 2010 bkg through 2000 blk to 2010 blk
-    def test_xwalk_full_bgp2000_bkg2010(self):
+    # 1990 bgp to 2010 bg through 2000 blk to 2010 blk
+    def test_xwalk_full_bgp2000_bg2010(self):
         knw_str_vals = numpy.array(
             [
                 [
@@ -540,21 +548,21 @@ class Test_GeoCrossWalk(unittest.TestCase):
             source_year=_90,
             target_year=_10,
             source_geo=bgp,
-            target_geo=bkg,
+            target_geo=bg,
             base_source_table=tab_data_path_1990,
             supp_source_table=supplement_data_path_90,
             input_var=input_vars_1990,
             weight_var=input_var_tags,
         )
         ix1, ix2 = 13, 17
-        id_cols = ["bgp1990gj", "bkg2010gj", "bkg2010ge"]
+        id_cols = ["bgp1990gj", "bg2010gj", "bg2010ge"]
         obs_str_vals = obs_xwalk.xwalk[id_cols][ix1:ix2].values
         wgt_cols = ["wt_pop", "wt_fam", "wt_hh", "wt_hu"]
         obs_num_vals = obs_xwalk.xwalk[wgt_cols][ix1:ix2].values
         numpy.testing.assert_equal(knw_str_vals, obs_str_vals)
         numpy.testing.assert_allclose(knw_num_vals, obs_num_vals, atol=6)
 
-    def test_xwalk_state_bgp2000_bkg2010(self):
+    def test_xwalk_state_bgp2000_bg2010(self):
         knw_str_vals = numpy.array(
             [
                 [
@@ -592,7 +600,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
             source_year=_90,
             target_year=_10,
             source_geo=bgp,
-            target_geo=bkg,
+            target_geo=bg,
             base_source_table=tab_data_path_1990,
             supp_source_table=supplement_data_path_90,
             input_var=input_vars_1990,
@@ -600,7 +608,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
             stfips=stfips,
         )
         ix1, ix2 = 13, 17
-        id_cols = ["bgp1990gj", "bkg2010gj", "bkg2010ge"]
+        id_cols = ["bgp1990gj", "bg2010gj", "bg2010ge"]
         obs_str_vals = obs_xwalk.xwalk[id_cols][ix1:ix2].values
         wgt_cols = ["wt_pop", "wt_fam", "wt_hh", "wt_hu"]
         obs_num_vals = obs_xwalk.xwalk[wgt_cols][ix1:ix2].values
@@ -614,7 +622,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
             source_year=_00,
             target_year=_10,
             source_geo=bgp,
-            target_geo=trt,
+            target_geo=tr,
             base_source_table=tab_data_path_2000,
             input_var=input_vars_2000_SF1b,
             weight_var=input_var_tags,
@@ -633,7 +641,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
             source_year=_00,
             target_year=_10,
             source_geo=bgp,
-            target_geo=trt,
+            target_geo=tr,
             base_source_table=tab_data_path_2000,
             input_var=input_vars_2000_SF1b,
             weight_var=input_var_tags,
@@ -652,7 +660,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
             source_year=_00,
             target_year=_10,
             source_geo=bgp,
-            target_geo=trt,
+            target_geo=tr,
             base_source_table=tab_data_path_2000,
             input_var=input_vars_2000_SF1b,
             weight_var=input_var_tags,
@@ -677,7 +685,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
             source_year=_00,
             target_year=_10,
             source_geo=bgp,
-            target_geo=trt,
+            target_geo=tr,
             base_source_table=tab_data_path_2000,
             input_var=input_vars_2000_SF1b,
             weight_var=input_var_tags,
@@ -698,7 +706,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
             source_year=_00,
             target_year=_10,
             source_geo=bgp,
-            target_geo=trt,
+            target_geo=tr,
             base_source_table=tab_data_path_2000,
             input_var=input_vars_2000_SF1b,
             weight_var=input_var_tags,
@@ -724,7 +732,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
             source_year=_00,
             target_year=_10,
             source_geo=bgp,
-            target_geo=trt,
+            target_geo=tr,
             base_source_table=tab_data_path_2000,
             input_var=input_vars_2000_SF1b,
             weight_var=input_var_tags,
@@ -745,7 +753,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
                 source_year=_00,
                 target_year=_10,
                 source_geo=bgp,
-                target_geo=trt,
+                target_geo=tr,
                 base_source_table=tab_data_path_2000,
                 input_var=input_vars_2000_SF1b,
                 weight_var=["one", "two"],
@@ -760,49 +768,49 @@ class Test_GeoCrossWalk(unittest.TestCase):
                 source_year=_90,
                 target_year=_10,
                 source_geo=blk,
-                target_geo=trt,
+                target_geo=tr,
                 base_source_table=tab_data_path_1990,
                 input_var=input_vars_1990,
                 weight_var=input_var_tags,
             )
 
-    def test_xwalk_source_code_bkg(self):
+    def test_xwalk_source_code_bg(self):
         # testing for triggered errors
         with self.assertRaises(AttributeError):
             observed_xwalk = nhgisxwalk.GeoCrossWalk(
                 base_xwalk_blk1990_blk2010,
                 source_year=_90,
                 target_year=_10,
-                source_geo=bkg,
-                target_geo=trt,
+                source_geo=bg,
+                target_geo=tr,
                 base_source_table=tab_data_path_1990,
                 input_var=input_vars_1990,
                 weight_var=input_var_tags,
             )
 
-    def test_xwalk_source_code_trt(self):
+    def test_xwalk_source_code_tr(self):
         # testing for triggered errors
         with self.assertRaises(AttributeError):
             observed_xwalk = nhgisxwalk.GeoCrossWalk(
                 base_xwalk_blk1990_blk2010,
                 source_year=_90,
                 target_year=_10,
-                source_geo=trt,
-                target_geo=trt,
+                source_geo=tr,
+                target_geo=tr,
                 base_source_table=tab_data_path_1990,
                 input_var=input_vars_1990,
                 weight_var=input_var_tags,
             )
 
-    def test_xwalk_source_code_cty(self):
+    def test_xwalk_source_code_co(self):
         # testing for triggered errors
         with self.assertRaises(AttributeError):
             observed_xwalk = nhgisxwalk.GeoCrossWalk(
                 base_xwalk_blk1990_blk2010,
                 source_year=_90,
                 target_year=_10,
-                source_geo=cty,
-                target_geo=trt,
+                source_geo=co,
+                target_geo=tr,
                 base_source_table=tab_data_path_1990,
                 input_var=input_vars_1990,
                 weight_var=input_var_tags,
@@ -852,7 +860,7 @@ class Test_upper_level_functions(unittest.TestCase):
             weight_var="pop",
             weight_prefix="wt_",
             source_id="bgp1990",
-            groupby_cols=["bgp1990", "trt2010"],
+            groupby_cols=["bgp1990", "tr2010"],
         )
         k1, o1 = known[:, :2], observed.values[:, :2]
         numpy.testing.assert_array_equal(k1, o1)
@@ -874,7 +882,7 @@ class Test_upper_level_functions(unittest.TestCase):
             input_var="pop_1990",
             weight_var="pop",
             source_id="bgp1990",
-            groupby_cols=["bgp1990", "trt2010"],
+            groupby_cols=["bgp1990", "tr2010"],
         )
         k1, o1 = known[:, :2], observed.values[:, :2]
         numpy.testing.assert_array_equal(k1, o1)
@@ -897,7 +905,7 @@ class Test_upper_level_functions(unittest.TestCase):
             weight_var=["pop", "hh"],
             weight_prefix="wt_",
             source_id="bgp1990",
-            groupby_cols=["bgp1990", "trt2010"],
+            groupby_cols=["bgp1990", "tr2010"],
         )
         k1, o1 = known[:, :2], observed.values[:, :2]
         numpy.testing.assert_array_equal(k1, o1)
@@ -919,7 +927,7 @@ class Test_upper_level_functions(unittest.TestCase):
             input_var=["pop_1990", "hh_1990"],
             weight_var=["pop", "hh"],
             source_id="bgp1990",
-            groupby_cols=["bgp1990", "trt2010"],
+            groupby_cols=["bgp1990", "tr2010"],
         )
         k1, o1 = known[:, :2], observed.values[:, :2]
         numpy.testing.assert_array_equal(k1, o1)
@@ -941,7 +949,7 @@ class Test_upper_level_functions(unittest.TestCase):
             input_var=["pop_1990", "hh_1990"],
             weight_var=["pop", "hh"],
             source_id="bgp1990",
-            groupby_cols=["bgp1990", "trt2010"],
+            groupby_cols=["bgp1990", "tr2010"],
         )
         observed = nhgisxwalk.round_weights(observed, decimals=2)
         k1, o1 = known[:, :2], observed.values[:, :2]
@@ -965,9 +973,9 @@ class Test_upper_level_functions(unittest.TestCase):
         known_sn = {
             blk: "block",
             bgp: "block group part",
-            bkg: "block group",
-            trt: "tract",
-            cty: "county",
+            bg: "block group",
+            tr: "tract",
+            co: "county",
         }
         observed_sn = nhgisxwalk.valid_geo_shorthand(shorthand_name=True)
         self.assertEqual(known_sn, observed_sn)
@@ -975,9 +983,9 @@ class Test_upper_level_functions(unittest.TestCase):
         known_ns = {
             "block": blk,
             "block group part": bgp,
-            "block group": bkg,
-            "tract": trt,
-            "county": cty,
+            "block group": bg,
+            "tract": tr,
+            "county": co,
         }
         observed_ns = nhgisxwalk.valid_geo_shorthand(shorthand_name=False)
         self.assertEqual(known_ns, observed_ns)
@@ -1020,26 +1028,26 @@ class Test_id_codes_functions(unittest.TestCase):
         with self.assertRaises(ValueError):
             nhgisxwalk.id_codes.generate_geoid("X1.1")
 
-    def test_trt_gj_no_G(self):
+    def test_tr_gj_no_G(self):
         with self.assertRaises(ValueError):
-            nhgisxwalk.id_codes.trt_gj("2010", "X1.1")
+            nhgisxwalk.id_codes.tr_gj("2010", "X1.1")
 
-    def test_trt_gj_bad_year(self):
+    def test_tr_gj_bad_year(self):
         with self.assertRaises(ValueError):
-            nhgisxwalk.id_codes.trt_gj("0000", "G123456789123456789")
+            nhgisxwalk.id_codes.tr_gj("0000", "G123456789123456789")
 
-    def test_cty_gj(self):
+    def test_co_gj(self):
         known_value = "G1000010"
-        observed_value = nhgisxwalk.id_codes.cty_gj("2010", "G1000010999999999")
+        observed_value = nhgisxwalk.id_codes.co_gj("2010", "G1000010999999999")
         self.assertEqual(known_value, observed_value)
 
-    def test_cty_gj_no_G(self):
+    def test_co_gj_no_G(self):
         with self.assertRaises(ValueError):
-            nhgisxwalk.id_codes.trt_gj("2010", "X1.1")
+            nhgisxwalk.id_codes.tr_gj("2010", "X1.1")
 
-    def test_cty_gj_bad_year(self):
+    def test_co_gj_bad_year(self):
         with self.assertRaises(ValueError):
-            nhgisxwalk.id_codes.trt_gj("0000", "G123456789123456789")
+            nhgisxwalk.id_codes.tr_gj("0000", "G123456789123456789")
 
 
 if __name__ == "__main__":
