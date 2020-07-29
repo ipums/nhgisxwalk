@@ -338,7 +338,7 @@ class GeoCrossWalk:
     
     The corresponding census-assigned GEOIDs are also available within the crosswalk.
     The block group parts have no corresponding GEOIDs because they are a direct product
-    of the NHHGIS.
+    of the NHGIS.
     
     >>> bgp2000_to_tr2010.xwalk[1020:1031][["bgp2000gj", "tr2010gj", "tr2010ge"]]
                            bgp2000gj        tr2010gj     tr2010ge
