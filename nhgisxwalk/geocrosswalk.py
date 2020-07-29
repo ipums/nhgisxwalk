@@ -262,7 +262,7 @@ class GeoCrossWalk:
     are single state subsets (Delaware) for testing and demonstration purposes.
     
     >>> subset_data_dir = "./testing_data_subsets"
-    >>> base_xwalk_name = "/nhgis_blk%s_blk%s_gj.csv.zip" % (source_year, target_year)
+    >>> base_xwalk_name = "/nhgis_blk%s_blk%s_gj.zip" % (source_year, target_year)
     >>> base_xwalk_file = subset_data_dir + base_xwalk_name
     >>> data_types = nhgisxwalk.str_types(["GJOIN%s"%source_year, "GJOIN%s"%target_year])
     >>> base_xwalk = pandas.read_csv(base_xwalk_file, index_col=0, dtype=data_types)
