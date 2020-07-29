@@ -668,9 +668,10 @@ class GeoCrossWalk:
             for idx, unacc in enumerate(unaccs, 1):
                 endex += idx
                 # append one record to the dataframe
+
                 self.xwalk.loc[endex] = [
                     unacc
-                    if c.split("_")[0][:3] == geo
+                    if (c.split("_")[0][:2] == geo or c.split("_")[0][:3] == geo)
                     else 0.0
                     if c in self.weight_col
                     else numpy.nan

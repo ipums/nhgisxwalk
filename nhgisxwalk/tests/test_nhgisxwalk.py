@@ -26,7 +26,7 @@ stfips = "10"
 
 
 def fetch_base_xwalk(sg, tg, sy, ty):
-    base_xwalk_name = "/nhgis_%s%s_%s%s_gj.csv.zip" % (sg, sy, tg, ty)
+    base_xwalk_name = "/nhgis_%s%s_%s%s_gj.zip" % (sg, sy, tg, ty)
     base_xwalk_file = data_dir + base_xwalk_name
     data_types = nhgisxwalk.str_types(["GJOIN%s" % sy, "GJOIN%s" % ty])
     base_xwalk = pandas.read_csv(base_xwalk_file, index_col=0, dtype=data_types)
@@ -214,10 +214,6 @@ class Test_GeoCrossWalk(unittest.TestCase):
         obs_target_nan_xwalk = nhgisxwalk.extract_state(
             obs_xwalk.xwalk, "nan", obs_xwalk.xwalk_name, obs_xwalk.target
         ).values
-
-        print(known_target_nan_xwalk)
-        print(obs_target_nan_xwalk)
-
         numpy.testing.assert_array_equal(known_target_nan_xwalk, obs_target_nan_xwalk)
         obs_source_nan_xwalk = nhgisxwalk.extract_state(
             obs_xwalk.xwalk, "nan", obs_xwalk.xwalk_name, obs_xwalk.source
@@ -316,10 +312,6 @@ class Test_GeoCrossWalk(unittest.TestCase):
         obs_source_fips = nhgisxwalk.extract_unique_stfips(
             df=obs_xwalk.xwalk, endpoint="bgp1990gj"
         )
-
-        print(known_source_fips)
-        print(obs_source_fips)
-
         self.assertEqual(known_source_fips, obs_source_fips)
 
     # 2000 bgp to 2010 tr through 2000 blk to 2010 blk
@@ -824,11 +816,11 @@ class Test_upper_level_functions(unittest.TestCase):
     def test_split_blk_blk_xwalk(self):
         known_ids = numpy.array(
             [
-                "G10000100432021078",
-                "G10000100432023014",
-                "G10000100432023015",
-                "G10000109900000011",
-                "G10000109900000012",
+                "G10000100401001000",
+                "G10000100401001001",
+                "G10000100401001002",
+                "G10000100401001003",
+                "G10000100401001003",
             ]
         )
         xwalk_name = base_xwalk_blk1990_blk2010_fname.split("/")[-1].split(".")[0]
