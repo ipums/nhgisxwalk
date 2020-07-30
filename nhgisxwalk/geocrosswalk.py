@@ -32,12 +32,12 @@ class GeoCrossWalk:
     of weights. The weights are the interpolated proportions of source
     attributes that are are calculated as being within the target units.
     For a description of the algorithmic workflow see the
-    `General Crosswalk Construction Framework <https://github.com/jGaboardi/nhgisxwalk/blob/master/resources/general-crosswalk-construction-framework.pdf>`_.
+    `General Crosswalk Construction Framework <https://github.com/jGaboardi/nhgisxwalk/blob/master/resources/frameworks/general-crosswalk-construction-framework.pdf>`_.
     For a description of the algorithmic workflow
     in the 1990 "no data" scenarios see
-    `Handling 1990 No-Data Blocks in Crosswalks <https://github.com/jGaboardi/nhgisxwalk/blob/master/resources/handling-1990-no-data-blocks-in-crosswalks.pdf>`_.
+    `Handling 1990 No-Data Blocks in Crosswalks <https://github.com/jGaboardi/nhgisxwalk/blob/master/resources/frameworks/handling-1990-no-data-blocks-in-crosswalks.pdf>`_.
     For more information of the base crosswalks see their
-    `technical details <https://www.nhgis.org/user-resources/geographic-crosswalks#details>`_
+    `technical details <https://www.nhgis.org/user-resources/frameworks/geographic-crosswalks#details>`_
     here.
     
     For further description see:
@@ -947,7 +947,7 @@ def calculate_atoms(
 
 def handle_1990_no_data(geoxwalk, vect, supp_src_tab, drop_supp_col):
     """Step 1 in this workflow is handled as a normal case. See the algorithmic workflow in
-    `Handling 1990 No-Data Blocks in Crosswalks <https://github.com/jGaboardi/nhgisxwalk/blob/master/resources/handling-1990-no
+    `Handling 1990 No-Data Blocks in Crosswalks <https://github.com/jGaboardi/nhgisxwalk/blob/master/resources/frameworks/handling-1990-no
     
     Parameters
     ----------
