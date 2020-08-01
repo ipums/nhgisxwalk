@@ -7,21 +7,37 @@ from .id_codes import blk_gj, bgp_gj, bg_gj, tr_gj, co_gj, gj_code_components
 import numpy
 import pandas
 
+import os
 import pickle
+import shutil
+import zipfile
 
 # used to fetch/vectorize ID generation functions
 id_generator_funcs = [blk_gj, bgp_gj, bg_gj, tr_gj, co_gj]
 id_generators = {f.__name__: f for f in id_generator_funcs}
 
 # sorting parameters -- all crosswalks are sorted accordingly
-sort_params = {
+SORT_PARAMS = {
     "ascending": True,
     "na_position": "last",
     "ignore_index": True,
     "inplace": True,
 }
+# sort columns in this order
+SORT_BYS = {
+    "nhgis_blk1990_blk2010_ge": ["GEOID90", "GEOID10"],
+    "nhgis_blk1990_blk2010_gj": ["GJOIN1990", "GJOIN2010"],
+    "nhgis_blk2000_blk2010_ge": ["GEOID00", "GEOID10"],
+    "nhgis_blk2000_blk2010_gj": ["GJOIN2000", "GJOIN2010"],
+}
+
+# All blk-blk crosswalk ID columns
+ID_COLS = ["GJOIN1990", "GJOIN2000", "GJOIN2010", "GEOID90", "GEOID00", "GEOID10"]
 
 CSV = "csv"
+ZIP = "zip"
+W = "w"
+R = "r"
 
 
 class GeoCrossWalk:
@@ -787,8 +803,8 @@ def extract_unique_stfips(cls=None, df=None, endpoint="target", code="gj"):
     return unique_stfips
 
 
-def xwalk_df_to_csv(cls=None, dfkwds=dict(), path="", fext="zip"):
-    """Write the produced crosswalk to .csv or .csv.zip.
+def xwalk_df_to_csv(cls=None, dfkwds=dict(), path=""):
+    """Write the produced crosswalk to ``.csv``.
     
     Parameters
     ----------
@@ -824,22 +840,14 @@ def xwalk_df_to_csv(cls=None, dfkwds=dict(), path="", fext="zip"):
         xwalk = dfkwds["df"]
     if stfips and xwalk_name.split("_")[-1] != stfips:
         xwalk_name += "_" + stfips
-    if fext:
-        compression_opts = dict(method=fext, archive_name="%s.%s" % (xwalk_name, CSV))
-        file_name = "%s%s.%s" % (path, xwalk_name, fext)
-    else:
-        compression_opts = None
-        file_name = "%s%s.%s" % (path, xwalk_name, CSV)
-    xwalk.to_csv(file_name, compression=compression_opts, index=False)
+    file_name = "%s%s.%s" % (path, xwalk_name, CSV)
+    xwalk.to_csv(file_name, index=False)
 
 
-def xwalk_df_from_csv(fname, fext="zip", **kwargs):
-    """Read in a produced crosswalk from .csv or .csv.zip."""
+def xwalk_df_from_csv(fname, **kwargs):
+    """Read in a produced crosswalk from ``.csv``."""
 
-    if fext:
-        file_path = "%s.%s" % (fname, fext)
-    else:
-        file_path = "%s.%s" % (fname, CSV)
+    file_path = "%s.%s" % (fname, CSV)
     xwalk = pandas.read_csv(file_path, **kwargs)
     return xwalk
 
@@ -1209,6 +1217,105 @@ def example_crosswalk_data():
     for cn, cd in zip(cols, col_data):
         example_data[cn] = cd
     return example_data
+
+
+def prepare_data_product(xwalk, path, code_type="gj", remove=True):
+    """Prepare an archived NHGIS crosswalk with a README.txt.
+    
+    Parameters
+    ----------
+
+    xwalk : {nhgisxwalk.GeoCrossWalk, dict}
+        Fetch the crosswalk name, if the parameter is an
+        ``nhgisxwalk.GeoCrossWalk``, or build the crosswalk name, from a
+        ``dict``. If the parameter type is a ``dict`` the information should
+        be keyed with ``'source'`` and ``'target'``.
+
+    path : str
+        File path to directory where the archive will be stored.
+    
+    code_type : str
+        Either ``'gj'`, the GISJOIN abbreviation from the NHGIS or
+        ``'ge'``, the GEOID abbreviation from the Census. Default is ``'gj'``.
+    
+    remove : bool
+        Delete the uncompressed directory (``True``). Default is ``True``.
+    
+    """
+
+    def _fetch_readme():
+        """Fetch and copy the proper README.txt for a geographic crosswalk."""
+        # set file paths + file names
+        RESOURCE_README_PATH = "../resources/readme_files/"
+        readme_file = "%s_README.%s" % (xwalk_name, TXT)
+        readme_from = RESOURCE_README_PATH + readme_file
+        readme_to = "%s/%s/%s" % (path, xwalk_name, readme_file)
+        # copy the specified README.txt into the archive directory
+        shutil.copyfile(readme_from, readme_to)
+
+    def _zip_directory():
+        """Initialize and archive a directory."""
+        # initialize the ziparchive
+        ziphandle = zipfile.ZipFile("%s/%s.%s" % (path, xwalk_name, ZIP), W)
+        # ziphandle is zipfile handle
+        for root, dirs, files in os.walk("%s/%s/" % (path, xwalk_name)):
+            for file in files:
+                ziphandle.write(os.path.join(root, file))
+        # close the zipped archive
+        ziphandle.close()
+        # delete uncompressed directory
+        if remove:
+            shutil.rmtree("%s/%s/" % (path, xwalk_name))
+
+    # set crosswalk name
+    if type(xwalk) == dict:
+        source, target = xwalk["source"], xwalk["target"]
+        xwalk_name = "nhgis_%s_%s_%s" % (source, target, code_type)
+    else:
+        xwalk_name = xwalk.xwalk_name
+
+    # run gneration workflow
+    _fetch_readme()
+    _zip_directory()
+
+
+def generate_WHAT():
+    """
+    """
+
+    pass
+
+
+def generate_blk_blk_xwalk(infile, column, dtype):
+    """
+    
+    Parameters
+    ----------
+    
+    infile : str
+        ...
+    
+    column : ...
+        ...
+    
+    dtype : ...
+        ...
+    
+    """
+
+    #
+    infile = infile[:-4]
+    xwalk_name = infile.split("/")[-1]
+    xwalk_path = infile.split(xwalk_name[0])[0]
+    st_path = xwalk_path + xwalk_name + "_state/"
+    #
+    df = xwalk_df_from_csv(infile, dtype=dtype)
+    #
+    sorter = SORT_BYS[xwalk_name]
+    df.sort_values(by=sorter, **SORT_PARAMS)
+    #
+    xwalk_df_to_csv(dfkwds={"df": df, "xwalk_name": xwalk_name}, path=xwalk_path)
+    split_blk_blk_xwalk(df, column, xwalk_name, fpath=st_path, sort_by=sorter)
 
 
 def split_blk_blk_xwalk(df, endpoint, fname, fpath="", sort_by=None):
