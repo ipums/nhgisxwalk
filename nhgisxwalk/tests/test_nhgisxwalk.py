@@ -7,10 +7,19 @@ import pandas
 
 import nhgisxwalk
 
+CSV = "csv"
+ZIP = "zip"
+W = "w"
+R = "r"
+
+
 # use sample data for all empirical tests
 data_dir = "./testing_data_subsets"
-tabular_data_path = data_dir + "/%s_block.csv.zip"
-supplement_data_path_90 = data_dir + "/%s_blck_grp_598_103.csv.zip"
+# tabular_data_path = data_dir + "/%s_block.csv.zip" #################################
+tabular_data_path = data_dir + "/%s_block.%s.%s"  #####################################
+# tabular_data_path = "%s/%s_block.%s.%s" % (data_dir + "/%s_block.csv.zip"
+# supplement_data_path_90 = data_dir + "/%s_blck_grp_598_103.csv.zip" ###################
+supplement_data_path_90 = data_dir + "/%s_blck_grp_598_103.%s.%s"
 
 # shorthand for geographies
 blk, bgp, bg, tr, co = "blk", "bgp", "bg", "tr", "co"
@@ -26,7 +35,7 @@ stfips = "10"
 
 
 def fetch_base_xwalk(sg, tg, sy, ty):
-    base_xwalk_name = "/nhgis_%s%s_%s%s_gj.zip" % (sg, sy, tg, ty)
+    base_xwalk_name = "/nhgis_%s%s_%s%s_gj.%s" % (sg, sy, tg, ty, ZIP)
     base_xwalk_file = data_dir + base_xwalk_name
     data_types = nhgisxwalk.str_types(["GJOIN%s" % sy, "GJOIN%s" % ty])
     base_xwalk = pandas.read_csv(base_xwalk_file, index_col=0, dtype=data_types)
@@ -45,9 +54,11 @@ input_vars_1990 = [
     nhgisxwalk.desc_code_1990["Housing Units"]["Total"],
 ]
 # empirical tabular data path
-tab_data_path_1990 = tabular_data_path % _90
+# tab_data_path_1990 = tabular_data_path % _90   ##############################
+tab_data_path_1990 = tabular_data_path % (_90, CSV, ZIP)
 # supplementary empirical tabular data path (only for 1990)
-supplement_data_path_90 = supplement_data_path_90 % _90
+# supplement_data_path_90 = supplement_data_path_90 % _90    ##################
+supplement_data_path_90 = supplement_data_path_90 % (_90, CSV, ZIP)
 
 # 2000 blocks to 2010 blocks ---------------------------------------------------
 base_xwalk_blk2000_blk2010, base_xwalk_blk2000_blk2010_fname = fetch_base_xwalk(
@@ -61,7 +72,8 @@ input_vars_2000_SF1b = [
     nhgisxwalk.desc_code_2000_SF1b["Housing Units"]["Total"],
 ]
 # empirical tabular data path
-tab_data_path_2000 = tabular_data_path % _00
+# tab_data_path_2000 = tabular_data_path % _00 ################################
+tab_data_path_2000 = tabular_data_path % (_00, CSV, ZIP)
 
 
 class Test_GeoCrossWalk(unittest.TestCase):
@@ -608,7 +620,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
         numpy.testing.assert_allclose(knw_num_vals, obs_num_vals, atol=6)
 
     # non-year, geography specific ---------------------------------------------
-    def test_xwalk_write_read_csv_from_class_compressed(self):
+    def test_xwalk_write_read_csv_from_class(self):
         write_xwalk = nhgisxwalk.GeoCrossWalk(
             base_xwalk_blk2000_blk2010,
             source_year=_00,
@@ -627,26 +639,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
         observed_values = read_xwalk["wt_pop"].values
         numpy.testing.assert_allclose(known_values, observed_values)
 
-    def test_xwalk_write_read_csv_from_class_uncompressed(self):
-        write_xwalk = nhgisxwalk.GeoCrossWalk(
-            base_xwalk_blk2000_blk2010,
-            source_year=_00,
-            target_year=_10,
-            source_geo=bgp,
-            target_geo=tr,
-            base_source_table=tab_data_path_2000,
-            input_var=input_vars_2000_SF1b,
-            weight_var=input_var_tags,
-            keep_base=False,
-            stfips=stfips,
-        )
-        nhgisxwalk.xwalk_df_to_csv(cls=write_xwalk, fext=None)
-        read_xwalk = nhgisxwalk.xwalk_df_from_csv(write_xwalk.xwalk_name, fext=None)
-        known_values = write_xwalk.xwalk["wt_pop"].values
-        observed_values = read_xwalk["wt_pop"].values
-        numpy.testing.assert_allclose(known_values, observed_values)
-
-    def test_xwalk_write_read_csv_from_df_compressed(self):
+    def test_xwalk_write_read_csv_from_df(self):
         write_xwalk = nhgisxwalk.GeoCrossWalk(
             base_xwalk_blk2000_blk2010,
             source_year=_00,
@@ -671,7 +664,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
         observed_values = read_xwalk["wt_pop"].values
         numpy.testing.assert_allclose(known_values, observed_values)
 
-    def test_xwalk_write_read_csv_from_df_compressed_no_stfips(self):
+    def test_xwalk_write_read_csv_from_df_no_stfips(self):
         write_xwalk = nhgisxwalk.GeoCrossWalk(
             base_xwalk_blk2000_blk2010,
             source_year=_00,
@@ -692,31 +685,29 @@ class Test_GeoCrossWalk(unittest.TestCase):
         observed_values = read_xwalk["wt_pop"].values
         numpy.testing.assert_allclose(known_values, observed_values)
 
-    def test_xwalk_write_read_csv_from_df_uncompressed(self):
-        write_xwalk = nhgisxwalk.GeoCrossWalk(
-            base_xwalk_blk2000_blk2010,
-            source_year=_00,
-            target_year=_10,
-            source_geo=bgp,
-            target_geo=tr,
-            base_source_table=tab_data_path_2000,
-            input_var=input_vars_2000_SF1b,
-            weight_var=input_var_tags,
-            keep_base=False,
-            stfips=stfips,
-        )
-        nhgisxwalk.xwalk_df_to_csv(
-            dfkwds={
-                "df": write_xwalk.xwalk,
-                "stfips": stfips,
-                "xwalk_name": write_xwalk.xwalk_name,
-            },
-            fext=None,
-        )
-        read_xwalk = nhgisxwalk.xwalk_df_from_csv(write_xwalk.xwalk_name, fext=None)
-        known_values = write_xwalk.xwalk["wt_pop"].values
-        observed_values = read_xwalk["wt_pop"].values
-        numpy.testing.assert_allclose(known_values, observed_values)
+    def test_prepare_data_product(self):
+        """
+        """
+
+        pass
+
+    def test_prepare_data_product(self):
+        """
+        """
+
+        pass
+
+    def test_generate_data_product_full(self):
+        """
+        """
+
+        pass
+
+    def test_generate_data_product_state(self):
+        """
+        """
+
+        pass
 
     def test_xwalk_write_read_pickle(self):
         write_xwalk = nhgisxwalk.GeoCrossWalk(
