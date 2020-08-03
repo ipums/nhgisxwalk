@@ -526,7 +526,7 @@ class GeoCrossWalk:
             self.xwalk = round_weights(self.xwalk, decimals=weights_precision)
 
         # sort the resultant values
-        self.xwalk.sort_values(by=[self.source, self.target], **sort_params)
+        self.xwalk.sort_values(by=[self.source, self.target], **SORT_PARAMS)
 
     def _drop_base_cols(self):
         """Retain only ID columns and original weights in the base crosswalk."""
@@ -731,7 +731,7 @@ def extract_state(in_xwalk, stfips, xwalk_name, endpoint, code="gj", sort_by=Non
         The code type used in indexing unique states. Default is ``'gj'``.
     
     sort_by : list
-        Columns to sort by. This is used along with ``sort_params``. Default is ``None``.
+        Columns to sort by. This is used along with ``SORT_PARAMS``. Default is ``None``.
     
     Returns
     -------
@@ -760,7 +760,7 @@ def extract_state(in_xwalk, stfips, xwalk_name, endpoint, code="gj", sort_by=Non
     out_xwalk = in_xwalk[condition].copy()
 
     if sort_by:
-        out_xwalk.sort_values(by=sort_by, **sort_params)
+        out_xwalk.sort_values(by=sort_by, **SORT_PARAMS)
 
     return out_xwalk
 
@@ -820,10 +820,7 @@ def xwalk_df_to_csv(cls=None, dfkwds=dict(), path=""):
         Default is ``dict()``.
     
     path : str
-        Directory path without the file name.  Default is ``''``.
-    
-    fext : str
-        Compression file extension. Default is ``'zip'``.
+        Directory path without the file name. Default is ``''``.
     
     """
 
@@ -844,10 +841,42 @@ def xwalk_df_to_csv(cls=None, dfkwds=dict(), path=""):
     xwalk.to_csv(file_name, index=False)
 
 
-def xwalk_df_from_csv(fname, **kwargs):
-    """Read in a produced crosswalk from ``.csv``."""
+def xwalk_df_from_csv(fname, path="", archived=False, **kwargs):
+    """Read in a produced crosswalk from an archived ``.zip`` or ``.csv``.
+    Pass in ``pandas.read_csv()`` keyword arguments with ``**kwargs``.
+    
+    Parameters
+    ----------
+    
+    fname : str
+        Crosswalk (file) name.
+    
+    path : str
+        Directory path without the file name. Default is ``''``.
+        
+    archived : bool
+        ``True`` if the crosswalk is coming from an archived
+        directory, otherwise ``False``. Default is ``False``.
+    
+    Returns
+    -------
+    
+    xwalk : pandas.DataFrame
+        The crosswalk dataframe.
+    
+    """
 
-    file_path = "%s.%s" % (fname, CSV)
+    if archived:
+        # extract the archive
+        with zipfile.ZipFile("%s%s.zip" % (path, fname), R) as zip_obj:
+            zip_obj.extractall(path)
+        # macOS leaves an annoying artifact
+        mac_artifact = "%s%s" % (path, "__MACOSX/")
+        if os.path.exists(mac_artifact):
+            shutil.rmtree(mac_artifact)
+        # update file path+name
+        fname = "%s/%s" % (fname, fname)
+    file_path = "%s%s.%s" % (path, fname, CSV)
     xwalk = pandas.read_csv(file_path, **kwargs)
     return xwalk
 
@@ -1279,11 +1308,20 @@ def prepare_data_product(xwalk, path, code_type="gj", remove=True):
     _zip_directory()
 
 
+def generate_data_product():
+    """
+    """
+
+    pass
+
+
+'''
 def generate_WHAT():
     """
     """
 
     pass
+'''
 
 
 def generate_blk_blk_xwalk(infile, column, dtype):
