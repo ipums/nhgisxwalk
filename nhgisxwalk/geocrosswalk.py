@@ -862,6 +862,10 @@ def xwalk_df_from_csv(fname, path="", archived=False, test=False, **kwargs):
         ``True`` if the crosswalk is coming from an archived
         directory, otherwise ``False``. Default is ``False``.
     
+    test : bool
+        Set to ``True`` if running unit tests, otherwise ``False``.
+        Default is ``False``.
+    
     Returns
     -------
     
