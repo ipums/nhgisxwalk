@@ -15,10 +15,7 @@ R = "r"
 
 # use sample data for all empirical tests
 data_dir = "./testing_data_subsets"
-# tabular_data_path = data_dir + "/%s_block.csv.zip" #################################
-tabular_data_path = data_dir + "/%s_block.%s.%s"  #####################################
-# tabular_data_path = "%s/%s_block.%s.%s" % (data_dir + "/%s_block.csv.zip"
-# supplement_data_path_90 = data_dir + "/%s_blck_grp_598_103.csv.zip" ###################
+tabular_data_path = data_dir + "/%s_block.%s.%s"
 supplement_data_path_90 = data_dir + "/%s_blck_grp_598_103.%s.%s"
 
 # shorthand for geographies
@@ -54,10 +51,8 @@ input_vars_1990 = [
     nhgisxwalk.desc_code_1990["Housing Units"]["Total"],
 ]
 # empirical tabular data path
-# tab_data_path_1990 = tabular_data_path % _90   ##############################
 tab_data_path_1990 = tabular_data_path % (_90, CSV, ZIP)
 # supplementary empirical tabular data path (only for 1990)
-# supplement_data_path_90 = supplement_data_path_90 % _90    ##################
 supplement_data_path_90 = supplement_data_path_90 % (_90, CSV, ZIP)
 
 # 2000 blocks to 2010 blocks ---------------------------------------------------
@@ -72,7 +67,6 @@ input_vars_2000_SF1b = [
     nhgisxwalk.desc_code_2000_SF1b["Housing Units"]["Total"],
 ]
 # empirical tabular data path
-# tab_data_path_2000 = tabular_data_path % _00 ################################
 tab_data_path_2000 = tabular_data_path % (_00, CSV, ZIP)
 
 
@@ -818,7 +812,9 @@ class Test_upper_level_functions(unittest.TestCase):
         nhgisxwalk.split_blk_blk_xwalk(
             base_xwalk_blk1990_blk2010, "GJOIN2010", xwalk_name, "gj"
         )
-        read_xwalk = nhgisxwalk.xwalk_df_from_csv(xwalk_name + "_" + stfips)
+        read_xwalk = nhgisxwalk.xwalk_df_from_csv(
+            xwalk_name + "_" + stfips, archived=True, test=True
+        )
         observed_ids = read_xwalk["GJOIN2010"].head().values
         numpy.testing.assert_array_equal(known_ids, observed_ids)
 
