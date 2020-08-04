@@ -36,6 +36,7 @@ ID_COLS = ["GJOIN1990", "GJOIN2000", "GJOIN2010", "GEOID90", "GEOID00", "GEOID10
 
 CSV = "csv"
 ZIP = "zip"
+TXT = "txt"
 W = "w"
 R = "r"
 
@@ -837,7 +838,10 @@ def xwalk_df_to_csv(cls=None, dfkwds=dict(), path=""):
         xwalk = dfkwds["df"]
     if stfips and xwalk_name.split("_")[-1] != stfips:
         xwalk_name += "_" + stfips
-    file_name = "%s%s.%s" % (path, xwalk_name, CSV)
+
+    file_name = "%s.%s" % (xwalk_name, CSV)
+    file_name = os.path.join(path, file_name)
+
     xwalk.to_csv(file_name, index=False)
 
 
@@ -1248,25 +1252,21 @@ def example_crosswalk_data():
     return example_data
 
 
-def prepare_data_product(xwalk, path, code_type="gj", remove=True):
+def prepare_data_product(xwalk, xwalk_name, path, remove=True):
     """Prepare an archived NHGIS crosswalk with a README.txt.
     
     Parameters
     ----------
 
-    xwalk : {nhgisxwalk.GeoCrossWalk, dict}
-        Fetch the crosswalk name, if the parameter is an
-        ``nhgisxwalk.GeoCrossWalk``, or build the crosswalk name, from a
-        ``dict``. If the parameter type is a ``dict`` the information should
-        be keyed with ``'source'`` and ``'target'``.
-
+    xwalk : pandas.DataFrame
+        The crosswalk.
+    
+    xwalk : str
+        The crosswalk name.
+    
     path : str
         File path to directory where the archive will be stored.
-    
-    code_type : str
-        Either ``'gj'`, the GISJOIN abbreviation from the NHGIS or
-        ``'ge'``, the GEOID abbreviation from the Census. Default is ``'gj'``.
-    
+      
     remove : bool
         Delete the uncompressed directory (``True``). Default is ``True``.
     
@@ -1274,36 +1274,59 @@ def prepare_data_product(xwalk, path, code_type="gj", remove=True):
 
     def _fetch_readme():
         """Fetch and copy the proper README.txt for a geographic crosswalk."""
+
+        readme_file = "%s_README.%s" % (readme_name, TXT)
+        readme_to = "%s/%s" % (path, readme_file)
+
         # set file paths + file names
-        RESOURCE_README_PATH = "../resources/readme_files/"
-        readme_file = "%s_README.%s" % (xwalk_name, TXT)
-        readme_from = RESOURCE_README_PATH + readme_file
-        readme_to = "%s/%s/%s" % (path, xwalk_name, readme_file)
-        # copy the specified README.txt into the archive directory
-        shutil.copyfile(readme_from, readme_to)
+        try:
+            # for actual workflow
+            RESOURCE_README_PATH = "../resources/readme_files/"
+            readme_from = RESOURCE_README_PATH + readme_file
+            # copy the specified README.txt into the archive directory
+            shutil.copyfile(readme_from, readme_to)
+        except FileNotFoundError:
+            # for tests
+            RESOURCE_README_PATH = "./resources/readme_files/"
+            readme_from = RESOURCE_README_PATH + readme_file
+            # copy the specified README.txt into the archive directory
+            shutil.copyfile(readme_from, readme_to)
 
     def _zip_directory():
         """Initialize and archive a directory."""
-        # initialize the ziparchive
-        ziphandle = zipfile.ZipFile("%s/%s.%s" % (path, xwalk_name, ZIP), W)
-        # ziphandle is zipfile handle
-        for root, dirs, files in os.walk("%s/%s/" % (path, xwalk_name)):
-            for file in files:
-                ziphandle.write(os.path.join(root, file))
-        # close the zipped archive
-        ziphandle.close()
+        # compress directory
+        shutil.make_archive(path, ZIP, path)
+
+        # https://docs.python.org/3/library/shutil.html#shutil.unpack_archive
+        # shutil.unpack_archive(filename[, extract_dir[, format]])
+
         # delete uncompressed directory
         if remove:
-            shutil.rmtree("%s/%s/" % (path, xwalk_name))
+            shutil.rmtree(path)
 
-    # set crosswalk name
-    if type(xwalk) == dict:
-        source, target = xwalk["source"], xwalk["target"]
-        xwalk_name = "nhgis_%s_%s_%s" % (source, target, code_type)
+    # README name same as crosswalk name
+    rn_eq_xn = True
+    xwalk_name_components = xwalk_name.split("_")
+    # less than 4 components; i.e. nhgis_bgp1990_tr2010
+    leq_4 = len(xwalk_name_components) < 4
+    # 4 or more components; i.e. nhgis_bgp1990_tr2010_09, nhgis_blk1990_blk2010_gj
+    geq_4 = len(xwalk_name_components) >= 4
+    # this logic chunk catches the block-block and state-level names
+    if geq_4:
+        try:
+            int(xwalk_name_components[-1])
+            rn_eq_xn = False
+        except ValueError:
+            pass
+    if rn_eq_xn:
+        readme_name = xwalk_name
     else:
-        xwalk_name = xwalk.xwalk_name
+        readme_name = "_".join(xwalk_name.split("_")[:-1])
 
-    # run gneration workflow
+    # write out the dataframe
+    xwalk_df_to_csv(dfkwds={"df": xwalk, "xwalk_name": xwalk_name}, path=path)
+
+    # run generation workflow
     _fetch_readme()
     _zip_directory()
 
@@ -1312,51 +1335,64 @@ def generate_data_product():
     """
     """
 
-    pass
-
-
-'''
-def generate_WHAT():
-    """
-    """
+    # this function will be go into data-subsets // generate national...
 
     pass
-'''
 
 
-def generate_blk_blk_xwalk(infile, column, dtype):
-    """
-    
+def regenerate_blk_blk_xwalk(in_path, out_path, target_column, dtype):
+    """The purpose of this function is specifically to read in the original
+    NHGIS block to block crosswalk data, sort it according to ``SORT_PARAMS``,
+    write it back out along with a README.txt, and finally split it by state
+    (again with a README.txt) with ``split_blk_blk_xwalk()``.
+       
     Parameters
     ----------
     
-    infile : str
-        ...
+    in_path : str
+        Input crosswalk (file) name.
     
-    column : ...
-        ...
+    out_path : str
+        Output crosswalk (file) name.
     
-    dtype : ...
-        ...
+    target_column : str
+        The column from which unique states should extracted.
+    
+    dtype : dict
+        Data types for columns in the input crosswalk.
     
     """
 
-    #
-    infile = infile[:-4]
-    xwalk_name = infile.split("/")[-1]
-    xwalk_path = infile.split(xwalk_name[0])[0]
-    st_path = xwalk_path + xwalk_name + "_state/"
-    #
-    df = xwalk_df_from_csv(infile, dtype=dtype)
-    #
+    # split components of the corsswalk path name
+    in_path_components = in_path.split("/")
+    # isolate the directory housing the crosswalk to read in
+    in_path = "/".join(in_path_components[:-1]) + "/"
+    # isolate the crosswalk name, source, target, and code type
+    xwalk_name = in_path_components[-1].split(".")[0]
+    xwalk_code = xwalk_name.split("_")[-1]
+    # read in the crosswalk
+    df = xwalk_df_from_csv(xwalk_name, path=in_path, archived=True, dtype=dtype)
+    # sort first by source then target IDs
     sorter = SORT_BYS[xwalk_name]
     df.sort_values(by=sorter, **SORT_PARAMS)
-    #
-    xwalk_df_to_csv(dfkwds={"df": df, "xwalk_name": xwalk_name}, path=xwalk_path)
-    split_blk_blk_xwalk(df, column, xwalk_name, fpath=st_path, sort_by=sorter)
+
+    # write out national crosswalk
+    out_path = "%s/%s" % (out_path, xwalk_name)
+    if not os.path.exists(out_path):
+        os.mkdir(out_path)
+    prepare_data_product(df, xwalk_name, out_path, remove=True)
+
+    # write out state crosswalks
+    st_path = out_path + "_state"
+    if not os.path.exists(st_path):
+        os.mkdir(st_path)
+    split_blk_blk_xwalk(
+        df, target_column, xwalk_name, xwalk_code, fpath=st_path, sort_by=sorter
+    )
+    del df
 
 
-def split_blk_blk_xwalk(df, endpoint, fname, fpath="", sort_by=None):
+def split_blk_blk_xwalk(df, endpoint, fname, code, fpath="", sort_by=None):
     """Split and write out an original NHGIS base-level (block) crosswalk.
     
     Parameters
@@ -1371,6 +1407,10 @@ def split_blk_blk_xwalk(df, endpoint, fname, fpath="", sort_by=None):
     fname : str
         Crosswalk (file) name.
     
+    code : str
+        The NHGIS standard GISJOIN abbreviation (``'gj'``) or the 
+        Census Bureau standard GEOID abbreviation (``'ge'``).
+    
     fpath : str
         Crosswalk (file) path. Default is ``''``.
     
@@ -1380,7 +1420,6 @@ def split_blk_blk_xwalk(df, endpoint, fname, fpath="", sort_by=None):
     """
 
     # extract and sort all unique state FIPS codes
-    code = fname[-2:]
     unique_stfips = extract_unique_stfips(df=df, endpoint=endpoint, code=code)
     unique_stfips = list(unique_stfips)
     unique_stfips.sort()
@@ -1390,6 +1429,8 @@ def split_blk_blk_xwalk(df, endpoint, fname, fpath="", sort_by=None):
         # create a subset for each endpoint (source/target) state
         stdf = extract_state(df, stfips, fname, endpoint, code=code, sort_by=sort_by)
         xwalk_name = fname + "_" + stfips
-        # write the subset to a zipped .csv
-        dfkwds = {"df": stdf, "stfips": stfips, "xwalk_name": xwalk_name}
-        xwalk_df_to_csv(dfkwds=dfkwds, path=fpath)
+        stfpath = os.path.join(fpath, xwalk_name)
+        if not os.path.exists(stfpath):
+            os.mkdir(stfpath)
+        prepare_data_product(stdf, xwalk_name, stfpath, remove=True)
+        del stdf
