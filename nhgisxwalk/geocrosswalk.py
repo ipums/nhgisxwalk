@@ -845,7 +845,7 @@ def xwalk_df_to_csv(cls=None, dfkwds=dict(), path=""):
     xwalk.to_csv(file_name, index=False)
 
 
-def xwalk_df_from_csv(fname, path="", archived=False, **kwargs):
+def xwalk_df_from_csv(fname, path="", archived=False, test=False, **kwargs):
     """Read in a produced crosswalk from an archived ``.zip`` or ``.csv``.
     Pass in ``pandas.read_csv()`` keyword arguments with ``**kwargs``.
     
@@ -879,7 +879,8 @@ def xwalk_df_from_csv(fname, path="", archived=False, **kwargs):
         if os.path.exists(mac_artifact):
             shutil.rmtree(mac_artifact)
         # update file path+name
-        fname = "%s/%s" % (fname, fname)
+        if not test:
+            fname = "%s/%s" % (fname, fname)
     file_path = "%s%s.%s" % (path, fname, CSV)
     xwalk = pandas.read_csv(file_path, **kwargs)
     return xwalk
@@ -1252,7 +1253,7 @@ def example_crosswalk_data():
     return example_data
 
 
-def prepare_data_product(xwalk, xwalk_name, path, remove=True):
+def prepare_data_product(xwalk, xwalk_name, path, remove=True, test=False):
     """Prepare an archived NHGIS crosswalk with a README.txt.
     
     Parameters
