@@ -816,7 +816,7 @@ class Test_upper_level_functions(unittest.TestCase):
         )
         xwalk_name = base_xwalk_blk1990_blk2010_fname.split("/")[-1].split(".")[0]
         nhgisxwalk.split_blk_blk_xwalk(
-            base_xwalk_blk1990_blk2010, "GJOIN2010", xwalk_name
+            base_xwalk_blk1990_blk2010, "GJOIN2010", xwalk_name, "gj"
         )
         read_xwalk = nhgisxwalk.xwalk_df_from_csv(xwalk_name + "_" + stfips)
         observed_ids = read_xwalk["GJOIN2010"].head().values
