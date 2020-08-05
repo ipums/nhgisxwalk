@@ -875,17 +875,32 @@ def xwalk_df_from_csv(fname, path="", archived=False, test=False, **kwargs):
     """
 
     if archived:
+
+        print("%s%s.zip" % (path, fname))
+        print(path)
+
         # extract the archive
-        with zipfile.ZipFile("%s%s.zip" % (path, fname), R) as zip_obj:
-            zip_obj.extractall(path)
+        # with zipfile.ZipFile("%s%s.zip" % (path, fname), R) as zip_obj:
+        #    zip_obj.extractall(path)
+
+        shutil.unpack_archive("%s%s.zip" % (path, fname), path + fname)
+
         # macOS leaves an annoying artifact
         mac_artifact = "%s%s" % (path, "__MACOSX/")
         if os.path.exists(mac_artifact):
             shutil.rmtree(mac_artifact)
+
         # update file path+name
-        if not test:
-            fname = "%s/%s" % (fname, fname)
+        # if not test:
+        #    fname = "%s/%s" % (fname, fname)
+
     file_path = "%s%s.%s" % (path, fname, CSV)
+    if not os.path.exists(file_path):
+        fname = "%s/%s" % (fname, fname)
+        file_path = "%s%s.%s" % (path, fname, CSV)
+
+    print(file_path)
+
     xwalk = pandas.read_csv(file_path, **kwargs)
     return xwalk
 
@@ -1302,9 +1317,6 @@ def prepare_data_product(xwalk, xwalk_name, path, remove=True, test=False):
         # compress directory
         shutil.make_archive(path, ZIP, path)
 
-        # https://docs.python.org/3/library/shutil.html#shutil.unpack_archive
-        # shutil.unpack_archive(filename[, extract_dir[, format]])
-
         # delete uncompressed directory
         if remove:
             shutil.rmtree(path)
@@ -1380,7 +1392,8 @@ def regenerate_blk_blk_xwalk(in_path, out_path, target_column, dtype):
     # sort first by source then target IDs
     sorter = SORT_BYS[xwalk_name]
     df.sort_values(by=sorter, **SORT_PARAMS)
-
+    print(df.head())
+    stop
     # write out national crosswalk
     out_path = "%s/%s" % (out_path, xwalk_name)
     if not os.path.exists(out_path):
