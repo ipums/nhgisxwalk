@@ -668,6 +668,8 @@ class GeoCrossWalk:
         endex = self.xwalk.index[-1]
         # dict for source and target 'unaccounted for' ids
         unaccounted = {self.source_geo: self.src_unacc, self.target_geo: self.trg_unacc}
+        # check for these character lengths in column names for each record append
+        lsrc, ltrg = len(self.source_geo), len(self.target_geo)
 
         # confirm variable data types
         if not hasattr(self, "weight_col"):
@@ -685,10 +687,9 @@ class GeoCrossWalk:
             for idx, unacc in enumerate(unaccs, 1):
                 endex += idx
                 # append one record to the dataframe
-
                 self.xwalk.loc[endex] = [
                     unacc
-                    if (c.split("_")[0][:2] == geo or c.split("_")[0][:3] == geo)
+                    if (c.split("_")[0][:lsrc] == geo or c.split("_")[0][:ltrg] == geo)
                     else 0.0
                     if c in self.weight_col
                     else numpy.nan
