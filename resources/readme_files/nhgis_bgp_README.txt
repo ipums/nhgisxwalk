@@ -25,17 +25,17 @@ Additional documentation on NHGIS crosswalks is available at:
 --------------------------------------------------------------------------------
 Data Summary
 --------------------------------------------------------------------------------
- 
+
 Each NHGIS crosswalk file provides interpolation weights for allocating census counts from a specified
 set of source zones to a specified set of target zones. Each record in the crosswalk represents a spatial
 intersection between a single source zone and a single target zone, which we refer to as an atom.
 The Census Bureau standard GEOID is included for all target units for convenience. GEOIDs
 for source units are not included due to block group parts not being a Census Bureau geography.
 
-File naming scheme:  nhgis_[source geog][source year]_[target geog][target year]{_state FIPS}.csv
+File naming scheme: nhgis_[source geog][source year]_[target geog][target year]{_state FIPS}.csv
 
 Geographic unit codes:
-    blk - Block 
+    blk - Block
     bgp - Block group part (intersections between block groups, places, county subdivisions, etc.)
     bg  - Block group
     tr  - Census tract
@@ -76,7 +76,7 @@ Composition of NHGIS block group part IDs:
 --------------------------------------------------------------------------------
 Content:
 --------------------------------------------------------------------------------
-    - The top row is a header row
+    - The top row is a header row.
     - Each subsequent row represents a potential intersection between a block group part and a large geographic unit.
     - All files contain fields for source and target unit GISJOIN ID and target unit GEOID (explained below).
     - All files contain fields for weighted proportional values of four variables:
