@@ -282,11 +282,12 @@ class GeoCrossWalk:
     `./testing_data_subsets/ <https://github.com/jGaboardi/nhgisxwalk/tree/master/testing_data_subsets>`_)
     are single state subsets (Delaware) for testing and demonstration purposes.
     
-    >>> subset_data_dir = "./testing_data_subsets"
-    >>> base_xwalk_name = "/nhgis_blk%s_blk%s_gj.zip" % (source_year, target_year)
-    >>> base_xwalk_file = subset_data_dir + base_xwalk_name
+    >>> subset_data_dir = "./testing_data_subsets/"
+    >>> base_xwalk_name = "nhgis_blk%s_blk%s_gj" % (source_year, target_year)
     >>> data_types = nhgisxwalk.str_types(["GJOIN%s"%source_year, "GJOIN%s"%target_year])
-    >>> base_xwalk = pandas.read_csv(base_xwalk_file, index_col=0, dtype=data_types)
+    >>> from_csv = {"path": subset_data_dir, "archived": True, "remove_unpacked": True}
+    >>> read_csv = {"dtype": data_types}
+    >>> base_xwalk = nhgisxwalk.xwalk_df_from_csv(base_xwalk_name, **from_csv, **read_csv)
     >>> base_xwalk.head()
                 GJOIN2000           GJOIN2010    WEIGHT     PAREA
     0  G10000100401001000  G10000100401001000  1.000000  1.000000
@@ -850,8 +851,6 @@ def xwalk_df_to_csv(cls=None, dfkwds=dict(), path=""):
     xwalk.to_csv(file_name, index=False)
 
 
-# def xwalk_df_from_csv(fname, path="", archived=False, test=False, **kwargs):
-# def xwalk_df_from_csv(fname, path="", archived=False, remove_upacked=False, read_csv=dict()):
 def xwalk_df_from_csv(
     fname, path="", archived=False, remove_unpacked=False, **read_csv
 ):
@@ -891,16 +890,18 @@ def xwalk_df_from_csv(
     
     """
 
-    archive_path = None
-
-    if archived:
-        archive_path = "%s%s" % (path, fname)
-
-        # make the temporary directory to store the unzipped archive and unpack
+    def _unzip_directory():
+        """Initialize and decompress a directory."""
         if not os.path.exists(archive_path):
             os.mkdir(archive_path + "/")
         shutil.unpack_archive("%s.%s" % (archive_path, ZIP), extract_dir=archive_path)
 
+    archive_path = None
+
+    if archived:
+        archive_path = "%s%s" % (path, fname)
+        # make the temporary directory to store the unzipped archive and unpack
+        _unzip_directory()
         # update file path+name
         fname = "%s/%s" % (fname, fname)
 
@@ -1323,6 +1324,10 @@ def prepare_data_product(xwalk, xwalk_name, path, remove=True):
         if remove:
             shutil.rmtree(path)
 
+    # ensure directory exists
+    if not os.path.exists(path):
+        os.mkdir(path)
+
     # README name same as crosswalk name
     rn_eq_xn = True
     xwalk_name_components = xwalk_name.split("_")
@@ -1423,8 +1428,6 @@ def regenerate_blk_blk_xwalk(
 
     # write out national crosswalk
     out_path = "%s/%s" % (out_path, xwalk_name)
-    if not os.path.exists(out_path):
-        os.mkdir(out_path)
     prepare_data_product(df, xwalk_name, out_path, remove=True)
 
     # write out state crosswalks
@@ -1475,7 +1478,5 @@ def split_blk_blk_xwalk(df, endpoint, fname, code, fpath="", sort_by=None):
         stdf = extract_state(df, stfips, fname, endpoint, code=code, sort_by=sort_by)
         xwalk_name = fname + "_" + stfips
         stfpath = os.path.join(fpath, xwalk_name)
-        if not os.path.exists(stfpath):
-            os.mkdir(stfpath)
         prepare_data_product(stdf, xwalk_name, stfpath, remove=True)
         del stdf
