@@ -681,30 +681,6 @@ class Test_GeoCrossWalk(unittest.TestCase):
         observed_values = read_xwalk["wt_pop"].values
         numpy.testing.assert_allclose(known_values, observed_values)
 
-    def test_prepare_data_product(self):
-        """
-        """
-
-        pass
-
-    def test_prepare_data_product(self):
-        """
-        """
-
-        pass
-
-    def test_generate_data_product_full(self):
-        """
-        """
-
-        pass
-
-    def test_generate_data_product_state(self):
-        """
-        """
-
-        pass
-
     def test_xwalk_write_read_pickle(self):
         write_xwalk = nhgisxwalk.GeoCrossWalk(
             base_xwalk_blk2000_blk2010,
@@ -799,6 +775,24 @@ class Test_GeoCrossWalk(unittest.TestCase):
 class Test_upper_level_functions(unittest.TestCase):
     def setUp(self):
         self.example_df = nhgisxwalk.example_crosswalk_data()
+
+    def test_prepare_data_product(self):
+        """
+        """
+
+        pass
+
+    def test_generate_data_product(self):
+        """
+        """
+
+        pass
+
+    def test_regenerate_blk_blk_xwalk(self):
+        """
+        """
+
+        pass
 
     def test_split_blk_blk_xwalk(self):
         known_ids = numpy.array(
