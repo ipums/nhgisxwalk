@@ -14,7 +14,7 @@ R = "r"
 
 
 # use sample data for all empirical tests
-data_dir = "./testing_data_subsets"
+data_dir = "./testing_data_subsets/"
 tabular_data_path = data_dir + "/%s_block.%s.%s"
 supplement_data_path_90 = data_dir + "/%s_blck_grp_598_103.%s.%s"
 
@@ -32,11 +32,15 @@ stfips = "10"
 
 
 def fetch_base_xwalk(sg, tg, sy, ty):
-    base_xwalk_name = "/nhgis_%s%s_%s%s_gj.%s" % (sg, sy, tg, ty, ZIP)
-    base_xwalk_file = data_dir + base_xwalk_name
+    base_xwalk_name = "nhgis_%s%s_%s%s_gj" % (sg, sy, tg, ty)
+    base_xwalk_path = data_dir
     data_types = nhgisxwalk.str_types(["GJOIN%s" % sy, "GJOIN%s" % ty])
-    base_xwalk = pandas.read_csv(base_xwalk_file, index_col=0, dtype=data_types)
-    return base_xwalk, base_xwalk_file
+    from_csv_kws = {"path": base_xwalk_path, "archived": True, "remove_unpacked": True}
+    read_csv_kws = {"dtype": data_types}
+    base_xwalk = nhgisxwalk.xwalk_df_from_csv(
+        base_xwalk_name, **from_csv_kws, **read_csv_kws
+    )
+    return base_xwalk, base_xwalk_path
 
 
 # 1990 blocks to 2010 blocks ---------------------------------------------------
