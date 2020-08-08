@@ -1,16 +1,16 @@
 """ Testing for the nhgisxwalk.
 """
 
-import unittest
-import numpy
-import pandas
-
 import nhgisxwalk
+import numpy
+import os
+import pandas
+import shutil
+import unittest
 
 CSV = "csv"
 ZIP = "zip"
-W = "w"
-R = "r"
+PKL = "pkl"
 
 
 # use sample data for all empirical tests
@@ -30,23 +30,23 @@ input_var_tags = ["pop", "fam", "hh", "hu"]
 # state-level values to use for subset -- Delaware
 stfips = "10"
 
+# NHGIS standard geographic abbreviation
+gj = "gj"
+
 
 def fetch_base_xwalk(sg, tg, sy, ty):
     base_xwalk_name = "nhgis_%s%s_%s%s_gj" % (sg, sy, tg, ty)
-    base_xwalk_path = data_dir
     data_types = nhgisxwalk.str_types(["GJOIN%s" % sy, "GJOIN%s" % ty])
-    from_csv_kws = {"path": base_xwalk_path, "archived": True, "remove_unpacked": True}
+    from_csv_kws = {"path": data_dir, "archived": True, "remove_unpacked": True}
     read_csv_kws = {"dtype": data_types}
     base_xwalk = nhgisxwalk.xwalk_df_from_csv(
         base_xwalk_name, **from_csv_kws, **read_csv_kws
     )
-    return base_xwalk, base_xwalk_path
+    return base_xwalk
 
 
 # 1990 blocks to 2010 blocks ---------------------------------------------------
-base_xwalk_blk1990_blk2010, base_xwalk_blk1990_blk2010_fname = fetch_base_xwalk(
-    blk, blk, _90, _10
-)
+base_xwalk_blk1990_blk2010 = fetch_base_xwalk(blk, blk, _90, _10)
 # input variables
 input_vars_1990 = [
     nhgisxwalk.desc_code_1990["Persons"]["Total"],
@@ -60,9 +60,7 @@ tab_data_path_1990 = tabular_data_path % (_90, CSV, ZIP)
 supplement_data_path_90 = supplement_data_path_90 % (_90, CSV, ZIP)
 
 # 2000 blocks to 2010 blocks ---------------------------------------------------
-base_xwalk_blk2000_blk2010, base_xwalk_blk2000_blk2010_fname = fetch_base_xwalk(
-    blk, blk, _00, _10,
-)
+base_xwalk_blk2000_blk2010 = fetch_base_xwalk(blk, blk, _00, _10)
 # input variables
 input_vars_2000_SF1b = [
     nhgisxwalk.desc_code_2000_SF1b["Persons"]["Total"],
@@ -812,13 +810,35 @@ class Test_upper_level_functions(unittest.TestCase):
                 "G10000100401001003",
             ]
         )
-        xwalk_name = base_xwalk_blk1990_blk2010_fname.split("/")[-1].split(".")[0]
+        xwalk_name = "nhgis_%s%s_%s%s_%s" % (blk, _90, blk, _10, gj)
+        xwalk_path = data_dir + xwalk_name + "_state"
+        # ensure directory exists
+        if not os.path.exists(xwalk_path):
+            os.mkdir(xwalk_path)
+        sorter = nhgisxwalk.SORT_BYS[xwalk_name]
         nhgisxwalk.split_blk_blk_xwalk(
-            base_xwalk_blk1990_blk2010, "GJOIN2010", xwalk_name, "gj"
+            base_xwalk_blk1990_blk2010,
+            "GJOIN2010",
+            xwalk_name,
+            gj,
+            fpath=xwalk_path,
+            sort_by=sorter,
         )
+
+        # read in the crosswalk
+        gjoin = "GJOIN%s"
+        gj_src, gj_trg = gjoin % _90, gjoin % _10
+        data_types = nhgisxwalk.str_types([gj_src, gj_trg])
+        from_csv_kws = {
+            "path": xwalk_path + "/",
+            "archived": True,
+            "remove_unpacked": True,
+        }
+        read_csv_kws = {"dtype": data_types}
         read_xwalk = nhgisxwalk.xwalk_df_from_csv(
-            xwalk_name + "_" + stfips, archived=True,
+            xwalk_name + "_%s" % stfips, **from_csv_kws, **read_csv_kws
         )
+
         observed_ids = read_xwalk["GJOIN2010"].head().values
         numpy.testing.assert_array_equal(known_ids, observed_ids)
 
@@ -975,9 +995,6 @@ class Test_upper_level_functions(unittest.TestCase):
 
 
 class Test_id_codes_functions(unittest.TestCase):
-    def setUp(self):
-        pass
-
     def test_generate_geoid_nan(self):
         known_value = numpy.nan
         observed_value = nhgisxwalk.id_codes.generate_geoid(numpy.nan)
@@ -1031,6 +1048,19 @@ class Test_id_codes_functions(unittest.TestCase):
     def test_co_gj_bad_year(self):
         with self.assertRaises(ValueError):
             nhgisxwalk.id_codes.tr_gj("0000", "G123456789123456789")
+
+
+class Test_remove_generated_data(unittest.TestCase):
+    def test_remove_generated_data(self):
+        # remove 2000-2010 written test data
+        xwalk_name = "nhgis_%s%s_%s%s_%s" % (bgp, _00, tr, _10, stfips)
+        os.remove(xwalk_name + "." + CSV)
+        os.remove(xwalk_name + "." + PKL)
+
+        # remove state data
+        xwalk_name = "nhgis_%s%s_%s%s_%s" % (blk, _90, blk, _10, gj)
+        xwalk_path = data_dir + xwalk_name + "_state"
+        shutil.rmtree(xwalk_path)
 
 
 if __name__ == "__main__":
