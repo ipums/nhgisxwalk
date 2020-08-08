@@ -813,7 +813,7 @@ class Test_upper_level_functions(unittest.TestCase):
             base_xwalk_blk1990_blk2010, "GJOIN2010", xwalk_name, "gj"
         )
         read_xwalk = nhgisxwalk.xwalk_df_from_csv(
-            xwalk_name + "_" + stfips, archived=True, test=True
+            xwalk_name + "_" + stfips, archived=True,
         )
         observed_ids = read_xwalk["GJOIN2010"].head().values
         numpy.testing.assert_array_equal(known_ids, observed_ids)

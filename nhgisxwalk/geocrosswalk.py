@@ -34,6 +34,10 @@ SORT_BYS = {
 # All blk-blk crosswalk ID columns
 ID_COLS = ["GJOIN1990", "GJOIN2000", "GJOIN2010", "GEOID90", "GEOID00", "GEOID10"]
 
+# special README.txt name for block group parts
+BGP_README = "nhgis_bgp"
+
+# extensions
 CSV = "csv"
 ZIP = "zip"
 TXT = "txt"
@@ -846,7 +850,11 @@ def xwalk_df_to_csv(cls=None, dfkwds=dict(), path=""):
     xwalk.to_csv(file_name, index=False)
 
 
-def xwalk_df_from_csv(fname, path="", archived=False, test=False, **kwargs):
+# def xwalk_df_from_csv(fname, path="", archived=False, test=False, **kwargs):
+# def xwalk_df_from_csv(fname, path="", archived=False, remove_upacked=False, read_csv=dict()):
+def xwalk_df_from_csv(
+    fname, path="", archived=False, remove_unpacked=False, **read_csv
+):
     """Read in a produced crosswalk from an archived ``.zip`` or ``.csv``.
     Pass in ``pandas.read_csv()`` keyword arguments with ``**kwargs``.
     
@@ -863,9 +871,17 @@ def xwalk_df_from_csv(fname, path="", archived=False, test=False, **kwargs):
         ``True`` if the crosswalk is coming from an archived
         directory, otherwise ``False``. Default is ``False``.
     
-    test : bool
+    test : bool ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         Set to ``True`` if running unit tests, otherwise ``False``.
         Default is ``False``.
+    
+    remove_unpacked : 
+    
+    
+    read_csv : dict
+        Pass in ``pandas.read_csv()`` keyword arguments with this parameter.
+    
+    
     
     Returns
     -------
@@ -875,34 +891,25 @@ def xwalk_df_from_csv(fname, path="", archived=False, test=False, **kwargs):
     
     """
 
+    archive_path = None
+
     if archived:
+        archive_path = "%s%s" % (path, fname)
 
-        print("%s%s.zip" % (path, fname))
-        print(path)
-
-        # extract the archive
-        # with zipfile.ZipFile("%s%s.zip" % (path, fname), R) as zip_obj:
-        #    zip_obj.extractall(path)
-
-        shutil.unpack_archive("%s%s.zip" % (path, fname), path + fname)
-
-        # macOS leaves an annoying artifact
-        mac_artifact = "%s%s" % (path, "__MACOSX/")
-        if os.path.exists(mac_artifact):
-            shutil.rmtree(mac_artifact)
+        # make the temporary directory to store the unzipped archive and unpack
+        if not os.path.exists(archive_path):
+            os.mkdir(archive_path + "/")
+        shutil.unpack_archive("%s.%s" % (archive_path, ZIP), extract_dir=archive_path)
 
         # update file path+name
-        # if not test:
-        #    fname = "%s/%s" % (fname, fname)
+        fname = "%s/%s" % (fname, fname)
 
     file_path = "%s%s.%s" % (path, fname, CSV)
-    if not os.path.exists(file_path):
-        fname = "%s/%s" % (fname, fname)
-        file_path = "%s%s.%s" % (path, fname, CSV)
+    xwalk = pandas.read_csv(file_path, **read_csv)
 
-    print(file_path)
+    if remove_unpacked and archive_path:
+        shutil.rmtree(archive_path)
 
-    xwalk = pandas.read_csv(file_path, **kwargs)
     return xwalk
 
 
@@ -1273,7 +1280,7 @@ def example_crosswalk_data():
     return example_data
 
 
-def prepare_data_product(xwalk, xwalk_name, path, remove=True, test=False):
+def prepare_data_product(xwalk, xwalk_name, path, remove=True):
     """Prepare an archived NHGIS crosswalk with a README.txt.
     
     Parameters
@@ -1296,22 +1303,16 @@ def prepare_data_product(xwalk, xwalk_name, path, remove=True, test=False):
     def _fetch_readme():
         """Fetch and copy the proper README.txt for a geographic crosswalk."""
 
+        # set file paths + file names
         readme_file = "%s_README.%s" % (readme_name, TXT)
         readme_to = "%s/%s" % (path, readme_file)
-
-        # set file paths + file names
-        try:
-            # for actual workflow
-            RESOURCE_README_PATH = "../resources/readme_files/"
-            readme_from = RESOURCE_README_PATH + readme_file
-            # copy the specified README.txt into the archive directory
-            shutil.copyfile(readme_from, readme_to)
-        except FileNotFoundError:
+        RESOURCE_README_PATH = "../resources/readme_files/"
+        if not os.path.exists(RESOURCE_README_PATH):
             # for tests
             RESOURCE_README_PATH = "./resources/readme_files/"
-            readme_from = RESOURCE_README_PATH + readme_file
-            # copy the specified README.txt into the archive directory
-            shutil.copyfile(readme_from, readme_to)
+        readme_from = RESOURCE_README_PATH + readme_file
+        # copy the specified README.txt into the archive directory
+        shutil.copyfile(readme_from, readme_to)
 
     def _zip_directory():
         """Initialize and archive a directory."""
@@ -1325,10 +1326,16 @@ def prepare_data_product(xwalk, xwalk_name, path, remove=True, test=False):
     # README name same as crosswalk name
     rn_eq_xn = True
     xwalk_name_components = xwalk_name.split("_")
+
+    # catch special case of block group parts
+    from_bgp = xwalk_name_components[1].startswith("bgp")
+
     # less than 4 components; i.e. nhgis_bgp1990_tr2010
     leq_4 = len(xwalk_name_components) < 4
+
     # 4 or more components; i.e. nhgis_bgp1990_tr2010_09, nhgis_blk1990_blk2010_gj
     geq_4 = len(xwalk_name_components) >= 4
+
     # this logic chunk catches the block-block and state-level names
     if geq_4:
         try:
@@ -1336,10 +1343,13 @@ def prepare_data_product(xwalk, xwalk_name, path, remove=True, test=False):
             rn_eq_xn = False
         except ValueError:
             pass
-    if rn_eq_xn:
-        readme_name = xwalk_name
+    if not from_bgp:
+        if rn_eq_xn:
+            readme_name = xwalk_name
+        else:
+            readme_name = "_".join(xwalk_name.split("_")[:-1])
     else:
-        readme_name = "_".join(xwalk_name.split("_")[:-1])
+        readme_name = BGP_README
 
     # write out the dataframe
     xwalk_df_to_csv(dfkwds={"df": xwalk, "xwalk_name": xwalk_name}, path=path)
@@ -1358,7 +1368,9 @@ def generate_data_product():
     pass
 
 
-def regenerate_blk_blk_xwalk(in_path, out_path, target_column, dtype):
+def regenerate_blk_blk_xwalk(
+    in_path, out_path, target_column, dtype, archived=True, remove_unpacked=True
+):
     """The purpose of this function is specifically to read in the original
     NHGIS block to block crosswalk data, sort it according to ``SORT_PARAMS``,
     write it back out along with a README.txt, and finally split it by state
@@ -1379,6 +1391,13 @@ def regenerate_blk_blk_xwalk(in_path, out_path, target_column, dtype):
     dtype : dict
         Data types for columns in the input crosswalk.
     
+    archived : ...
+        ...
+    
+    remove_unpacked : 
+    
+    
+    
     """
 
     # split components of the corsswalk path name
@@ -1388,13 +1407,20 @@ def regenerate_blk_blk_xwalk(in_path, out_path, target_column, dtype):
     # isolate the crosswalk name, source, target, and code type
     xwalk_name = in_path_components[-1].split(".")[0]
     xwalk_code = xwalk_name.split("_")[-1]
+
     # read in the crosswalk
-    df = xwalk_df_from_csv(xwalk_name, path=in_path, archived=True, dtype=dtype)
+    from_csv_kws = {
+        "path": in_path,
+        "archived": archived,
+        "remove_unpacked": remove_unpacked,
+    }
+    read_csv_kws = {"dtype": dtype}
+    df = xwalk_df_from_csv(xwalk_name, **from_csv_kws, **read_csv_kws)
+
     # sort first by source then target IDs
     sorter = SORT_BYS[xwalk_name]
     df.sort_values(by=sorter, **SORT_PARAMS)
-    print(df.head())
-    stop
+
     # write out national crosswalk
     out_path = "%s/%s" % (out_path, xwalk_name)
     if not os.path.exists(out_path):
