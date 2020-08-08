@@ -41,8 +41,6 @@ BGP_README = "nhgis_bgp"
 CSV = "csv"
 ZIP = "zip"
 TXT = "txt"
-W = "w"
-R = "r"
 
 
 class GeoCrossWalk:
@@ -870,17 +868,12 @@ def xwalk_df_from_csv(
         ``True`` if the crosswalk is coming from an archived
         directory, otherwise ``False``. Default is ``False``.
     
-    test : bool ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        Set to ``True`` if running unit tests, otherwise ``False``.
+    remove_unpacked : bool
+        Delete the unzipped directory after (``True``), otherwise ``False``.
         Default is ``False``.
-    
-    remove_unpacked : 
-    
     
     read_csv : dict
         Pass in ``pandas.read_csv()`` keyword arguments with this parameter.
-    
-    
     
     Returns
     -------
@@ -1396,12 +1389,13 @@ def regenerate_blk_blk_xwalk(
     dtype : dict
         Data types for columns in the input crosswalk.
     
-    archived : ...
-        ...
+    archived : bool
+        ``True`` if the crosswalk is coming from an archived
+        directory, otherwise ``False``. Default is ``False``.
     
-    remove_unpacked : 
-    
-    
+    remove_unpacked : bool
+        Delete the unzipped directory after (``True``), otherwise ``False``.
+        Default is ``False``.
     
     """
 
@@ -1432,8 +1426,6 @@ def regenerate_blk_blk_xwalk(
 
     # write out state crosswalks
     st_path = out_path + "_state"
-    if not os.path.exists(st_path):
-        os.mkdir(st_path)
     split_blk_blk_xwalk(
         df, target_column, xwalk_name, xwalk_code, fpath=st_path, sort_by=sorter
     )
