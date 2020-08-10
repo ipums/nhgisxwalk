@@ -7,21 +7,40 @@ from .id_codes import blk_gj, bgp_gj, bg_gj, tr_gj, co_gj, gj_code_components
 import numpy
 import pandas
 
+import os
 import pickle
+import shutil
+import zipfile
 
 # used to fetch/vectorize ID generation functions
 id_generator_funcs = [blk_gj, bgp_gj, bg_gj, tr_gj, co_gj]
 id_generators = {f.__name__: f for f in id_generator_funcs}
 
 # sorting parameters -- all crosswalks are sorted accordingly
-sort_params = {
+SORT_PARAMS = {
     "ascending": True,
     "na_position": "last",
     "ignore_index": True,
     "inplace": True,
 }
+# sort columns in this order
+SORT_BYS = {
+    "nhgis_blk1990_blk2010_ge": ["GEOID90", "GEOID10"],
+    "nhgis_blk1990_blk2010_gj": ["GJOIN1990", "GJOIN2010"],
+    "nhgis_blk2000_blk2010_ge": ["GEOID00", "GEOID10"],
+    "nhgis_blk2000_blk2010_gj": ["GJOIN2000", "GJOIN2010"],
+}
 
+# All blk-blk crosswalk ID columns
+ID_COLS = ["GJOIN1990", "GJOIN2000", "GJOIN2010", "GEOID90", "GEOID00", "GEOID10"]
+
+# special README.txt name for block group parts
+BGP_README = "nhgis_bgp"
+
+# extensions
 CSV = "csv"
+ZIP = "zip"
+TXT = "txt"
 
 
 class GeoCrossWalk:
@@ -32,12 +51,12 @@ class GeoCrossWalk:
     of weights. The weights are the interpolated proportions of source
     attributes that are are calculated as being within the target units.
     For a description of the algorithmic workflow see the
-    `General Crosswalk Construction Framework <https://github.com/jGaboardi/nhgisxwalk/blob/master/resources/general-crosswalk-construction-framework.pdf>`_.
+    `General Crosswalk Construction Framework <https://github.com/jGaboardi/nhgisxwalk/blob/master/resources/frameworks/general-crosswalk-construction-framework.pdf>`_.
     For a description of the algorithmic workflow
     in the 1990 "no data" scenarios see
-    `Handling 1990 No-Data Blocks in Crosswalks <https://github.com/jGaboardi/nhgisxwalk/blob/master/resources/handling-1990-no-data-blocks-in-crosswalks.pdf>`_.
+    `Handling 1990 No-Data Blocks in Crosswalks <https://github.com/jGaboardi/nhgisxwalk/blob/master/resources/frameworks/handling-1990-no-data-blocks-in-crosswalks.pdf>`_.
     For more information of the base crosswalks see their
-    `technical details <https://www.nhgis.org/user-resources/geographic-crosswalks#details>`_
+    `technical details <https://www.nhgis.org/user-resources/frameworks/geographic-crosswalks#details>`_
     here.
     
     For further description see:
@@ -261,11 +280,12 @@ class GeoCrossWalk:
     `./testing_data_subsets/ <https://github.com/jGaboardi/nhgisxwalk/tree/master/testing_data_subsets>`_)
     are single state subsets (Delaware) for testing and demonstration purposes.
     
-    >>> subset_data_dir = "./testing_data_subsets"
-    >>> base_xwalk_name = "/nhgis_blk%s_blk%s_gj.zip" % (source_year, target_year)
-    >>> base_xwalk_file = subset_data_dir + base_xwalk_name
+    >>> subset_data_dir = "./testing_data_subsets/"
+    >>> base_xwalk_name = "nhgis_blk%s_blk%s_gj" % (source_year, target_year)
     >>> data_types = nhgisxwalk.str_types(["GJOIN%s"%source_year, "GJOIN%s"%target_year])
-    >>> base_xwalk = pandas.read_csv(base_xwalk_file, index_col=0, dtype=data_types)
+    >>> from_csv = {"path": subset_data_dir, "archived": True, "remove_unpacked": True}
+    >>> read_csv = {"dtype": data_types}
+    >>> base_xwalk = nhgisxwalk.xwalk_df_from_csv(base_xwalk_name, **from_csv, **read_csv)
     >>> base_xwalk.head()
                 GJOIN2000           GJOIN2010    WEIGHT     PAREA
     0  G10000100401001000  G10000100401001000  1.000000  1.000000
@@ -510,7 +530,7 @@ class GeoCrossWalk:
             self.xwalk = round_weights(self.xwalk, decimals=weights_precision)
 
         # sort the resultant values
-        self.xwalk.sort_values(by=[self.source, self.target], **sort_params)
+        self.xwalk.sort_values(by=[self.source, self.target], **SORT_PARAMS)
 
     def _drop_base_cols(self):
         """Retain only ID columns and original weights in the base crosswalk."""
@@ -716,7 +736,7 @@ def extract_state(in_xwalk, stfips, xwalk_name, endpoint, code="gj", sort_by=Non
         The code type used in indexing unique states. Default is ``'gj'``.
     
     sort_by : list
-        Columns to sort by. This is used along with ``sort_params``. Default is ``None``.
+        Columns to sort by. This is used along with ``SORT_PARAMS``. Default is ``None``.
     
     Returns
     -------
@@ -745,7 +765,7 @@ def extract_state(in_xwalk, stfips, xwalk_name, endpoint, code="gj", sort_by=Non
     out_xwalk = in_xwalk[condition].copy()
 
     if sort_by:
-        out_xwalk.sort_values(by=sort_by, **sort_params)
+        out_xwalk.sort_values(by=sort_by, **SORT_PARAMS)
 
     return out_xwalk
 
@@ -788,8 +808,8 @@ def extract_unique_stfips(cls=None, df=None, endpoint="target", code="gj"):
     return unique_stfips
 
 
-def xwalk_df_to_csv(cls=None, dfkwds=dict(), path="", fext="zip"):
-    """Write the produced crosswalk to .csv or .csv.zip.
+def xwalk_df_to_csv(cls=None, dfkwds=dict(), path=""):
+    """Write the produced crosswalk to ``.csv``.
     
     Parameters
     ----------
@@ -805,10 +825,7 @@ def xwalk_df_to_csv(cls=None, dfkwds=dict(), path="", fext="zip"):
         Default is ``dict()``.
     
     path : str
-        Directory path without the file name.  Default is ``''``.
-    
-    fext : str
-        Compression file extension. Default is ``'zip'``.
+        Directory path without the file name. Default is ``''``.
     
     """
 
@@ -825,23 +842,68 @@ def xwalk_df_to_csv(cls=None, dfkwds=dict(), path="", fext="zip"):
         xwalk = dfkwds["df"]
     if stfips and xwalk_name.split("_")[-1] != stfips:
         xwalk_name += "_" + stfips
-    if fext:
-        compression_opts = dict(method=fext, archive_name="%s.%s" % (xwalk_name, CSV))
-        file_name = "%s%s.%s" % (path, xwalk_name, fext)
-    else:
-        compression_opts = None
-        file_name = "%s%s.%s" % (path, xwalk_name, CSV)
-    xwalk.to_csv(file_name, compression=compression_opts, index=False)
+
+    file_name = "%s.%s" % (xwalk_name, CSV)
+    file_name = os.path.join(path, file_name)
+
+    xwalk.to_csv(file_name, index=False)
 
 
-def xwalk_df_from_csv(fname, fext="zip", **kwargs):
-    """Read in a produced crosswalk from .csv or .csv.zip."""
+def xwalk_df_from_csv(
+    fname, path="", archived=False, remove_unpacked=False, **read_csv
+):
+    """Read in a produced crosswalk from an archived ``.zip`` or ``.csv``.
+    Pass in ``pandas.read_csv()`` keyword arguments with ``**kwargs``.
+    
+    Parameters
+    ----------
+    
+    fname : str
+        Crosswalk (file) name.
+    
+    path : str
+        Directory path without the file name. Default is ``''``.
+        
+    archived : bool
+        ``True`` if the crosswalk is coming from an archived
+        directory, otherwise ``False``. Default is ``False``.
+    
+    remove_unpacked : bool
+        Delete the unzipped directory after (``True``), otherwise ``False``.
+        Default is ``False``.
+    
+    read_csv : dict
+        Pass in ``pandas.read_csv()`` keyword arguments with this parameter.
+    
+    Returns
+    -------
+    
+    xwalk : pandas.DataFrame
+        The crosswalk dataframe.
+    
+    """
 
-    if fext:
-        file_path = "%s.%s" % (fname, fext)
-    else:
-        file_path = "%s.%s" % (fname, CSV)
-    xwalk = pandas.read_csv(file_path, **kwargs)
+    def _unzip_directory():
+        """Initialize and decompress a directory."""
+        if not os.path.exists(archive_path):
+            os.mkdir(archive_path + "/")
+        shutil.unpack_archive("%s.%s" % (archive_path, ZIP), extract_dir=archive_path)
+
+    archive_path = None
+
+    if archived:
+        archive_path = "%s%s" % (path, fname)
+        # make the temporary directory to store the unzipped archive and unpack
+        _unzip_directory()
+        # update file path+name
+        fname = "%s/%s" % (fname, fname)
+
+    file_path = "%s%s.%s" % (path, fname, CSV)
+    xwalk = pandas.read_csv(file_path, **read_csv)
+
+    if remove_unpacked and archive_path:
+        shutil.rmtree(archive_path)
+
     return xwalk
 
 
@@ -948,7 +1010,7 @@ def calculate_atoms(
 
 def handle_1990_no_data(geoxwalk, vect, supp_src_tab, drop_supp_col):
     """Step 1 in this workflow is handled as a normal case. See the algorithmic workflow in
-    `Handling 1990 No-Data Blocks in Crosswalks <https://github.com/jGaboardi/nhgisxwalk/blob/master/resources/handling-1990-no
+    `Handling 1990 No-Data Blocks in Crosswalks <https://github.com/jGaboardi/nhgisxwalk/blob/master/resources/frameworks/handling-1990-no
     
     Parameters
     ----------
@@ -1212,20 +1274,224 @@ def example_crosswalk_data():
     return example_data
 
 
-def split_blk_blk_xwalk(df, endpoint, fname, fpath="", sort_by=None):
+def prepare_data_product(xwalk, xwalk_name, path, remove=True):
+    """Prepare an archived NHGIS crosswalk with a README.txt.
+    
+    Parameters
+    ----------
+
+    xwalk : pandas.DataFrame
+        The crosswalk.
+    
+    xwalk : str
+        The crosswalk name.
+    
+    path : str
+        File path to directory where the archive will be stored.
+      
+    remove : bool
+        Delete the uncompressed directory (``True``). Default is ``True``.
+    
+    """
+
+    def _fetch_readme():
+        """Fetch and copy the proper README.txt for a geographic crosswalk."""
+
+        # set file paths + file names
+        readme_file = "%s_README.%s" % (readme_name, TXT)
+        readme_to = "%s/%s" % (path, readme_file)
+        RESOURCE_README_PATH = "../resources/readme_files/"
+        if not os.path.exists(RESOURCE_README_PATH):
+            # for tests
+            RESOURCE_README_PATH = "./resources/readme_files/"
+        readme_from = RESOURCE_README_PATH + readme_file
+        # copy the specified README.txt into the archive directory
+        shutil.copyfile(readme_from, readme_to)
+
+    def _zip_directory():
+        """Initialize and archive a directory."""
+        # compress directory
+        shutil.make_archive(path, ZIP, path)
+
+        # delete uncompressed directory
+        if remove:
+            shutil.rmtree(path)
+
+    # ensure directory exists
+    if not os.path.exists(path):
+        os.makedirs(path, exist_ok=True)
+
+    # README name same as crosswalk name
+    rn_eq_xn = True
+    xwalk_name_components = xwalk_name.split("_")
+
+    # catch special case of block group parts
+    from_bgp = xwalk_name_components[1].startswith("bgp")
+
+    # less than 4 components; i.e. nhgis_bgp1990_tr2010
+    leq_4 = len(xwalk_name_components) < 4
+
+    # 4 or more components; i.e. nhgis_bgp1990_tr2010_09, nhgis_blk1990_blk2010_gj
+    geq_4 = len(xwalk_name_components) >= 4
+
+    # this logic chunk catches the block-block and state-level names
+    if geq_4:
+        try:
+            int(xwalk_name_components[-1])
+            rn_eq_xn = False
+        except ValueError:
+            pass
+    if not from_bgp:
+        if rn_eq_xn:
+            readme_name = xwalk_name
+        else:
+            readme_name = "_".join(xwalk_name.split("_")[:-1])
+    else:
+        readme_name = BGP_README
+
+    # write out the dataframe
+    xwalk_df_to_csv(dfkwds={"df": xwalk, "xwalk_name": xwalk_name}, path=path)
+
+    # run generation workflow
+    _fetch_readme()
+    _zip_directory()
+
+
+def generate_data_product(
+    base_xwalk, xwalk_kwargs, out_path, remove_base=True, remove_unpacked=True,
+):
+    """ Create a national crosswalk, split into state-level (target)
+    subsets, then archive all with individual README files. Currently this 
+    supports the creation of block group part geographies, which are
+    labeled with NHGIS standard IDS (gj, GISJOIN, GJOIN, etc.).
+    
+    Parameters
+    ----------
+    
+    base_xwalk : pandas.DataFrame
+        An NHGIS base-level (block) crosswalk.
+    
+    xwalk_kwargs : dict
+        These are the keyword parameters for generating GeoCrossWalk object.
+    
+    out_path : str
+        Output crosswalk (file) name.
+    
+    remove_base: bool
+        Delete the base crosswalk after (``True``), otherwise ``False``.
+        Default is ``False``.
+    
+    remove_unpacked : bool
+        Delete the unzipped directory after (``True``), otherwise ``False``.
+        Default is ``True``.
+    
+    """
+
+    # Instantiate an ``nhgisxwalk.GeoCrossWalk`` object
+    xwalk_obj = GeoCrossWalk(base_xwalk, **xwalk_kwargs)
+    if remove_base:
+        del base_xwalk
+
+    # write out national crosswalk
+    out_path = "%s%s" % (out_path, xwalk_obj.xwalk_name)
+    prepare_data_product(
+        xwalk_obj.xwalk, xwalk_obj.xwalk_name, out_path, remove=remove_unpacked
+    )
+
+    # write out state crosswalks
+    st_path = out_path + "_state"
+    split_xwalk(
+        xwalk_obj.xwalk, xwalk_obj.target, xwalk_obj.xwalk_name, "gj", fpath=st_path,
+    )
+    del xwalk_obj
+
+
+def regenerate_blk_blk_xwalk(
+    in_path, out_path, target_column, dtype, archived=True, remove_unpacked=True
+):
+    """The purpose of this function is specifically to read in the original
+    NHGIS block to block crosswalk data, sort it according to ``SORT_PARAMS``,
+    write it back out along with a README.txt, and finally split it by state
+    (again with a README.txt) with ``split_blk_blk_xwalk()``.
+       
+    Parameters
+    ----------
+    
+    in_path : str
+        Input crosswalk (file) name.
+    
+    out_path : str
+        Output crosswalk (file) name.
+    
+    target_column : str
+        The column from which unique states should extracted.
+    
+    dtype : dict
+        Data types for columns in the input crosswalk.
+    
+    archived : bool
+        ``True`` if the crosswalk is coming from an archived
+        directory, otherwise ``False``. Default is ``False``.
+    
+    remove_unpacked : bool
+        Delete the unzipped directory after (``True``), otherwise ``False``.
+        Default is ``True``.
+    
+    """
+
+    # split components of the corsswalk path name
+    in_path_components = in_path.split("/")
+    # isolate the directory housing the crosswalk to read in
+    in_path = "/".join(in_path_components[:-1])
+    if not in_path.endswith("/"):
+        in_path += "/"
+    # isolate the crosswalk name, source, target, and code type
+    xwalk_name = in_path_components[-1].split(".")[0]
+    xwalk_code = xwalk_name.split("_")[-1]
+
+    # read in the crosswalk
+    from_csv_kws = {
+        "path": in_path,
+        "archived": archived,
+        "remove_unpacked": remove_unpacked,
+    }
+    read_csv_kws = {"dtype": dtype}
+    df = xwalk_df_from_csv(xwalk_name, **from_csv_kws, **read_csv_kws)
+
+    # sort first by source then target IDs
+    sorter = SORT_BYS[xwalk_name]
+    df.sort_values(by=sorter, **SORT_PARAMS)
+
+    # write out national crosswalk
+    out_path = "%s%s" % (out_path, xwalk_name)
+    prepare_data_product(df, xwalk_name, out_path, remove=remove_unpacked)
+
+    # write out state crosswalks
+    st_path = out_path + "_state"
+    split_xwalk(
+        df, target_column, xwalk_name, xwalk_code, fpath=st_path, sort_by=sorter
+    )
+    del df
+
+
+def split_xwalk(df, endpoint, fname, code, fpath="", sort_by=None):
     """Split and write out an original NHGIS base-level (block) crosswalk.
     
     Parameters
     ----------
     
     df : pandas.DataFrame
-        An original NHGIS base-level (block) crosswalk
+        An original NHGIS base-level (block) crosswalk.
     
     endpoint : str
         The column from which unique states should extracted.
     
     fname : str
         Crosswalk (file) name.
+    
+    code : str
+        The NHGIS standard GISJOIN abbreviation (``'gj'``) or the 
+        Census Bureau standard GEOID abbreviation (``'ge'``).
     
     fpath : str
         Crosswalk (file) path. Default is ``''``.
@@ -1236,7 +1502,6 @@ def split_blk_blk_xwalk(df, endpoint, fname, fpath="", sort_by=None):
     """
 
     # extract and sort all unique state FIPS codes
-    code = fname[-2:]
     unique_stfips = extract_unique_stfips(df=df, endpoint=endpoint, code=code)
     unique_stfips = list(unique_stfips)
     unique_stfips.sort()
@@ -1246,6 +1511,6 @@ def split_blk_blk_xwalk(df, endpoint, fname, fpath="", sort_by=None):
         # create a subset for each endpoint (source/target) state
         stdf = extract_state(df, stfips, fname, endpoint, code=code, sort_by=sort_by)
         xwalk_name = fname + "_" + stfips
-        # write the subset to a zipped .csv
-        dfkwds = {"df": stdf, "stfips": stfips, "xwalk_name": xwalk_name}
-        xwalk_df_to_csv(dfkwds=dfkwds, path=fpath)
+        stfpath = os.path.join(fpath, xwalk_name)
+        prepare_data_product(stdf, xwalk_name, stfpath, remove=True)
+        del stdf
