@@ -15,8 +15,8 @@ PKL = "pkl"
 
 # use sample data for all empirical tests
 data_dir = "./testing_data_subsets/"
-tabular_data_path = data_dir + "/%s_block.%s.%s"
-supplement_data_path_90 = data_dir + "/%s_blck_grp_598_103.%s.%s"
+tabular_data_path = data_dir + "%s_block.%s.%s"
+supplement_data_path_90 = data_dir + "%s_blck_grp_598_103.%s.%s"
 
 # shorthand for geographies
 blk, bgp, bg, tr, co = "blk", "bgp", "bg", "tr", "co"
@@ -33,9 +33,15 @@ stfips = "10"
 # NHGIS standard geographic abbreviation
 gj = "gj"
 
+# base (block) crosswalk name format
+_xwalk_name_fmat = "nhgis_%s%s_%s%s"
+base_xwalk_name_fmat = _xwalk_name_fmat + "_%s"
+prod_xwalk_name_fmat = _xwalk_name_fmat
+prod_state_xwalk_name_fmat = prod_xwalk_name_fmat + "_%s"
+
 
 def fetch_base_xwalk(sg, tg, sy, ty):
-    base_xwalk_name = "nhgis_%s%s_%s%s_gj" % (sg, sy, tg, ty)
+    base_xwalk_name = base_xwalk_name_fmat % (sg, sy, tg, ty, gj)
     data_types = nhgisxwalk.str_types(["GJOIN%s" % sy, "GJOIN%s" % ty])
     from_csv_kws = {"path": data_dir, "archived": True, "remove_unpacked": True}
     read_csv_kws = {"dtype": data_types}
@@ -777,10 +783,23 @@ class Test_upper_level_functions(unittest.TestCase):
         self.example_df = nhgisxwalk.example_crosswalk_data()
 
     def test_prepare_data_product(self):
-        """
-        """
+        xwalk_name = prod_xwalk_name_fmat % (bgp, _90, co, _10)
+        path_out = data_dir + xwalk_name
+        nhgisxwalk.prepare_data_product(
+            self.example_df, xwalk_name, path_out, remove=True
+        )
 
-        pass
+        # read in the crosswalk
+        from_csv_kws = {
+            "path": data_dir + "/",
+            "archived": True,
+            "remove_unpacked": True,
+        }
+        read_xwalk = nhgisxwalk.xwalk_df_from_csv(xwalk_name, **from_csv_kws)
+
+        known = numpy.array([1.0, 0.3, 0.7, 1.0, 1.0])
+        observed = read_xwalk["wt"].values
+        numpy.testing.assert_array_equal(known, observed)
 
     def test_generate_data_product(self):
         """
@@ -789,10 +808,42 @@ class Test_upper_level_functions(unittest.TestCase):
         pass
 
     def test_regenerate_blk_blk_xwalk(self):
-        """
-        """
+        known_ids = numpy.array(
+            [
+                "G10000100401001000",
+                "G10000100401001001",
+                "G10000100401001002",
+                "G10000100401001003",
+                "G10000100401001003",
+            ]
+        )
+        xwalk_name = base_xwalk_name_fmat % (blk, _90, blk, _10, gj)
+        path_in = data_dir + xwalk_name + ".%s" % ZIP
+        path_out = data_dir
+        dtype = nhgisxwalk.str_types(nhgisxwalk.ID_COLS)
+        # ensure directory exists
+        if not os.path.exists(path_out + xwalk_name + "_state"):
+            os.mkdir(path_out + xwalk_name + "_state")
+        nhgisxwalk.regenerate_blk_blk_xwalk(
+            path_in, path_out, "GJOIN2010", dtype, remove_unpacked=True
+        )
 
-        pass
+        # read in the crosswalk
+        gjoin = "GJOIN%s"
+        gj_src, gj_trg = gjoin % _90, gjoin % _10
+        data_types = nhgisxwalk.str_types([gj_src, gj_trg])
+        from_csv_kws = {
+            "path": path_out + "/",
+            "archived": True,
+            "remove_unpacked": True,
+        }
+        read_csv_kws = {"dtype": data_types}
+        read_xwalk = nhgisxwalk.xwalk_df_from_csv(
+            xwalk_name, **from_csv_kws, **read_csv_kws
+        )
+
+        observed_ids = read_xwalk["GJOIN2010"].head().values
+        numpy.testing.assert_array_equal(known_ids, observed_ids)
 
     def test_split_blk_blk_xwalk(self):
         known_ids = numpy.array(
@@ -804,7 +855,7 @@ class Test_upper_level_functions(unittest.TestCase):
                 "G10000100401001003",
             ]
         )
-        xwalk_name = "nhgis_%s%s_%s%s_%s" % (blk, _90, blk, _10, gj)
+        xwalk_name = base_xwalk_name_fmat % (blk, _90, blk, _10, gj)
         xwalk_path = data_dir + xwalk_name + "_state"
         # ensure directory exists
         if not os.path.exists(xwalk_path):
@@ -1047,12 +1098,16 @@ class Test_id_codes_functions(unittest.TestCase):
 class Test_remove_generated_data(unittest.TestCase):
     def test_remove_generated_data(self):
         # remove 2000-2010 written test data
-        xwalk_name = "nhgis_%s%s_%s%s_%s" % (bgp, _00, tr, _10, stfips)
+        xwalk_name = prod_state_xwalk_name_fmat % (bgp, _00, tr, _10, stfips)
         os.remove(xwalk_name + "." + CSV)
         os.remove(xwalk_name + "." + PKL)
 
+        # remove data from ``prepare_data_product()`` test
+        xwalk_name = data_dir + prod_xwalk_name_fmat % (bgp, _90, co, _10)
+        os.remove(xwalk_name + "." + ZIP)
+
         # remove state data
-        xwalk_name = "nhgis_%s%s_%s%s_%s" % (blk, _90, blk, _10, gj)
+        xwalk_name = base_xwalk_name_fmat % (blk, _90, blk, _10, gj)
         xwalk_path = data_dir + xwalk_name + "_state"
         shutil.rmtree(xwalk_path)
 

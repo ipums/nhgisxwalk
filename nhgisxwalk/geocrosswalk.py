@@ -1402,7 +1402,9 @@ def regenerate_blk_blk_xwalk(
     # split components of the corsswalk path name
     in_path_components = in_path.split("/")
     # isolate the directory housing the crosswalk to read in
-    in_path = "/".join(in_path_components[:-1]) + "/"
+    in_path = "/".join(in_path_components[:-1])
+    if not in_path.endswith("/"):
+        in_path += "/"
     # isolate the crosswalk name, source, target, and code type
     xwalk_name = in_path_components[-1].split(".")[0]
     xwalk_code = xwalk_name.split("_")[-1]
@@ -1421,8 +1423,8 @@ def regenerate_blk_blk_xwalk(
     df.sort_values(by=sorter, **SORT_PARAMS)
 
     # write out national crosswalk
-    out_path = "%s/%s" % (out_path, xwalk_name)
-    prepare_data_product(df, xwalk_name, out_path, remove=True)
+    out_path = "%s%s" % (out_path, xwalk_name)
+    prepare_data_product(df, xwalk_name, out_path, remove=remove_unpacked)
 
     # write out state crosswalks
     st_path = out_path + "_state"
