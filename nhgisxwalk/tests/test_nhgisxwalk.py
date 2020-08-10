@@ -791,7 +791,7 @@ class Test_upper_level_functions(unittest.TestCase):
 
         # read in the crosswalk
         from_csv_kws = {
-            "path": data_dir + "/",
+            "path": data_dir,
             "archived": True,
             "remove_unpacked": True,
         }
@@ -802,10 +802,88 @@ class Test_upper_level_functions(unittest.TestCase):
         numpy.testing.assert_array_equal(known, observed)
 
     def test_generate_data_product(self):
-        """
-        """
+        # records known data values
+        knw_str_vals = numpy.array(
+            [
+                [
+                    "G100001090444999990421009999999219012",
+                    "G1000010042100",
+                    "10001042100",
+                ],
+                [
+                    "G100001090444999990421009999999999921",
+                    "G1000010042100",
+                    "10001042100",
+                ],
+                [
+                    "G100001090444999990421009999999999921",
+                    "G1000010042201",
+                    "10001042201",
+                ],
+                [
+                    "G100001090444999990421009999999999922",
+                    "G1000010042100",
+                    "10001042100",
+                ],
+            ]
+        )
+        knw_num_vals = numpy.array(
+            [
+                [1.0, 1.0, 1.0, 1.0],
+                [0.99766436, 0.99716625, 0.99714829, 0.99727768],
+                [0.00233564, 0.00283375, 0.00285171, 0.00272232],
+                [1.0, 1.0, 1.0, 1.0],
+            ]
+        )
 
-        pass
+        # generate the product
+        xwalk_args = {
+            "source_year": _90,
+            "target_year": _10,
+            "source_geo": bgp,
+            "target_geo": tr,
+            "base_source_table": tab_data_path_1990,
+            "supp_source_table": supplement_data_path_90,
+            "input_var": input_vars_1990,
+            "weight_var": input_var_tags,
+            "keep_base": False,
+            "add_geoid": True,
+        }
+        nhgisxwalk.generate_data_product(
+            base_xwalk_blk1990_blk2010, xwalk_args, data_dir
+        )
+
+        # record observed
+        obs_xwalk = nhgisxwalk.GeoCrossWalk(
+            base_xwalk_blk1990_blk2010,
+            source_year=_90,
+            target_year=_10,
+            source_geo=bgp,
+            target_geo=tr,
+            base_source_table=tab_data_path_1990,
+            supp_source_table=supplement_data_path_90,
+            input_var=input_vars_1990,
+            weight_var=input_var_tags,
+        )
+
+        # test
+        id_cols = ["bgp1990gj", "tr2010gj", "tr2010ge"]
+        data_types = nhgisxwalk.str_types(id_cols)
+        from_csv_kws = {
+            "path": data_dir,
+            "archived": True,
+            "remove_unpacked": True,
+        }
+        read_csv_kws = {"dtype": data_types}
+        read_xwalk = nhgisxwalk.xwalk_df_from_csv(
+            obs_xwalk.xwalk_name, **from_csv_kws, **read_csv_kws
+        )
+        ix1, ix2 = 13, 17
+        obs_str_vals = obs_xwalk.xwalk[id_cols][ix1:ix2].values
+        wgt_cols = ["wt_pop", "wt_fam", "wt_hh", "wt_hu"]
+        obs_num_vals = obs_xwalk.xwalk[wgt_cols][ix1:ix2].values
+        numpy.testing.assert_equal(knw_str_vals, obs_str_vals)
+        numpy.testing.assert_allclose(knw_num_vals, obs_num_vals, atol=6)
 
     def test_regenerate_blk_blk_xwalk(self):
         known_ids = numpy.array(
@@ -821,9 +899,6 @@ class Test_upper_level_functions(unittest.TestCase):
         path_in = data_dir + xwalk_name + ".%s" % ZIP
         path_out = data_dir
         dtype = nhgisxwalk.str_types(nhgisxwalk.ID_COLS)
-        # ensure directory exists
-        if not os.path.exists(path_out + xwalk_name + "_state"):
-            os.mkdir(path_out + xwalk_name + "_state")
         nhgisxwalk.regenerate_blk_blk_xwalk(
             path_in, path_out, "GJOIN2010", dtype, remove_unpacked=True
         )
@@ -833,7 +908,7 @@ class Test_upper_level_functions(unittest.TestCase):
         gj_src, gj_trg = gjoin % _90, gjoin % _10
         data_types = nhgisxwalk.str_types([gj_src, gj_trg])
         from_csv_kws = {
-            "path": path_out + "/",
+            "path": path_out,
             "archived": True,
             "remove_unpacked": True,
         }
@@ -845,7 +920,7 @@ class Test_upper_level_functions(unittest.TestCase):
         observed_ids = read_xwalk["GJOIN2010"].head().values
         numpy.testing.assert_array_equal(known_ids, observed_ids)
 
-    def test_split_blk_blk_xwalk(self):
+    def test_split_xwalk(self):
         known_ids = numpy.array(
             [
                 "G10000100401001000",
@@ -857,11 +932,8 @@ class Test_upper_level_functions(unittest.TestCase):
         )
         xwalk_name = base_xwalk_name_fmat % (blk, _90, blk, _10, gj)
         xwalk_path = data_dir + xwalk_name + "_state"
-        # ensure directory exists
-        if not os.path.exists(xwalk_path):
-            os.mkdir(xwalk_path)
         sorter = nhgisxwalk.SORT_BYS[xwalk_name]
-        nhgisxwalk.split_blk_blk_xwalk(
+        nhgisxwalk.split_xwalk(
             base_xwalk_blk1990_blk2010,
             "GJOIN2010",
             xwalk_name,
@@ -1110,6 +1182,12 @@ class Test_remove_generated_data(unittest.TestCase):
         xwalk_name = base_xwalk_name_fmat % (blk, _90, blk, _10, gj)
         xwalk_path = data_dir + xwalk_name + "_state"
         shutil.rmtree(xwalk_path)
+
+        # remove state data
+        xwalk_name = prod_xwalk_name_fmat % (bgp, _90, tr, _10)
+        xwalk_path = data_dir + xwalk_name
+        shutil.rmtree(xwalk_path + "_state")
+        os.remove(xwalk_path + "." + ZIP)
 
 
 if __name__ == "__main__":

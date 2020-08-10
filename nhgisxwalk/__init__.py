@@ -14,7 +14,7 @@ from .geocrosswalk import valid_geo_shorthand, example_crosswalk_data
 from .geocrosswalk import prepare_data_product, generate_data_product
 from .geocrosswalk import xwalk_df_to_csv, xwalk_df_from_csv
 from .geocrosswalk import extract_state, extract_unique_stfips
-from .geocrosswalk import regenerate_blk_blk_xwalk, split_blk_blk_xwalk
+from .geocrosswalk import regenerate_blk_blk_xwalk, split_xwalk
 from .geocrosswalk import SORT_PARAMS, SORT_BYS
 from .geocrosswalk import ID_COLS, CSV, ZIP, TXT
 

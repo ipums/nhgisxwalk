@@ -1319,7 +1319,7 @@ def prepare_data_product(xwalk, xwalk_name, path, remove=True):
 
     # ensure directory exists
     if not os.path.exists(path):
-        os.mkdir(path)
+        os.makedirs(path, exist_ok=True)
 
     # README name same as crosswalk name
     rn_eq_xn = True
@@ -1357,13 +1357,53 @@ def prepare_data_product(xwalk, xwalk_name, path, remove=True):
     _zip_directory()
 
 
-def generate_data_product():
-    """
+def generate_data_product(
+    base_xwalk, xwalk_kwargs, out_path, remove_base=True, remove_unpacked=True,
+):
+    """ Create a national crosswalk, split into state-level (target)
+    subsets, then archive all with individual README files. Currently this 
+    supports the creation of block group part geographies, which are
+    labeled with NHGIS standard IDS (gj, GISJOIN, GJOIN, etc.).
+    
+    Parameters
+    ----------
+    
+    base_xwalk : pandas.DataFrame
+        An NHGIS base-level (block) crosswalk.
+    
+    xwalk_kwargs : dict
+        These are the keyword parameters for generating GeoCrossWalk object.
+    
+    out_path : str
+        Output crosswalk (file) name.
+    
+    remove_base: bool
+        Delete the base crosswalk after (``True``), otherwise ``False``.
+        Default is ``False``.
+    
+    remove_unpacked : bool
+        Delete the unzipped directory after (``True``), otherwise ``False``.
+        Default is ``True``.
+    
     """
 
-    # this function will be go into data-subsets // generate national...
+    # Instantiate an ``nhgisxwalk.GeoCrossWalk`` object
+    xwalk_obj = GeoCrossWalk(base_xwalk, **xwalk_kwargs)
+    if remove_base:
+        del base_xwalk
 
-    pass
+    # write out national crosswalk
+    out_path = "%s%s" % (out_path, xwalk_obj.xwalk_name)
+    prepare_data_product(
+        xwalk_obj.xwalk, xwalk_obj.xwalk_name, out_path, remove=remove_unpacked
+    )
+
+    # write out state crosswalks
+    st_path = out_path + "_state"
+    split_xwalk(
+        xwalk_obj.xwalk, xwalk_obj.target, xwalk_obj.xwalk_name, "gj", fpath=st_path,
+    )
+    del xwalk_obj
 
 
 def regenerate_blk_blk_xwalk(
@@ -1395,7 +1435,7 @@ def regenerate_blk_blk_xwalk(
     
     remove_unpacked : bool
         Delete the unzipped directory after (``True``), otherwise ``False``.
-        Default is ``False``.
+        Default is ``True``.
     
     """
 
@@ -1428,20 +1468,20 @@ def regenerate_blk_blk_xwalk(
 
     # write out state crosswalks
     st_path = out_path + "_state"
-    split_blk_blk_xwalk(
+    split_xwalk(
         df, target_column, xwalk_name, xwalk_code, fpath=st_path, sort_by=sorter
     )
     del df
 
 
-def split_blk_blk_xwalk(df, endpoint, fname, code, fpath="", sort_by=None):
+def split_xwalk(df, endpoint, fname, code, fpath="", sort_by=None):
     """Split and write out an original NHGIS base-level (block) crosswalk.
     
     Parameters
     ----------
     
     df : pandas.DataFrame
-        An original NHGIS base-level (block) crosswalk
+        An original NHGIS base-level (block) crosswalk.
     
     endpoint : str
         The column from which unique states should extracted.
