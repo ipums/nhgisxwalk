@@ -489,7 +489,7 @@ class GeoCrossWalk:
                 handle_1990_no_data(self, vectorized, supp_source_table, drop_supp_col)
 
             else:
-                raise RuntimeError("Only 'bgp' as is functional.")
+                raise RuntimeError("Only 'bgp' is currently functional.")
 
         # keep only the necessary base columns ---------------------------------
         if drop_base_cols:
