@@ -1104,7 +1104,7 @@ def handle_1990_no_data(geoxwalk, vect, supp_src_tab, drop_supp_col):
     ## 3(a) --------------------------------------------------------------------------
     ### 1990 Block Group Part Summary Data (National)
     # confirm variable data types
-    if not hasattr(geoxwalk, "input_var"):
+    if hasattr(geoxwalk, "input_var"):
         geoxwalk.input_var = _check_vars(geoxwalk.input_var)
     supp_src_tab_sf = pandas.read_csv(supp_src_tab, dtype=str)
     for iv in geoxwalk.input_var:
