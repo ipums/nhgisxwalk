@@ -16,7 +16,7 @@ PKL = "pkl"
 # use sample data for all empirical tests
 data_dir = "./testing_data_subsets/"
 tabular_data_path = data_dir + "%s_block.%s.%s"
-supplement_data_path_90 = data_dir + "%s_blck_grp_598_103.%s.%s"
+supplement_data_path_90 = data_dir + "%s_blck_grp_598.%s.%s"
 
 # shorthand for geographies
 blk, bgp, bg, tr, co = "blk", "bgp", "bg", "tr", "co"
