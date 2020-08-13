@@ -15,7 +15,7 @@ RES_TRSTA,   Reservation/Trust Lands Code
 BLOCKA,      Block Code
 BLCK_GRPA,   Block Group Code
 TRACTA,      Census Tract Code
-CDA,         Congressional District (101st) Code
+CD101A,      Congressional District (101st) Code
 C_CITYA,     Consolidated City Code
 COUNTY,      County Name
 COUNTYA,     County Code
@@ -44,7 +44,7 @@ RES_TRSTA,   Reservation/Trust Lands Code
 BLOCKA,      Block Code
 BLCK_GRPA,   Block Group Code
 TRACTA,      Census Tract Code
-CDA,         Congressional District (101st) Code
+CD101A,      Congressional District (101st) Code
 C_CITYA,     Consolidated City Code
 COUNTY,      County Name
 COUNTYA,     County Code
