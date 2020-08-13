@@ -38,7 +38,7 @@ This pacakge allows for the generation of temporal crosswalks of census geograph
 * [Proportionally-weighted Synthetic Atoms](https://github.com/jGaboardi/nhgisxwalk/blob/master/notebooks/weighted-portion-synthetic-atoms.ipynb)
 * [Synthetic Example](https://github.com/jGaboardi/nhgisxwalk/blob/master/notebooks/synthetic-example.ipynb)
 * Sample Workflow (see all [here](https://github.com/jGaboardi/nhgisxwalk/blob/master/notebooks)):
-  * [1990 block group parts to 2010 tracts](https://github.com/jGaboardi/nhgisxwalk/blob/master/notebooks/data-subset-sample-workflow-bgp1990trt2010.ipynb)
+  * [1990 block group parts to 2010 tracts](https://github.com/jGaboardi/nhgisxwalk/blob/master/notebooks/data-subset-sample-workflow-bgp1990tr2010.ipynb)
 
 ## Resources
 
