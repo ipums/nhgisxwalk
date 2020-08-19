@@ -169,7 +169,7 @@ subject to the following conditions:
     * Publications and research reports employing NHGIS data should include the following citation:
 
         Steven Manson, Jonathan Schroeder, David Van Riper, Tracy Kugler, and Steven Ruggles.
-        IPUMS National Historical Geographic Information System: Version 15.0 [Database].
+        IPUMS National Historical Geographic Information System: Version 15.0 [dataset].
         Minneapolis, MN: IPUMS. 2020. http://doi.org/10.18128/D050.V15.0
 
     * For policy briefs, online resources, or articles in the popular press, we 
