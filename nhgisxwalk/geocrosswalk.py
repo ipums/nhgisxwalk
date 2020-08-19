@@ -35,7 +35,7 @@ SORT_BYS = {
 ID_COLS = ["GJOIN1990", "GJOIN2000", "GJOIN2010", "GEOID90", "GEOID00", "GEOID10"]
 
 # special README.txt name for block group parts
-BGP_README = "nhgis_bgp"
+BGP_README = "nhgis_bgp_crosswalk"
 
 # extensions
 CSV = "csv"
