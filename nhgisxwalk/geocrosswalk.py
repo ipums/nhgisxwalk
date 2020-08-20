@@ -1110,13 +1110,6 @@ def handle_1990_no_data(geoxwalk, vect, supp_src_tab, drop_supp_col):
     for iv in geoxwalk.input_var:
         supp_src_tab_sf[iv] = supp_src_tab_sf[iv].astype(float)
 
-    # GISJOIN ID Correction
-    # *** this will be deprecated following the update of NHGIS GBP data ***
-    src_idcols = code_cols(geoxwalk.source_geo, geoxwalk.source_year)
-    supp_src_tab_sf = id_generators["%s_gj" % geoxwalk.source_geo](
-        supp_src_tab_sf, src_idcols, cname=geoxwalk.tabular_code_label
-    )
-
     # 3(b) ---------------------------------------------------------------------------
     # Identify containing geography IDs in Summary File (block groups)
     supp_idcols = code_cols(geoxwalk.supp_geo, geoxwalk.source_year)

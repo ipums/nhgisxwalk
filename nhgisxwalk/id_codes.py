@@ -41,7 +41,7 @@ def code_cols(geog, year):
             #                   County Subdivision--
             #                   Place/Remainder--
             #                   Census Tract--
-            #                   Congressional District (1993-1995, 103rd Congress)--    # Should be Congressional District (101st)
+            #                   Congressional District (101st) Code--
             #                   American Indian/Alaska Native Area/Remainder--
             #                   Reservation/Trust Lands/Remainder--
             #                   Alaska Native Regional Corporation/Remainder--
@@ -53,7 +53,7 @@ def code_cols(geog, year):
                 "CTY_SUBA",
                 "PLACEA",
                 "TRACTA",
-                "CDA",  ################################################################# swap out "CD103A"
+                "CD101A",
                 "AIANHHA",
                 "RES_TRSTA",
                 "ANRCA",
