@@ -12,7 +12,7 @@
 }
 
 \title{Handling 1990 No-Data Blocks in Crosswalks}
-\author{Jonathon Schroeder and James Gaboardi}
+\author{Jonathan Schroeder and James Gaboardi}
 \date{May 2020}
 
 \begin{document}
@@ -23,7 +23,7 @@
 
 \section{Problem}
 \begin{itemize}
-  \item \href{https://github.com/jGaboardi/nhgisxwalk/blob/master/resources/general-crosswalk-construction-framework.pdf}{General goal}: Generate a crosswalk from source zones to target zones by aggregating up from a block-to-block crosswalk.
+  \item \href{https://github.com/jGaboardi/nhgisxwalk/blob/master/resources/frameworks/general-crosswalk-construction-framework.pdf}{General goal}: Generate a crosswalk from source zones to target zones by aggregating up from a block-to-block crosswalk.
   \begin{itemize}
       \item Ideally, the crosswalk should include at least one record for every source zone and at least one for every target zone, so all source and target zones are represented.
   \end{itemize}
@@ -46,7 +46,7 @@ General concept: Use the associations between no-data 1990 blocks and \textit{wh
 
 \item Construct initial BGP crosswalk using only the ``inhabited'' blocks--those in 1990 data table.
     \begin{enumerate}
-    \item Follow \href{https://github.com/jGaboardi/nhgisxwalk/blob/master/resources/general-crosswalk-construction-framework.pdf}{general steps} 1-8, using option 4a for target zones and 4b for source zones
+    \item Follow \href{https://github.com/jGaboardi/nhgisxwalk/blob/master/resources/frameworks/general-crosswalk-construction-framework.pdf}{general steps} 1-8, using option 4a for target zones and 4b for source zones
     \end{enumerate}
 
 \item Construct BG crosswalk using \textit{only} no-data blocks (all counts are 0)
