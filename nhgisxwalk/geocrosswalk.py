@@ -794,7 +794,7 @@ def extract_unique_stfips(cls=None, df=None, endpoint="target", code="gj"):
     Returns
     -------
     
-    unique_stfips : 
+    unique_stfips : set
         All unique states from the specified column.
     
     """
