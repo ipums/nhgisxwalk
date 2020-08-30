@@ -42,6 +42,9 @@ CSV = "csv"
 ZIP = "zip"
 TXT = "txt"
 
+# NaN string
+NaN = "nan"
+
 
 class GeoCrossWalk:
     """Generate a temporal crosswalk for census geography data 
@@ -748,18 +751,18 @@ def extract_state(in_xwalk, stfips, xwalk_name, endpoint, code="gj", sort_by=Non
 
     # make sure the crosswalk isn't already an extracted state or overwritten
     check_state_label = xwalk_name.split("_")[-1]
-    if check_state_label.isnumeric() or check_state_label == "nan":
+    if check_state_label.isnumeric() or check_state_label == NaN:
         msg = "This crosswalk may already be a state subset. "
         msg += "Check the name/attributes.\n"
         msg += "\txwalk_name: '%s', stfips: %s'" % (xwalk_name, stfips)
         raise RuntimeError(msg)
 
     # set NaN (null) extraction condition
-    nan = True if stfips.lower() == "nan" else False
+    nan = True if stfips.lower() == NaN else False
 
     # set extraction condition
     extract_lambda = (
-        lambda x: nan if str(x) == "nan" else _state(x, stfips=stfips, code=code)
+        lambda x: nan if str(x) == NaN else _state(x, stfips=stfips, code=code)
     )
     condition = in_xwalk[endpoint].map(extract_lambda)
     out_xwalk = in_xwalk[condition].copy()
@@ -1214,7 +1217,7 @@ def _state(rec, stfips=None, code="gj"):
         return rec[idx1:idx2] == stfips
     else:
         # extract_unique_stfips()
-        return "nan" if str(rec) == "nan" else rec[idx1:idx2]
+        return NaN if str(rec) == NaN else rec[idx1:idx2]
 
 
 def _check_vars(_vars):
