@@ -15,4 +15,4 @@
    - watermark
    - pip:
      - git+https://github.com/jGaboardi/nhgisxwalk.git@master
-     - handcalc
+     - handcalcs
