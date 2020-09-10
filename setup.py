@@ -50,7 +50,7 @@ def setup_package():
 
     _groups_files = {
         "conda": "requirements_conda.txt",
-        "pypi": "requirements_pypi.txt",
+        "pypi": "requirements.txt",
     }
     reqs = _get_requirements_from_files(_groups_files)
     reqs = [r for k, v in reqs.items() for r in v]
