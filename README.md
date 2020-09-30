@@ -69,7 +69,7 @@ If you use `nhgisxwalk` in a scientific publication, we would appreciate using t
 
 
 ## License
-The package is licensed under the [BSD 3-Clause license](https://github.com/jGaboardi/nhgisxwalk/blob/master/LICENSE).
+The package is licensed under the [MPL-2.0 License](https://github.com/jGaboardi/nhgisxwalk/blob/master/LICENSE).
 
 
 
