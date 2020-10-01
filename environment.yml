@@ -14,5 +14,5 @@
    - shapely
    - watermark
    - pip:
-     - git+https://github.com/jGaboardi/nhgisxwalk.git@master
+     - git+https://github.com/ipums/nhgisxwalk.git@master
      - handcalcs
