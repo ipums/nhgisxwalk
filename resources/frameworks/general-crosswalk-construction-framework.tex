@@ -89,7 +89,7 @@ Generate a crosswalk $\bm{X_{\mathbf{ST}}}$ ...
     \item Else if possible, derive $\mathbf{S}$ identifiers from source sub-zone data from step 2.
     \item Else, obtain identifiers through other means...
       \begin{enumerate}
-      \item 1990 block-group parts require some \href{https://github.com/jGaboardi/nhgisxwalk/blob/master/resources/frameworks/handling-1990-no-data-blocks-in-crosswalks.pdf}{special handling} because neither 4a nor 4b pertain to all BGPs.
+      \item 1990 block-group parts require some \href{https://github.com/ipums/nhgisxwalk/blob/master/resources/frameworks/handling-1990-no-data-blocks-in-crosswalks.pdf}{special handling} because neither 4a nor 4b pertain to all BGPs.
       \item If we generate crosswalks for target zones that cannot be identified from block IDs (e.g., places, county subdivisions, etc.), we'll need to add a step to join block crosswalk to target-year block data that includes identifiers for the target zones.
      \end{enumerate}
    \item Where $\bm{s^\prime}$ is \textit{null} (= ``''), omit these dummy sub-zone atoms from subsequent computations.
