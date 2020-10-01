@@ -54,10 +54,10 @@ class GeoCrossWalk:
     of weights. The weights are the interpolated proportions of source
     attributes that are are calculated as being within the target units.
     For a description of the algorithmic workflow see the
-    `General Crosswalk Construction Framework <https://github.com/jGaboardi/nhgisxwalk/blob/master/resources/frameworks/general-crosswalk-construction-framework.pdf>`_.
+    `General Crosswalk Construction Framework <https://github.com/ipums/nhgisxwalk/blob/master/resources/frameworks/general-crosswalk-construction-framework.pdf>`_.
     For a description of the algorithmic workflow
     in the 1990 "no data" scenarios see
-    `Handling 1990 No-Data Blocks in Crosswalks <https://github.com/jGaboardi/nhgisxwalk/blob/master/resources/frameworks/handling-1990-no-data-blocks-in-crosswalks.pdf>`_.
+    `Handling 1990 No-Data Blocks in Crosswalks <https://github.com/ipums/nhgisxwalk/blob/master/resources/frameworks/handling-1990-no-data-blocks-in-crosswalks.pdf>`_.
     For more information of the base crosswalks see their
     `technical details <https://www.nhgis.org/user-resources/frameworks/geographic-crosswalks#details>`_
     here.
@@ -215,7 +215,7 @@ class GeoCrossWalk:
     -----
     
     For more information see the ``nhgisxwalk`` FAQ
-    `page <https://github.com/jGaboardi/nhgisxwalk/wiki/FAQ-&-Resources>`_.
+    `page <https://github.com/ipums/nhgisxwalk/wiki/FAQ-&-Resources>`_.
     
     Examples
     --------
@@ -278,9 +278,9 @@ class GeoCrossWalk:
     to build up the source and and target units from the source and and target
     years. Currently supported base crosswalks are 1990-2010 blocks and
     2000-2010 blocks, which can be downloaded from
-    `NHGIS <https://github.com/jGaboardi/nhgisxwalk/wiki/FAQ-&-Resources#where-can-i-download-the-base-geographic-crosswalks>`_.
+    `NHGIS <https://github.com/ipums/nhgisxwalk/wiki/FAQ-&-Resources#where-can-i-download-the-base-geographic-crosswalks>`_.
     The versions found within ``nhgisxwalk`` (see 
-    `./testing_data_subsets/ <https://github.com/jGaboardi/nhgisxwalk/tree/master/testing_data_subsets>`_)
+    `./testing_data_subsets/ <https://github.com/ipums/nhgisxwalk/tree/master/testing_data_subsets>`_)
     are single state subsets (Delaware) for testing and demonstration purposes.
     
     >>> subset_data_dir = "./testing_data_subsets/"
@@ -568,7 +568,7 @@ class GeoCrossWalk:
 
         # Special case for 2000 blocks (of 2000 bgp)-- needs Urban/Rural code
         # For more details see:
-        # https://gist.github.com/jGaboardi/36c7640af1f228cdc8a691505262e543
+        # https://gist.github.com/ipums/36c7640af1f228cdc8a691505262e543
         # and
         # nhgisxwalk/notebooks/build_subset.ipynb
 
@@ -1013,7 +1013,7 @@ def calculate_atoms(
 
 def handle_1990_no_data(geoxwalk, vect, supp_src_tab, drop_supp_col):
     """Step 1 in this workflow is handled as a normal case. See the algorithmic workflow in
-    `Handling 1990 No-Data Blocks in Crosswalks <https://github.com/jGaboardi/nhgisxwalk/blob/master/resources/frameworks/handling-1990-no
+    `Handling 1990 No-Data Blocks in Crosswalks <https://github.com/ipums/nhgisxwalk/blob/master/resources/frameworks/handling-1990-no
     
     Parameters
     ----------
