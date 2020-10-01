@@ -74,7 +74,7 @@ co1990 = r"""
 """
 
 # ------------------------------------------------------------------------- 2000
-# *** NOTE *** The URBRURALA code is added. For more details see, https,//gist.github.com/jGaboardi/36c7640af1f228cdc8a691505262e543
+# *** NOTE *** The URBRURALA code is added. For more details see, https,//gist.github.com/ipums/36c7640af1f228cdc8a691505262e543
 blk2000 = r"""
 GISJOIN,     GIS Join Match Code
 YEAR,        Data File Year
