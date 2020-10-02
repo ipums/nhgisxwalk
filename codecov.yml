@@ -2,11 +2,9 @@
 # For copyright and licensing information, see the NOTICE and LICENSE files
 # in this project's top-level directory, and also on-line at:
 #   https://github.com/ipums/nhgisxwalk
-
 codecov:
   notify:
     after_n_builds: 9
-
 coverage:
   range: 50..95
   round: nearest
@@ -21,7 +19,6 @@ coverage:
         target: 80%
   ignore:
     - "tests/*"
-
 comment:
   layout: "reach, diff, files"
   behavior: once
