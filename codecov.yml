@@ -6,7 +6,7 @@ codecov:
   notify:
     after_n_builds: 9
 coverage:
-  range: 50...95
+  range: 50...90
   round: nearest
   precision: 1
   status:
