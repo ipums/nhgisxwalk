@@ -1,1 +1,1 @@
-include LICENSE CHANGELOG.md MANIFEST.in requirements.txt
+include LICENSE.txt NOTICE.txt CHANGELOG.md MANIFEST.in requirements.txt

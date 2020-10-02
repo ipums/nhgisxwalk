@@ -1,4 +1,10 @@
-"""The variables here provide raw-string descriptions for columns in the 
+# This file is part of the Minnesota Population Center's NHGISXWALK.
+# For copyright and licensing information, see the NOTICE and LICENSE files
+# in this project's top-level directory, and also on-line at:
+#   https://github.com/ipums/nhgisxwalk
+
+"""
+The variables here provide raw-string descriptions for columns in the 
 'context cookbooks' provided with NHGIS data downloads. These are used to 
 create pandas.DataFrame objects in code_components.CodeComponents().
 """
