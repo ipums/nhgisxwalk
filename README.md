@@ -63,7 +63,7 @@ If you are having issues, please [create an issue](https://github.com/ipums/nhgi
 ## Citations
 If you use `nhgisxwalk` in a scientific publication, we would appreciate using the following citations:
 * **Steven Manson, Jonathan Schroeder, David Van Riper, and Steven Ruggles**. *IPUMS National Historical Geographic Information System: Version 14.0* [Database]. Minneapolis, MN: IPUMS. 2019. http://doi.org/10.18128/D050.V14.0
-* **James Gaboardi**. *[jGaboardi/nhgisxwalk](https://github.com/ipums/nhgisxwalk)*. Zenodo. 2020. [![DOI](https://zenodo.org/badge/259962549.svg)](https://zenodo.org/badge/latestdoi/259962549)
+* **James Gaboardi**. *[ipums/nhgisxwalk](https://github.com/ipums/nhgisxwalk)*. Zenodo. 2020. [![DOI](https://zenodo.org/badge/259962549.svg)](https://zenodo.org/badge/latestdoi/259962549)
 
 
 ## License
