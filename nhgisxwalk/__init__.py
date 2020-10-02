@@ -1,4 +1,4 @@
-__version__ = "0.0.9post1"
+__version__ = "0.1.0"
 """
 # `nhgisxwalk` --- IPUMS/NHGIS Census Crosswalk and Atom Generator
 
