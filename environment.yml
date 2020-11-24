@@ -7,7 +7,7 @@
  channels:
    - conda-forge
  dependencies:
-   - python=3.8
+   - python=3.9
    - geopandas
    - descartes
    - ipython
@@ -19,5 +19,5 @@
    - shapely
    - watermark
    - pip:
-     - git+https://github.com/ipums/nhgisxwalk.git@master
+     - git+https://github.com/ipums/nhgisxwalk.git@main
      - handcalcs
