@@ -29,7 +29,7 @@
        - name: define shell
          shell: bash -l {0}
          run: |
-           if $matrix.os == windows-latest
+           if $matrix.os != windows-latest
            then
              echo "SHELL=bash -l {0}" >> $GITHUB_ENV
              echo "SHELL_NAME=bash" >> $GITHUB_ENV
