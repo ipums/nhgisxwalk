@@ -14,7 +14,7 @@
      - cron: '59 23 * * *'
 
  env:
-   run_test: 'pytest -v nhgisxwalk --cov=nhgisxwalk --doctest-modules --cov-config=.coveragerc --cov-report=xml'
+   RUN_TEST: 'pytest -v nhgisxwalk --cov=nhgisxwalk --doctest-modules --cov-config=.coveragerc --cov-report=xml'
 
  jobs:
    unittests:
@@ -48,8 +48,8 @@
            micromamba-version: 'latest'
 
        - name: run tests - env.SHELL_NAME
-         shell: env.SHELL
-         run: echo "${{ env.run_test }}"
+         shell: ${{ env.SHELL }}
+         run: echo "${{ env.RUN_TEST }}"
        
        
        #- name: run tests - bash
