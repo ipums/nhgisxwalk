@@ -23,7 +23,7 @@
          os: ['macos-latest', 'ubuntu-latest', 'windows-latest']
          environment-file: [ci/36.yaml, ci/37.yaml, ci/38.yaml, ci/39.yaml]
          env:
-            run_test: 'pytest -v nhgisxwalk --cov=nhgisxwalk --doctest-modules --cov-config=.coveragerc --cov-report=xml'
+            run_test: pytest -v nhgisxwalk --cov=nhgisxwalk --doctest-modules --cov-config=.coveragerc --cov-report=xml
      steps:
        - name: checkout repo
          uses: actions/checkout@v2
@@ -37,13 +37,13 @@
        - name: run tests - bash
          shell: bash -l {0}
          #run: pytest -v nhgisxwalk --cov=nhgisxwalk --doctest-modules --cov-config=.coveragerc --cov-report=xml
-         run: ${{ run_test }}
+         run: ${{ env.run_test }}
          if: matrix.os != 'windows-latest'
        
        - name: run tests - powershell
          shell: powershell
          #run: pytest -v nhgisxwalk --cov=nhgisxwalk --doctest-modules --cov-config=.coveragerc --cov-report=xml
-         run: ${{ run_test }}
+         run: ${{ env.run_test }}
          if: matrix.os == 'windows-latest'
      
        - name: codecov
