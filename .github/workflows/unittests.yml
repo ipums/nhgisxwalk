@@ -26,18 +26,6 @@
          os: ['macos-latest', 'ubuntu-latest', 'windows-latest']
          environment-file: [ci/36.yaml, ci/37.yaml, ci/38.yaml, ci/39.yaml]
      steps:
-       - name: define shell
-         shell: bash -l {0}
-         run: |
-           if $matrix.os != windows-latest
-           then
-             echo "SHELL='bash -l {0}'" >> $GITHUB_ENV
-             echo "SHELL_NAME='bash'" >> $GITHUB_ENV
-           else
-             echo "SHELL='powershell'" >> $GITHUB_ENV
-             echo "SHELL_NAME='powershell'" >> $GITHUB_ENV
-           fi
-       
        - name: checkout repo
          uses: actions/checkout@v2
 
@@ -46,21 +34,16 @@
          with:
            environment-file: ${{ matrix.environment-file }}
            micromamba-version: 'latest'
-
-       - name: run tests - env.SHELL_NAME
-         shell: ${{ env.SHELL }}
-         run: echo "${{ env.RUN_TEST }}"
        
+       - name: run tests - bash
+         shell: bash -l {0}
+         run: echo "${{ env.run_test }}"
+         if: matrix.os != 'windows-latest'
        
-       #- name: run tests - bash
-       #  shell: bash -l {0}
-       #  run: echo "${{ env.run_test }}"
-       #  if: matrix.os != 'windows-latest'
-       #
-       #- name: run tests - powershell
-       #  shell: powershell
-       #  run: echo "${{ env.run_test }}"
-       #  if: matrix.os == 'windows-latest'
+       - name: run tests - powershell
+         shell: powershell
+         run: echo "${{ env.run_test }}"
+         if: matrix.os == 'windows-latest'
      
        - name: codecov
          uses: codecov/codecov-action@v1
