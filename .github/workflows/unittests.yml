@@ -47,8 +47,8 @@
            environment-file: ${{ matrix.environment-file }}
            micromamba-version: 'latest'
 
-       - name: run tests - "${{ env.SHELL_NAME }}"
-         shell: "${{ env.SHELL }}"
+       - name: run tests - env.SHELL_NAME
+         shell: env.SHELL
          run: echo "${{ env.run_test }}"
        
        
