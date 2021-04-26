@@ -25,7 +25,7 @@
      steps:
        - name: checkout repo
          uses: actions/checkout@v2
-       
+
        - name: setup micromamba
          uses: mamba-org/provision-with-micromamba@main
          with:
@@ -48,32 +48,3 @@
            token: ${{ secrets.CODECOV_TOKEN }}
            file: ./coverage.xml
            name: nhgisxwalk-codecov
-     
-     
-     
-     
-     #efaults:
-     # run:
-     #   shell: bash -l {0}
-     #teps:
-     # - uses: actions/checkout@v2
-     # - uses: actions/cache@v2
-     #   env:
-     #     CACHE_NUMBER: 0
-     #   with:
-     #     path: ~/conda_pkgs_dir
-     #     key: ${{ matrix.os }}-conda-${{ env.CACHE_NUMBER }}-${{ hashFiles(matrix.environment-file) }}
-     # - uses: conda-incubator/setup-miniconda@v2
-     #   with:
-     #      miniconda-version: 'latest'
-     #      mamba-version: "*"
-     #      channels: conda-forge
-     #      channel-priority: true
-     #      auto-update-conda: false
-     #      auto-activate-base: false
-     #      environment-file: ${{ matrix.environment-file }}
-     #      activate-environment: test
-     #      use-only-tar-bz2: true
-     # - run: mamba info --all
-     # - run: mamba list
-     # - run: pytest -v nhgisxwalk --cov=nhgisxwalk --doctest-modules --cov-config=.coveragerc --cov-report=xml
