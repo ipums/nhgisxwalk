@@ -14,7 +14,7 @@
      - cron: '59 23 * * *'
 
  env:
-   RUN_TEST: 'pytest -v nhgisxwalk --cov=nhgisxwalk --doctest-modules --cov-config=.coveragerc --cov-report=xml'
+   RUN_TEST: pytest -v nhgisxwalk --cov=nhgisxwalk --doctest-modules --cov-config=.coveragerc --cov-report=xml
 
  jobs:
    unittests:
