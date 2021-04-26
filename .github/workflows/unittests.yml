@@ -38,12 +38,12 @@
        - name: run tests - bash
          shell: bash -l {0}
          run: echo ${{ env.run_test }}
-         if: matrix.os != windows-latest
+         if: matrix.os != 'windows-latest'
        
        - name: run tests - powershell
          shell: powershell
          run: echo ${{ env.run_test }}
-         if: matrix.os == windows-latest
+         if: matrix.os == 'windows-latest'
      
        - name: codecov
          uses: codecov/codecov-action@v1
