@@ -1,11 +1,11 @@
 codecov
-geopandas
-descartes
+geopandas>=0.9
 nbsphinx
 numpy>=1.3
 pandas>=1.0
 pip
 pre-commit
+pygeos
 pytest
 pytest-cov
 sphinx>=1.4.3

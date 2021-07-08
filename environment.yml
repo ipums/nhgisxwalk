@@ -8,13 +8,13 @@
    - conda-forge
  dependencies:
    - python=3.9
-   - geopandas
-   - descartes
+   - geopandas>=0.9.0
    - ipython
    - jupyter
    - matplotlib
    - nb_conda_kernels
    - pandas
+   - pygeos
    - pip
    - shapely
    - watermark
