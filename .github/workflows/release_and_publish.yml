@@ -13,7 +13,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: Manual CI Reason
+        description: Manual Release Reason
         default: test
         required: false
 
@@ -60,8 +60,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
-      - name: Publish distribution 📦 to PyPI
-        uses: pypa/gh-action-pypi-publish@master
-        with:
-          user: __token__
-          password: ${{ secrets.PYPI_PASSWORD }}
+      #- name: Publish distribution 📦 to PyPI
+      #  uses: pypa/gh-action-pypi-publish@master
+      #  with:
+      #    user: __token__
+      #    password: ${{ secrets.PYPI_PASSWORD }}
