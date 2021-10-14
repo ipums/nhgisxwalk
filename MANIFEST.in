@@ -1,1 +1,3 @@
 include LICENSE.txt NOTICE.txt CHANGELOG.md MANIFEST.in requirements.txt
+include versioneer.py
+include nhgisxwalk/_version.py
