@@ -1,4 +1,3 @@
-__version__ = "0.1.2"
 """
 # `nhgisxwalk` --- IPUMS/NHGIS Census Crosswalk and Atom Generator
 
@@ -26,3 +25,7 @@ from .geocrosswalk import ID_COLS, CSV, ZIP, TXT
 from .variable_codes import code_desc_1990, desc_code_1990
 from .variable_codes import code_desc_2000_SF1b, desc_code_2000_SF1b
 from .variable_codes import code_desc_2000_SF3b, desc_code_2000_SF3b
+
+from . import _version
+
+__version__ = _version.get_versions()["version"]

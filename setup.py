@@ -6,6 +6,7 @@
 from distutils.command.build_py import build_py
 from setuptools import setup
 import sys
+import versioneer
 
 package = "nhgisxwalk"
 
@@ -14,10 +15,6 @@ package = "nhgisxwalk"
 # https://github.com/pydata/xarray/pull/2643/files#diff-2eeaed663bd0d25b7e608891384b7298R29-R30
 needs_pytest = {"pytest", "test", "ptr"}.intersection(sys.argv)
 setup_requires = ["pytest-runner"] if needs_pytest else []
-
-# Get __version__ from package/__init__.py
-with open(package + "/__init__.py", "r") as f:
-    exec(f.readline())
 
 description = "Spatio-temporal NHGIS Crosswalks"
 
@@ -29,16 +26,16 @@ with open("README.md", "r", encoding="utf-8") as file:
 def _get_requirements_from_files(groups_files):
     """returns a dictionary of all requirements
     keyed by type of requirement.
-    
+
     Parameters
     ----------
-    
+
     groups_files : dict
         k - descriptive name, v - file name (including extension)
-    
+
     Returns
     -------
-    
+
     groups_reqlist : dict
         k - descriptive name, v - list of required packages
     """
@@ -62,7 +59,8 @@ def setup_package():
 
     setup(
         name=package,
-        version=__version__,
+        version=versioneer.get_version(),
+        cmdclass=versioneer.get_cmdclass({"build_py": build_py}),
         description=description,
         long_description=long_description,
         long_description_content_type="text/markdown",
@@ -91,7 +89,6 @@ def setup_package():
         py_modules=[package],
         install_requires=reqs,
         zip_safe=False,
-        cmdclass={"build.py": build_py},
         python_requires=">=3.7",
     )
 
