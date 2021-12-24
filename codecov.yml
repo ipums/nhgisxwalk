@@ -4,7 +4,7 @@
 #   https://github.com/ipums/nhgisxwalk
 codecov:
   notify:
-    after_n_builds: 12
+    after_n_builds: 5
 coverage:
   range: 50...90
   round: nearest
@@ -22,5 +22,5 @@ coverage:
 comment:
   layout: "reach, diff, files"
   behavior: once
-  after_n_builds: 12
+  after_n_builds: 5
   require_changes: true
