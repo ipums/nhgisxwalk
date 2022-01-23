@@ -23,6 +23,8 @@
    unittests:
      name: micromamba (${{ matrix.os }}, ${{ matrix.environment-file }})
      runs-on: ${{ matrix.os }}
+     env:
+       RUN_TESTS: pytest -v nhgisxwalk --cov nhgisxwalk --doctest-modules --cov-config .coveragerc --cov-report xml
      timeout-minutes: 10
      strategy:
        matrix:
@@ -46,12 +48,12 @@
 
        - name: run tests - bash
          shell: bash -l {0}
-         run: pytest -v nhgisxwalk --cov=nhgisxwalk --doctest-modules --cov-config=.coveragerc --cov-report=xml
+         run: ${{ env.RUN_TESTS }}
          if: matrix.os != 'windows-latest'
        
        - name: run tests - powershell
          shell: powershell
-         run: pytest -v nhgisxwalk --cov=nhgisxwalk --doctest-modules --cov-config=.coveragerc --cov-report=xml
+         run: ${{ env.RUN_TESTS }}
          if: matrix.os == 'windows-latest'
      
        - name: codecov
