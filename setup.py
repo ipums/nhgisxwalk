@@ -80,7 +80,6 @@ def setup_package():
             "Topic :: Scientific/Engineering :: GIS",
             "License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)",
             "Programming Language :: Python",
-            "Programming Language :: Python :: 3.7",
             "Programming Language :: Python :: 3.8",
             "Programming Language :: Python :: 3.9",
             "Programming Language :: Python :: 3.10",
@@ -90,7 +89,7 @@ def setup_package():
         py_modules=[package],
         install_requires=reqs,
         zip_safe=False,
-        python_requires=">=3.7",
+        python_requires=">=3.8",
     )
 
 
