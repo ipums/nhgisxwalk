@@ -7,38 +7,41 @@
 """
 
 
-from .__code_components import *
+from io import StringIO
+
 import numpy
 import pandas
-from io import StringIO
+
+from .__code_components import *
 
 
 def code_cols(geog, year):
     """Geography ID coded columns.
-    
+
     Parameters
     ----------
-    
+
     geog : str
          The specified census geography. This will support
          ["blk", "bgp", "bg", "tr", "co",...] in the future.
-    
+
     year : str
         The specified census year. This will support
         ["1990", "2000", "2010", "2020"] in the future.
-    
+
     Returns
     -------
-    
+
     cols : list
         The correct ordering of columns to create the geography ID.
-    
+
     """
     # ensure `year` is a str
     year = str(year)
 
     if geog == "bgp":
         if year == "1990":
+            """
             # Geographic level (598_103):
             #       Block Group by:
             #                   State--
@@ -52,6 +55,7 @@ def code_cols(geog, year):
             #                   Alaska Native Regional Corporation/Remainder--
             #                   Urbanized Area/Remainder--
             #                   Urban/Rural
+            """
             cols = [
                 "STATEA",
                 "COUNTYA",
@@ -67,6 +71,7 @@ def code_cols(geog, year):
                 "BLCK_GRPA",
             ]
         if year == "2000":
+            """
             # Geographic level (_90):
             #       Block Group by:
             #                   State--
@@ -75,6 +80,7 @@ def code_cols(geog, year):
             #                   Place/Remainder--
             #                   Census Tract--
             #                   Urban/Rural
+            """
             cols = [
                 "STATEA",
                 "COUNTYA",
@@ -101,19 +107,19 @@ def generate_atom_id(df, c1, c2, cname):
 def generate_geoid(in_id):
     """Convert a GISJOIN ID to a GEOID ID.
     Note: NOT functional for Block Group Parts (only NHGIS).
-    
+
     Parameters
     ----------
-    
+
     in_id : str
         Input ID from particular year.
-    
+
     Returns
     -------
-    
+
     out_id : str or numpy.nan
         Converted ID.
-    
+
     """
 
     if str(in_id) == "nan":
@@ -133,27 +139,28 @@ def generate_geoid(in_id):
 
 def gisjoin_id(record, component_order, trailing_zeros):
     """GISJOIN ID generator. Add 'G' and trailing zeros.
-    See `GISJOIN identifiers <https://www.nhgis.org/user-resources/geographic-crosswalks>`_.
-    
+    See GISJOIN identifiers
+    [https://www.nhgis.org/user-resources/geographic-crosswalks>].
+
     Parameters
     ----------
-    
+
     record : namedtuple
         A single record instance of a ``pandas.DataFrame``.
-    
+
     component_order : list
          The correct ordering of columns to create the ID.
-    
+
     trailing_zeros : list
         The specific columns to add a trailing zero.
-    
+
     Returns
     -------
-    
+
     _id : str, numpy.nan
         The GISJOIN version of a census geography ID if the geography
         exists, otherwise ``numpy.nan``.
-    
+
     """
 
     endex = -1
@@ -179,28 +186,28 @@ def gisjoin_id(record, component_order, trailing_zeros):
 
 def blk_gj(df, order, cname="GISJOIN", tzero=["STATE", "COUNTY"]):
     """Recreate BLK GISJOIN ---- Used to extract 2000 block UR codes.
-    
+
     Parameters
     ----------
-    
+
     df : pandas.DataFrame
         The input dataframe.
-    
+
     order : list-like
         The correct ordering of columns.
-    
+
     cname : str
         The name for the new column. Default is 'GISJOIN'.
-    
+
     tzeros : list
         The columns to add trailing zero. Default is ['STATE', 'COUNTY'].
-    
+
     Returns
     -------
-    
+
     df : pandas.DataFrame
         The input ``df`` with new column.
-    
+
     """
 
     df[cname] = [gisjoin_id(record, order, tzero) for record in df.itertuples()]
@@ -209,28 +216,28 @@ def blk_gj(df, order, cname="GISJOIN", tzero=["STATE", "COUNTY"]):
 
 def bgp_gj(df, order, cname="_GJOIN", tzero=["STATEA", "COUNTYA"]):
     """Recreate BGPs GISJOIN ID.
-    
+
     Parameters
     ----------
-    
+
     df : pandas.DataFrame
         The input dataframe.
-    
+
     order : list-like
         The correct ordering of columns.
-    
+
     cname : str
         The name for the new column. Default is '_GJOIN'.
-    
+
     tzeros : list
         The columns to add trailing zero. Default is ['STATEA', 'COUNTYA'].
-    
+
     Returns
     -------
-    
+
     df : pandas.DataFrame
         The input ``df`` with new column.
-    
+
     """
 
     # recreate GISJOIN ID (_GJOIN, [or other])
@@ -240,41 +247,42 @@ def bgp_gj(df, order, cname="_GJOIN", tzero=["STATEA", "COUNTYA"]):
 
 def bg_gj(year, _id, df=None, order=None, cname="GISJOIN", tzero=["STATEA", "COUNTYA"]):
     """Extract the block group ID from the block ID.
-    See `GISJOIN identifiers <https://www.nhgis.org/user-resources/geographic-crosswalks>`_.
-    
+    See GISJOIN identifiers
+    [https://www.nhgis.org/user-resources/geographic-crosswalks].
+
     The 1990 block group ID is the first character of the block ID, so
     the GISJOIN ID for a block group is G+state+0+county+0+tract+block[0].
-    
+
     Parameters
     ----------
-    
+
     year : str
         The census collection year.
-    
+
     _id : str
         The block GISJOIN/GEOID.
-    
+
     df : pandas.DataFrame
         The input dataframe.
-    
+
     order : list-like
         The correct ordering of columns.
-    
+
     cname : str
         The name for the new column. Default is 'GISJOIN'.
-    
+
     tzeros : list
         The columns to add trailing zero. Default is ['STATEA', 'COUNTYA'].
-    
+
     Returns
     -------
-    
+
     block_group_id : str
         The block group GISJOIN.
-    
+
     df : pandas.DataFrame
         The input ``df`` with new column.
-    
+
     """
 
     # scenario 1: map function to each row of dataframe to extract ID
@@ -301,23 +309,24 @@ def bg_gj(year, _id, df=None, order=None, cname="GISJOIN", tzero=["STATEA", "COU
 
 def tr_gj(year, _id):
     """Extract the tract ID from the block ID.
-    See `GISJOIN identifiers <https://www.nhgis.org/user-resources/geographic-crosswalks>`_.
-    
+    See GISJOIN identifiers
+    [https://www.nhgis.org/user-resources/geographic-crosswalks].
+
     Parameters
     ----------
-    
+
     year : str
         The census collection year.
-    
+
     _id : str
         The block GISJOIN.
-    
+
     Returns
     -------
-    
+
     tract_id : str
         The tract GISJOIN.
-    
+
     """
 
     if not _id.startswith("G"):
@@ -336,23 +345,24 @@ def tr_gj(year, _id):
 
 def co_gj(year, _id):
     """Extract the county ID from the block ID.
-    See `GISJOIN identifiers <https://www.nhgis.org/user-resources/geographic-crosswalks>`_.
-    
+    See GISJOIN identifiers
+    [https://www.nhgis.org/user-resources/geographic-crosswalks].
+
     Parameters
     ----------
-    
+
     year : str
         The census collection year.
-    
+
     _id : str
         The block GISJOIN.
-    
+
     Returns
     -------
-    
+
     county_id : str
         The county GISJOIN.
-    
+
     """
 
     if not _id.startswith("G"):
@@ -371,28 +381,28 @@ def co_gj(year, _id):
 
 def id_from(target_func, target_year, source, vectorized):
     """Create target IDs from source IDs.
-    
+
     Parameters
     ----------
-    
+
     target_func : function or method
         The function or method for generating requested target IDs.
-    
+
     target_year : str
         The original target ID year.
-    
+
     source : iterable
         The original source IDs.
-    
+
     vectorized : bool
         Potential speedup when set to ``True``. Default is ``True``.
-    
+
     Returns
     -------
-    
+
     result : iterable
         The generated target IDs.
-    
+
     """
 
     # generate IDs from source geographies to target geographies
@@ -407,24 +417,24 @@ def id_from(target_func, target_year, source, vectorized):
 def gj_code_components(year, geo):
     """Fetch the raw-string of the components used to create the specified
     year+geography ID, and return in a dataframe.
-    
+
     Parameters
     ----------
-    
+
     year : str
         The specified census year.
-    
+
     geo : str
         The specified census geography.
-    
+
     Returns
     -------
-    
+
     df : pandas.DataFrame
         A dataframe of two columns: "Variable", "Description". The
         "Variable" column is tabular name of the component that is
         explained in "Description".
-    
+
     """
 
     if year == "1990":
