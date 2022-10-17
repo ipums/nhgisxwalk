@@ -12,20 +12,36 @@ __author__ = "James Gaboardi <jgaboardi@gmail.com>"
 __date__ = "2020-04"
 
 
-from .geocrosswalk import GeoCrossWalk
-from .geocrosswalk import calculate_atoms, round_weights, str_types
-from .geocrosswalk import valid_geo_shorthand, example_crosswalk_data
-from .geocrosswalk import prepare_data_product, generate_data_product
-from .geocrosswalk import xwalk_df_to_csv, xwalk_df_from_csv
-from .geocrosswalk import extract_state, extract_unique_stfips
-from .geocrosswalk import regenerate_blk_blk_xwalk, split_xwalk
-from .geocrosswalk import SORT_PARAMS, SORT_BYS
-from .geocrosswalk import ID_COLS, CSV, ZIP, TXT
-
-from .variable_codes import code_desc_1990, desc_code_1990
-from .variable_codes import code_desc_2000_SF1b, desc_code_2000_SF1b
-from .variable_codes import code_desc_2000_SF3b, desc_code_2000_SF3b
-
 from . import _version
+from .geocrosswalk import (
+    CSV,
+    ID_COLS,
+    SORT_BYS,
+    SORT_PARAMS,
+    TXT,
+    ZIP,
+    GeoCrossWalk,
+    calculate_atoms,
+    example_crosswalk_data,
+    extract_state,
+    extract_unique_stfips,
+    generate_data_product,
+    prepare_data_product,
+    regenerate_blk_blk_xwalk,
+    round_weights,
+    split_xwalk,
+    str_types,
+    valid_geo_shorthand,
+    xwalk_df_from_csv,
+    xwalk_df_to_csv,
+)
+from .variable_codes import (
+    code_desc_1990,
+    code_desc_2000_SF1b,
+    code_desc_2000_SF3b,
+    desc_code_1990,
+    desc_code_2000_SF1b,
+    desc_code_2000_SF3b,
+)
 
 __version__ = _version.get_versions()["version"]

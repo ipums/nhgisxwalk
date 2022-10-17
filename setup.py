@@ -3,9 +3,11 @@
 # in this project's top-level directory, and also on-line at:
 #   https://github.com/ipums/nhgisxwalk
 
-from distutils.command.build_py import build_py
-from setuptools import setup
 import sys
+from distutils.command.build_py import build_py
+
+from setuptools import setup
+
 import versioneer
 
 package = "nhgisxwalk"

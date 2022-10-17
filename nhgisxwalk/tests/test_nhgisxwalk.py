@@ -6,12 +6,13 @@
 """ Testing for nhgisxwalk.
 """
 
-import nhgisxwalk
-import numpy
 import os
-import pandas
 import shutil
 import unittest
+
+import numpy
+
+import nhgisxwalk
 
 CSV = "csv"
 ZIP = "zip"
@@ -138,7 +139,9 @@ class Test_GeoCrossWalk(unittest.TestCase):
         numpy.testing.assert_equal(knw_str_vals, obs_str_vals)
         numpy.testing.assert_allclose(knw_num_vals, obs_num_vals, atol=6)
 
-    def test_xwalk_state_bgp1990_tr2010(self,):
+    def test_xwalk_state_bgp1990_tr2010(
+        self,
+    ):
         knw_str_vals = numpy.array(
             [
                 [
@@ -195,7 +198,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
 
     def test_xwalk_bgp1990_tr2010_no_supp_error(self):
         with self.assertRaises(RuntimeError):
-            obs_xwalk = nhgisxwalk.GeoCrossWalk(
+            nhgisxwalk.GeoCrossWalk(
                 base_xwalk_blk1990_blk2010,
                 source_year=_90,
                 target_year=_10,
@@ -267,19 +270,19 @@ class Test_GeoCrossWalk(unittest.TestCase):
             stfips=stfips,
         )
         with self.assertRaises(RuntimeError):
-            obs_target_nan_xwalk = nhgisxwalk.extract_state(
+            nhgisxwalk.extract_state(
                 obs_xwalk.xwalk, "nan", obs_xwalk.xwalk_name, obs_xwalk.target
             )
         with self.assertRaises(RuntimeError):
-            obs_source_nan_xwalk = nhgisxwalk.extract_state(
+            nhgisxwalk.extract_state(
                 obs_xwalk.xwalk, "nan", obs_xwalk.xwalk_name, obs_xwalk.source
             )
         with self.assertRaises(RuntimeError):
-            obs_target_nan_base = nhgisxwalk.extract_state(
+            nhgisxwalk.extract_state(
                 obs_xwalk.base, "nan", obs_xwalk.xwalk_name, obs_xwalk.base_target_col
             )
         with self.assertRaises(RuntimeError):
-            obs_source_nan_base = nhgisxwalk.extract_state(
+            nhgisxwalk.extract_state(
                 obs_xwalk.base, "nan", obs_xwalk.xwalk_name, obs_xwalk.base_source_col
             )
 
@@ -456,19 +459,19 @@ class Test_GeoCrossWalk(unittest.TestCase):
             stfips=stfips,
         )
         with self.assertRaises(RuntimeError):
-            obs_target_nan_xwalk = nhgisxwalk.extract_state(
+            nhgisxwalk.extract_state(
                 obs_xwalk.xwalk, "nan", obs_xwalk.xwalk_name, obs_xwalk.target
             )
         with self.assertRaises(RuntimeError):
-            obs_source_nan_xwalk = nhgisxwalk.extract_state(
+            nhgisxwalk.extract_state(
                 obs_xwalk.xwalk, "nan", obs_xwalk.xwalk_name, obs_xwalk.source
             )
         with self.assertRaises(RuntimeError):
-            obs_target_nan_base = nhgisxwalk.extract_state(
+            nhgisxwalk.extract_state(
                 obs_xwalk.base, "nan", obs_xwalk.xwalk_name, obs_xwalk.base_target_col
             )
         with self.assertRaises(RuntimeError):
-            obs_source_nan_base = nhgisxwalk.extract_state(
+            nhgisxwalk.extract_state(
                 obs_xwalk.base, "nan", obs_xwalk.xwalk_name, obs_xwalk.base_source_col
             )
 
@@ -714,7 +717,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
     def test_xwalk_uneven_input(self):
         # testing for triggered errors
         with self.assertRaises(RuntimeError):
-            observed_xwalk = nhgisxwalk.GeoCrossWalk(
+            nhgisxwalk.GeoCrossWalk(
                 base_xwalk_blk2000_blk2010,
                 source_year=_00,
                 target_year=_10,
@@ -729,7 +732,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
     def test_xwalk_source_code_blk(self):
         # testing for triggered errors
         with self.assertRaises(RuntimeError):
-            observed_xwalk = nhgisxwalk.GeoCrossWalk(
+            nhgisxwalk.GeoCrossWalk(
                 base_xwalk_blk1990_blk2010,
                 source_year=_90,
                 target_year=_10,
@@ -743,7 +746,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
     def test_xwalk_source_code_bg(self):
         # testing for triggered errors
         with self.assertRaises(AttributeError):
-            observed_xwalk = nhgisxwalk.GeoCrossWalk(
+            nhgisxwalk.GeoCrossWalk(
                 base_xwalk_blk1990_blk2010,
                 source_year=_90,
                 target_year=_10,
@@ -757,7 +760,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
     def test_xwalk_source_code_tr(self):
         # testing for triggered errors
         with self.assertRaises(AttributeError):
-            observed_xwalk = nhgisxwalk.GeoCrossWalk(
+            nhgisxwalk.GeoCrossWalk(
                 base_xwalk_blk1990_blk2010,
                 source_year=_90,
                 target_year=_10,
@@ -771,7 +774,7 @@ class Test_GeoCrossWalk(unittest.TestCase):
     def test_xwalk_source_code_co(self):
         # testing for triggered errors
         with self.assertRaises(AttributeError):
-            observed_xwalk = nhgisxwalk.GeoCrossWalk(
+            nhgisxwalk.GeoCrossWalk(
                 base_xwalk_blk1990_blk2010,
                 source_year=_90,
                 target_year=_10,
@@ -873,6 +876,7 @@ class Test_upper_level_functions(unittest.TestCase):
 
         # test
         id_cols = ["bgp1990gj", "tr2010gj", "tr2010ge"]
+        """
         data_types = nhgisxwalk.str_types(id_cols)
         from_csv_kws = {
             "path": data_dir,
@@ -883,6 +887,7 @@ class Test_upper_level_functions(unittest.TestCase):
         read_xwalk = nhgisxwalk.xwalk_df_from_csv(
             obs_xwalk.xwalk_name, **from_csv_kws, **read_csv_kws
         )
+        """
         ix1, ix2 = 13, 17
         obs_str_vals = obs_xwalk.xwalk[id_cols][ix1:ix2].values
         wgt_cols = ["wt_pop", "wt_fam", "wt_hh", "wt_hu"]

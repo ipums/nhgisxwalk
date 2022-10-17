@@ -24,7 +24,7 @@
      name: micromamba (${{ matrix.os }}, ${{ matrix.environment-file }})
      runs-on: ${{ matrix.os }}
      env:
-       RUN_TESTS: pytest -v nhgisxwalk --cov nhgisxwalk --doctest-modules --cov-config .coveragerc --cov-report xml
+       RUN_TESTS: pytest -v nhgisxwalk --cov nhgisxwalk --doctest-modules --cov-config .coveragerc --cov-report xml --color yes --cov-append --cov-report term-missing
      timeout-minutes: 10
      strategy:
        matrix:
