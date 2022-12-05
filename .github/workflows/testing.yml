@@ -20,7 +20,7 @@
          description: Manual CI Reason
          default: test
          required: false
-
+ 
  jobs:
    linting:
       runs-on: ubuntu-latest
@@ -28,7 +28,7 @@
         - uses: actions/checkout@v3
         - uses: actions/setup-python@v4
         - uses: pre-commit/action@v3.0.0
-
+ 
    testing:
      needs: linting
      name: micromamba (${{ matrix.os }}, ${{ matrix.environment-file }})
@@ -56,17 +56,17 @@
            environment-file: ${{ matrix.environment-file }}
            micromamba-version: 'latest'
        
-      - name: environment info
-        shell: bash -l {0}
-        run: |
-          micromamba info
-          micromamba list
-      
-      - name: spatial versions
-        shell: bash -l {0}
-        run: |
-          python -c "import geopandas; geopandas.show_versions();"
-
+       - name: environment info
+         shell: bash -l {0}
+         run: |
+           micromamba info
+           micromamba list
+       
+       - name: spatial versions
+         shell: bash -l {0}
+         run: |
+           python -c "import geopandas; geopandas.show_versions();"
+ 
        - name: run tests - bash
          shell: bash -l {0}
          run: ${{ env.RUN_TESTS }}
