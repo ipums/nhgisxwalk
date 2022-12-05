@@ -3,6 +3,8 @@
 # in this project's top-level directory, and also on-line at:
 #   https://github.com/ipums/nhgisxwalk
 
+ name: Continuous Integration
+ 
  on:
    push:
      branches:
@@ -18,22 +20,30 @@
          description: Manual CI Reason
          default: test
          required: false
-
+ 
  jobs:
-   unittests:
+   linting:
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v3
+        - uses: actions/setup-python@v4
+        - uses: pre-commit/action@v3.0.0
+ 
+   testing:
+     needs: linting
      name: micromamba (${{ matrix.os }}, ${{ matrix.environment-file }})
      runs-on: ${{ matrix.os }}
      env:
-       RUN_TESTS: pytest -v nhgisxwalk --cov nhgisxwalk --doctest-modules --cov-config .coveragerc --cov-report xml --color yes --cov-append --cov-report term-missing
+       RUN_TESTS: pytest nhgisxwalk -v -r a --cov nhgisxwalk --doctest-modules --cov-config .coveragerc --cov-report xml --color yes --cov-append --cov-report term-missing
      timeout-minutes: 10
      strategy:
        matrix:
-         environment-file: [ci/38.yaml, ci/39.yaml, ci/310.yaml]
+         environment-file: [ci/38.yaml, ci/39.yaml, ci/310.yaml, ci/311.yaml]
          os: ['ubuntu-latest']
          include:
-           - environment-file: ci/310.yaml
+           - environment-file: ci/311.yaml
              os: macos-latest
-           - environment-file: ci/310.yaml
+           - environment-file: ci/311.yaml
              os: windows-latest
      
      steps:
@@ -45,7 +55,18 @@
          with:
            environment-file: ${{ matrix.environment-file }}
            micromamba-version: 'latest'
-
+       
+       - name: environment info
+         shell: bash -l {0}
+         run: |
+           micromamba info
+           micromamba list
+       
+       - name: spatial versions
+         shell: bash -l {0}
+         run: |
+           python -c "import geopandas; geopandas.show_versions();"
+ 
        - name: run tests - bash
          shell: bash -l {0}
          run: ${{ env.RUN_TESTS }}

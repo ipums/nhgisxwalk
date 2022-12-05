@@ -7,17 +7,27 @@
  channels:
    - conda-forge
  dependencies:
-   - python=3.10
+   - python=3.11
+   - black
+   - codecov
+   - coverage
+   - flake8
    - geopandas
+   - handcalcs
    - ipython
+   - isort
    - jupyter
    - matplotlib
    - nb_conda_kernels
+   - notebook
+   - numpy
    - pandas
-   - pygeos
-   - pip
+   - pre-commit
+   - pyproject-flake8
+   - pytest
+   - pytest-cov
    - shapely
    - watermark
+   - pip
    - pip:
      - git+https://github.com/ipums/nhgisxwalk.git@main
-     - handcalcs

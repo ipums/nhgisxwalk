@@ -4,8 +4,8 @@
 #   https://github.com/ipums/nhgisxwalk
 
 """
-The variables here provide raw-string descriptions for columns in the 
-'context cookbooks' provided with NHGIS data downloads. These are used to 
+The variables here provide raw-string descriptions for columns in the
+'context cookbooks' provided with NHGIS data downloads. These are used to
 create pandas.DataFrame objects in code_components.CodeComponents().
 """
 
