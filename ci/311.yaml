@@ -9,8 +9,9 @@ channels:
 dependencies:
   - python=3.11
   # required
-  - numpy
+  - geopandas
   - pandas
+  - numpy
   - watermark
   # testing
   - pytest
