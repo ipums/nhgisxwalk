@@ -98,6 +98,8 @@ src_paths = ["nhgisxwalk"]
 max_line_length = 88
 per-file-ignores = [
     "*__init__.py:F401",
+    "nhgisxwalk/__code_components.py:E501",
+    "nhgisxwalk/id_codes.py:F403,F405",
 ]
 exclude = [
     "versioneer.py",
