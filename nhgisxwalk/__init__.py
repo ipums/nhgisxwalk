@@ -12,7 +12,9 @@ __author__ = "James Gaboardi <jgaboardi@gmail.com>"
 __date__ = "2020-04"
 
 
-from . import _version
+import contextlib
+from importlib.metadata import PackageNotFoundError, version
+
 from .geocrosswalk import (
     CSV,
     ID_COLS,
@@ -44,4 +46,5 @@ from .variable_codes import (
     desc_code_2000_SF3b,
 )
 
-__version__ = _version.get_versions()["version"]
+with contextlib.suppress(PackageNotFoundError):
+    __version__ = version("nhgisxwalk")
