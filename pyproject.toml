@@ -4,14 +4,10 @@
 #   https://github.com/ipums/nhgisxwalk
 
 [build-system]
-requires = [
-    "black",
-    "isort",
-    "pyproject-flake8",
-    "setuptools>=61.0.0",
-    "versioneer[toml]==0.26",
-]
+requires = ["setuptools>=61.0", "setuptools_scm[toml]>=6.2"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
 
 [project]
 name = "nhgisxwalk"
@@ -35,27 +31,29 @@ classifiers = [
     "Topic :: Scientific/Engineering :: GIS",
     "License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 dependencies = [
-    "black",
-    "codecov",
-    "coverage",
-    "flake8",
     "geopandas",
-    "handcalcs",
-    "isort",
-    "nbsphinx",
     "numpy",
-    "numpydoc",
     "pandas",
     "pip",
+]
+
+[project.optional-dependencies]
+notebooks = [
+    "handcalcs",
+]
+
+dev = [
+    "black",
+    "codecov",
+    "nbsphinx",
+    "numpydoc",
     "pre-commit",
-    "pyproject-flake8",
     "pytest",
     "pytest-cov",
     "sphinx",
@@ -66,6 +64,7 @@ dependencies = [
     "watermark",
     "wheel",
 ]
+
 
 [project.urls]
 Home = "https://tech.popdata.org/nhgisxwalk/"
@@ -82,29 +81,41 @@ nhgisxwalk = [
     "testing_data_subsets/*",
 ]
 
-[tool.versioneer]
-VCS = "git"
-style = "pep440"
-versionfile_source = "nhgisxwalk/_version.py"
-versionfile_build = "nhgisxwalk/_version.py"
-tag_prefix = "v"
-parentdir_prefix = "nhgisxwalk-"
-
-[tool.isort]
-profile = "black"
-src_paths = ["nhgisxwalk"]
-
-[tool.flake8]
-max_line_length = 88
-per-file-ignores = [
-    "*__init__.py:F401",
-    "nhgisxwalk/__code_components.py:E501",
-    "nhgisxwalk/id_codes.py:F403,F405",
-]
-exclude = [
-    "versioneer.py",
-    "nhgisxwalk/_version.py"
-]
-
 [tool.black]
 line-length = 88
+
+[tool.ruff]
+line-length = 88
+select = ["E", "F", "W", "I", "UP", "N", "B", "A", "C4", "SIM", "ARG"]
+target-version = "py39"
+ignore = [
+    "B006",
+    "B008",
+    "B009",
+    "B010",
+    "C408",
+    "E731",
+    "F401",
+    "F403",
+    "F405",
+    "N803",
+    "N806",
+    "N816",
+    "N999",
+    "UP007"
+]
+exclude = ["nhgisxwalk/tests/*"]
+
+[tool.coverage.run]
+source = ["./nhgisxwalk"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "if self.debug:",
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "except ModuleNotFoundError:",
+    "except ImportError",
+]
+ignore_errors = true
+omit = ["nhgisxwalk/tests/*"]

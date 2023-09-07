@@ -85,7 +85,6 @@ tab_data_path_2000 = tabular_data_path % (_00, CSV, ZIP)
 
 
 class Test_GeoCrossWalk(unittest.TestCase):
-
     # 1990 bgp to 2010 tr through 1990 blk to 2010 blk
     def test_xwalk_full_bgp1990_tr2010(self):
         knw_str_vals = numpy.array(
@@ -287,8 +286,8 @@ class Test_GeoCrossWalk(unittest.TestCase):
             )
 
     def test_xwalk_extract_unique_stfips_cls_bgp1990_tr2010(self):
-        known_target_fips = set(["10"])
-        known_source_fips = set(["10", "34", "nan"])
+        known_target_fips = {"10"}
+        known_source_fips = {"10", "34", "nan"}
         obs_xwalk = nhgisxwalk.GeoCrossWalk(
             base_xwalk_blk1990_blk2010,
             source_year=_90,
@@ -312,8 +311,8 @@ class Test_GeoCrossWalk(unittest.TestCase):
         self.assertEqual(known_source_fips, obs_source_fips)
 
     def test_xwalk_extract_unique_stfips_df_bgp1990_tr2010(self):
-        known_target_fips = set(["10"])
-        known_source_fips = set(["10", "34", "nan"])
+        known_target_fips = {"10"}
+        known_source_fips = {"10", "34", "nan"}
         obs_xwalk = nhgisxwalk.GeoCrossWalk(
             base_xwalk_blk1990_blk2010,
             source_year=_90,
@@ -476,8 +475,8 @@ class Test_GeoCrossWalk(unittest.TestCase):
             )
 
     def test_xwalk_extract_unique_stfips_cls_bgp2000_tr2010(self):
-        known_target_fips = set(["10"])
-        known_source_fips = set(["10", "34"])
+        known_target_fips = {"10"}
+        known_source_fips = {"10", "34"}
         obs_xwalk = nhgisxwalk.GeoCrossWalk(
             base_xwalk_blk2000_blk2010,
             source_year=_00,
@@ -500,8 +499,8 @@ class Test_GeoCrossWalk(unittest.TestCase):
         self.assertEqual(known_source_fips, obs_source_fips)
 
     def test_xwalk_extract_unique_stfips_df_bgp2000_tr2010(self):
-        known_target_fips = set(["10"])
-        known_source_fips = set(["10", "34"])
+        known_target_fips = {"10"}
+        known_source_fips = {"10", "34"}
         obs_xwalk = nhgisxwalk.GeoCrossWalk(
             base_xwalk_blk2000_blk2010,
             source_year=_00,

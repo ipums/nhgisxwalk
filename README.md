@@ -46,7 +46,7 @@ This pacakge allows for the generation of temporal crosswalks of census geograph
 
 ## Installation
 
-Currently `nhgisxwalk` officially supports Python [3.8](https://docs.python.org/3.8/), [3.9](https://docs.python.org/3.9/), and [3.10](https://docs.python.org/3.10/). Please make sure that you are operating in a Python >= 3.8 environment. Install the most current development version of `nhgisxwalk` by running:
+Currently `nhgisxwalk` officially supports Python [3.9](https://docs.python.org/3.9/), [3.10](https://docs.python.org/3.10/), and [3.11](https://docs.python.org/3.11/). Please make sure that you are operating in a Python >= 3.9 environment. Install the most current development version of `nhgisxwalk` by running:
 
 ```
 $ pip install git+https://github.com/ipums/nhgisxwalk
@@ -75,4 +75,3 @@ The package is licensed under the [MPL-2.0 License](https://github.com/ipums/nhg
 This project is funded through:
 
 [<img align="middle" src="figs/nsf_logo.png" width="100">](https://www.nsf.gov/index.jsp) National Science Foundation Award #1825768: [National Historical Geographic Information System](https://www.nsf.gov/awardsearch/showAward?AWD_ID=1825768&HistoricalAwards=false)
-

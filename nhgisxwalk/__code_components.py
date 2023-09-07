@@ -36,7 +36,7 @@ STATEA,      State Code
 URBRURALA,   Urban/Rural Code
 URB_AREAA,   Urban Area Code
 CD103A,      Congressional District (103rd) Code
-ANPSADPI,    Area Name/PSAD Term/Part Indicator"""
+ANPSADPI,    Area Name/PSAD Term/Part Indicator"""  # noqa E501
 
 bgp1990 = r"""
 GISJOIN,     GIS Join Match Code
@@ -68,7 +68,7 @@ URBRURALA,   Urban/Rural Code
 URB_AREA,    Urban Area Name
 URB_AREAA,   Urban Area Code
 CD103A,      Congressional District (103rd) Code
-ANPSADPI,    Area Name/PSAD Term/Part Indicator"""
+ANPSADPI,    Area Name/PSAD Term/Part Indicator"""  # noqa E501
 
 bg1990 = r"""
 """
@@ -80,7 +80,8 @@ co1990 = r"""
 """
 
 # ------------------------------------------------------------------------- 2000
-# *** NOTE *** The URBRURALA code is added. For more details see, https,//gist.github.com/ipums/36c7640af1f228cdc8a691505262e543
+# *** NOTE *** The URBRURALA code is added. For more details see,
+# https,//gist.github.com/ipums/36c7640af1f228cdc8a691505262e543
 blk2000 = r"""
 GISJOIN,     GIS Join Match Code
 YEAR,        Data File Year
@@ -95,7 +96,7 @@ BLCK_GRPA,   Block Group Code
 BLOCKA,      Block Code
 AIANHHA,     American Indian Area/Alaska Native Area/Hawaiian Home Land Code
 URBRURALA,   Urban/Rural Code
-NAME,        Area Name-Legal/Statistical Area Description (LSAD) Term-Part Indicator"""
+NAME,        Area Name-Legal/Statistical Area Description (LSAD) Term-Part Indicator"""  # noqa E501
 
 bgp2000 = r"""
 GISJOIN,     GIS Join Match Code
@@ -167,7 +168,7 @@ SDUNIA,      School District (Unified)/Remainder Code
 PUMA5A,      Public Use Microdata Sample Area (PUMA) Code
 BTTRA,       Tribal Census Tract Code
 BTBGA,       Tribal Block Group Code
-"""
+"""  # noqa E501
 
 tr2010 = r"""
 GISJOIN,     GIS Join Match Code
@@ -204,7 +205,7 @@ SDSECA,      School District (Secondary)/Remainder Code
 SDUNIA,      School District (Unified)/Remainder Code
 PUMA5A,      Public Use Microdata Sample Area (PUMA) Code
 BTTRA,       Tribal Census Tract Code
-BTBGA,       Tribal Block Group Code"""
+BTBGA,       Tribal Block Group Code"""  # noqa E501
 
 co2010 = r"""
 GISJOIN,     GIS Join Match Code

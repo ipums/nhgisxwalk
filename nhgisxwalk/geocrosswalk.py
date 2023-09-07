@@ -436,21 +436,23 @@ class GeoCrossWalk:
         drop_supp_col=True,
         weights_precision=10,
     ):
-
         # Set class attributes -------------------------------------------------
         # source and target class attributes
         self.source_year, self.target_year = source_year, target_year
         self.source_geo, self.target_geo = source_geo, target_geo
 
         # check that supplemental table is declared if 1990 block group parts
-        if self.source_year == "1990" and self.source_geo == "bgp":
-            if not supp_source_table:
-                msg = (
-                    "The 'supp_source_table' parameter must be declared (and valid) "
-                    "when creating a crosswalk sourced from 1990 blocks/block group "
-                    f"parts. The current value is '{supp_source_table}'."
-                )
-                raise RuntimeError(msg)
+        if (
+            self.source_year == "1990"
+            and self.source_geo == "bgp"
+            and not supp_source_table
+        ):
+            msg = (
+                "The 'supp_source_table' parameter must be declared (and valid) "
+                "when creating a crosswalk sourced from 1990 blocks/block group "
+                f"parts. The current value is '{supp_source_table}'."
+            )
+            raise RuntimeError(msg)
 
         # set for gj (nhgis ID)
         self.code_type, self.code_label = "gj", "GJOIN"
@@ -459,7 +461,7 @@ class GeoCrossWalk:
         # source and target names
         self.source = self.source_geo + self.source_year + self.code_type
         self.target = self.target_geo + self.target_year + self.code_type
-        self.xwalk_name = "nhgis_%s_%s" % (self.source[:-2], self.target[:-2])
+        self.xwalk_name = f"nhgis_{self.source[:-2]}_{self.target[:-2]}"
         self.stfips = stfips
 
         # input, summed, and weight variable names
@@ -511,7 +513,6 @@ class GeoCrossWalk:
         where excluded from the publicly-released summary files
         -------------------------------------------------------------------------"""
         if self.source_year == "1990" or self.target_year == "1990":
-
             if self.source_geo == "bgp" or self.target_geo == "bgp":
                 # block group IDs are needed to determine
                 # populated blocks in 1990
@@ -796,11 +797,11 @@ def extract_state(in_xwalk, stfips, xwalk_name, endpoint, code="gj", sort_by=Non
     if check_state_label.isnumeric() or check_state_label == NaN:
         msg = "This crosswalk may already be a state subset. "
         msg += "Check the name/attributes.\n"
-        msg += "\txwalk_name: '%s', stfips: %s'" % (xwalk_name, stfips)
+        msg += f"\txwalk_name: '{xwalk_name}', stfips: {stfips}'"
         raise RuntimeError(msg)
 
     # set NaN (null) extraction condition
-    nan = True if stfips.lower() == NaN else False
+    nan = stfips.lower() == NaN
 
     # set extraction condition
     extract_lambda = (
@@ -888,7 +889,7 @@ def xwalk_df_to_csv(cls=None, dfkwds=dict(), path=""):
     if stfips and xwalk_name.split("_")[-1] != stfips:
         xwalk_name += "_" + stfips
 
-    file_name = "%s.%s" % (xwalk_name, CSV)
+    file_name = f"{xwalk_name}.{CSV}"
     file_name = os.path.join(path, file_name)
 
     xwalk.to_csv(file_name, index=False)
@@ -932,18 +933,18 @@ def xwalk_df_from_csv(
         """Initialize and decompress a directory."""
         if not os.path.exists(archive_path):
             os.mkdir(archive_path + "/")
-        shutil.unpack_archive("%s.%s" % (archive_path, ZIP), extract_dir=archive_path)
+        shutil.unpack_archive(f"{archive_path}.{ZIP}", extract_dir=archive_path)
 
     archive_path = None
 
     if archived:
-        archive_path = "%s%s" % (path, fname)
+        archive_path = f"{path}{fname}"
         # make the temporary directory to store the unzipped archive and unpack
         _unzip_directory()
         # update file path+name
-        fname = "%s/%s" % (fname, fname)
+        fname = f"{fname}/{fname}"
 
-    file_path = "%s%s.%s" % (path, fname, CSV)
+    file_path = f"{path}{fname}.{CSV}"
     xwalk = pandas.read_csv(file_path, **read_csv)
 
     if remove_unpacked and archive_path:
@@ -1018,7 +1019,7 @@ def calculate_atoms(
     # check variable lists are equal length
     if n_input_var != n_weight_var:
         msg = "The 'input_var' and 'weight_var' should be the same length. "
-        msg += "%s != %s" % (n_input_var, n_weight_var)
+        msg += f"{n_input_var} != {n_weight_var}"
         raise RuntimeError(msg)
 
     # add prefix (if desired)
@@ -1030,7 +1031,6 @@ def calculate_atoms(
 
     # iterate over each pair of input/interpolation variables
     for ix, (ivar, wvar) in enumerate(zip(input_var, weight_col)):
-
         # calculate numerators
         df[wvar] = df[weight] * df[ivar]
         if ix == 0:
@@ -1265,7 +1265,7 @@ def _state(rec, stfips=None, code="gj"):
 
 def _check_vars(_vars):
     """If the input is a single, named variable (str), insert it into a list."""
-    if type(_vars) == str:
+    if isinstance(_vars, str):
         _vars = [_vars]
     return _vars
 
@@ -1337,8 +1337,8 @@ def prepare_data_product(xwalk, xwalk_name, path, remove=True):
         """Fetch and copy the proper README.txt for a geographic crosswalk."""
 
         # set file paths + file names
-        readme_file = "%s_README.%s" % (readme_name, TXT)
-        readme_to = "%s/%s" % (path, readme_file)
+        readme_file = f"{readme_name}_README.{TXT}"
+        readme_to = f"{path}/{readme_file}"
         RESOURCE_README_PATH = "../resources/readme_files/"
         if not os.path.exists(RESOURCE_README_PATH):
             # for tests
@@ -1383,10 +1383,7 @@ def prepare_data_product(xwalk, xwalk_name, path, remove=True):
         except ValueError:
             pass
     if not from_bgp:
-        if rn_eq_xn:
-            readme_name = xwalk_name
-        else:
-            readme_name = "_".join(xwalk_name.split("_")[:-1])
+        readme_name = xwalk_name if rn_eq_xn else "_".join(xwalk_name.split("_")[:-1])
     else:
         readme_name = BGP_README
 
@@ -1438,7 +1435,7 @@ def generate_data_product(
         del base_xwalk
 
     # write out national crosswalk
-    out_path = "%s%s" % (out_path, xwalk_obj.xwalk_name)
+    out_path = f"{out_path}{xwalk_obj.xwalk_name}"
     prepare_data_product(
         xwalk_obj.xwalk, xwalk_obj.xwalk_name, out_path, remove=remove_unpacked
     )
@@ -1512,7 +1509,7 @@ def regenerate_blk_blk_xwalk(
     df.sort_values(by=sorter, **SORT_PARAMS)
 
     # write out national crosswalk
-    out_path = "%s%s" % (out_path, xwalk_name)
+    out_path = f"{out_path}{xwalk_name}"
     prepare_data_product(df, xwalk_name, out_path, remove=remove_unpacked)
 
     # write out state crosswalks
