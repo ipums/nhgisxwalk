@@ -85,7 +85,6 @@ tab_data_path_2000 = tabular_data_path % (_00, CSV, ZIP)
 
 
 class Test_GeoCrossWalk(unittest.TestCase):
-
     # 1990 bgp to 2010 tr through 1990 blk to 2010 blk
     def test_xwalk_full_bgp1990_tr2010(self):
         knw_str_vals = numpy.array(

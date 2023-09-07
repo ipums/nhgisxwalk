@@ -436,7 +436,6 @@ class GeoCrossWalk:
         drop_supp_col=True,
         weights_precision=10,
     ):
-
         # Set class attributes -------------------------------------------------
         # source and target class attributes
         self.source_year, self.target_year = source_year, target_year
@@ -511,7 +510,6 @@ class GeoCrossWalk:
         where excluded from the publicly-released summary files
         -------------------------------------------------------------------------"""
         if self.source_year == "1990" or self.target_year == "1990":
-
             if self.source_geo == "bgp" or self.target_geo == "bgp":
                 # block group IDs are needed to determine
                 # populated blocks in 1990
@@ -1030,7 +1028,6 @@ def calculate_atoms(
 
     # iterate over each pair of input/interpolation variables
     for ix, (ivar, wvar) in enumerate(zip(input_var, weight_col)):
-
         # calculate numerators
         df[wvar] = df[weight] * df[ivar]
         if ix == 0:
