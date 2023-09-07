@@ -91,9 +91,8 @@ def code_cols(geog, year):
                 "BLCK_GRPA",
             ]
 
-    if geog == "bg":
-        if year == "1990":
-            cols = ["STATEA", "COUNTYA", "TRACTA", "BLCK_GRPA"]
+    if geog == "bg" and year == "1990":
+        cols = ["STATEA", "COUNTYA", "TRACTA", "BLCK_GRPA"]
 
     return cols
 
@@ -290,10 +289,7 @@ def bg_gj(year, _id, df=None, order=None, cname="GISJOIN", tzero=["STATEA", "COU
         # 1990 -- Block Group (by State--County--Census Tract)
         if year == "1990":
             len_id = len(_id)
-            if len_id % 2 == 0:
-                indexer = 3
-            else:
-                indexer = 2
+            indexer = 3 if len_id % 2 == 0 else 2
         if year == "2010":
             indexer = 3
 
