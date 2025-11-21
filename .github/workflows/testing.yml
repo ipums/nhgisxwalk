@@ -25,7 +25,7 @@
    linting:
       runs-on: ubuntu-latest
       steps:
-        - uses: actions/checkout@v4
+        - uses: actions/checkout@v6
         - uses: actions/setup-python@v5
         - uses: pre-commit/action@v3.0.1
  
@@ -52,7 +52,7 @@
 
      steps:
        - name: checkout repo
-         uses: actions/checkout@v4
+         uses: actions/checkout@v6
 
        - name: setup micromamba
          uses: mamba-org/setup-micromamba@v1
